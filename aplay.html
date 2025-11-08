@@ -280,7 +280,7 @@
             });
         }
         
-        // --- 2. INVENTARIO PERSISTENTE (Pedidos Confirmados) ---
+        // --- 2. INVENTARIO PERSISTENTE (Pedidos Ya Confirmados) ---
         // Carga los pedidos guardados para persistencia (el stock no se reinicia al cargar la página)
         let localOrders = JSON.parse(localStorage.getItem('simulatedOrders')) || {};
         
@@ -771,4 +771,5 @@ Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
         });
     </script>
 </body>
+
 </html>
