@@ -209,19 +209,19 @@
     <script>
         
         // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (34 Productos) ---
-        const productInventory = {};
-        const productData = [];
-        const sizes = ["M", "L", "XL"]; 
-        const FIXED_PRICE = 250.00; 
-        const DEFAULT_STOCK = 2; // *** STOCK BASE ESTABLECIDO EN 2 ***
+const productInventory = {};
+const productData = [];
+const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; // Tallas por defecto si no se especifican
+const FIXED_PRICE = 250.00; 
+const DEFAULT_STOCK = 2;
 
-        for (let i = 1; i <= 34; i++) {
-            const id = `PROD_${String(i).padStart(3, '0')}`;
-            
-            const stock = {};
-            sizes.forEach(size => {
-                stock[size] = DEFAULT_STOCK; 
-            });
+for (let i = 1; i <= 34; i++) {
+    const id = `PROD_${String(i).padStart(3, '0')}`;
+    let mainImg, frontImg, backImg;
+    
+    // Nueva variable: Tallas específicas para este modelo
+    let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+    let initialStockOverrides = {}; // Para el stock inicial de cada talla
             
             // Stock de demostración inicial (Si quieres modificar el stock base de algún producto)
             if (i === 1) { 
@@ -241,6 +241,11 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
+                modelSizes = ['M', 'L', 'XL']; // <--- TALLAS PERSONALIZADAS
+        initialStockOverrides.M = 1; 
+        initialStockOverrides.L=1;
+        initialStockOverrides.XL=1;
+                // Unidades específicas para una talla
             } else if (i === 2) { 
                 // Playera Modelo No. 2
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
@@ -925,6 +930,7 @@ Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
 </body>
 
 </html>
+
 
 
 
