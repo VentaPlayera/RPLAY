@@ -213,24 +213,18 @@ const productInventory = {};
 const productData = [];
 const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"]; // Tallas por defecto si no se especifican
 const FIXED_PRICE = 250.00; 
-const DEFAULT_STOCK = 1;
+const DEFAULT_STOCK_PER_SIZE = 1;
 
 for (let i = 1; i <= 70; i++) {
     const id = `PROD_${String(i).padStart(3, '0')}`;
     let mainImg, frontImg, backImg;
+    let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+    let initialStockOverrides = {}; // Stock específico para este modelo/talla
     
-    // Nueva variable: Tallas específicas para este modelo
-    let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
-    let initialStockOverrides = {}; // Para el stock inicial de cada talla
-            
-            // Stock de demostración inicial (Si quieres modificar el stock base de algún producto)
-            if (i === 1) { 
-                stock.S = 1; 
-            }
-            
-            productInventory[id] = stock;
-
-            let mainImg, frontImg, backImg;
+    // Asignamos una imagen por defecto para asegurar que siempre haya una imagen
+    mainImg = 'https://via.placeholder.com/250x250/F4E3F5?text=Modelo+' + i;
+    frontImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Frente+' + i;
+    backImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Espalda+' + i;
 
             // ==========================================================
             // INICIO DE ASIGNACIÓN DE RUTAS DE IMAGEN ÚNICAS
@@ -423,17 +417,17 @@ for (let i = 1; i <= 70; i++) {
             /*
             *** AÑADE MÁS BLOQUES 'else if' AQUÍ PARA CADA MODELO QUE QUIERAS PERSONALIZAR ***
             
-     
-            
             */
-            else {
-                // Opción de reserva: Mantiene el placeholder para los productos que no has personalizado (i = 4 a 34)
-                mainImg = 'https://via.placeholder.com/250x250/F4E3F5?text=Modelo+' + i;
-                frontImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Frente+' + i;
-                backImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Espalda+' + i;
-            }
+           // 1. Crear el objeto de stock para este producto
+            const stock = {};
+            modelSizes.forEach(size => {
+                // Usa el override si existe, de lo contrario, usa el stock por defecto
+                stock[size] = initialStockOverrides[size] !== undefined ? initialStockOverrides[size] : DEFAULT_STOCK_PER_SIZE;
+            });
             // ==========================================================
-            
+            // 2. Asignar al inventario global
+            productInventory[id] = stock;
+            // 3. Añadir a la lista de productos
             productData.push({
                 id: id,
                 name: `Playera Modelo No. ${i}`,
@@ -938,6 +932,7 @@ Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
 </body>
 
 </html>
+
 
 
 
