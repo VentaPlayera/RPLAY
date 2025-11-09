@@ -588,14 +588,14 @@
                 currentSelectedSize = size;
                 
                 // Actualizar info de stock y cantidad
-                sizeStatusEl.textContent = stock > 5 ? `¡${stock} unidades disponibles!` : `¡Quedan sólo ${stock} unidades! ¡Aparta la tuya!`;
+                sizeStatusEl.textContent = stock > 5 ? `¡${stock} unidades disponibles!` : `¡Queda  ${stock} pieza unica! ¡Aparta la tuya!`;
                 
                 // Actualizar el input de cantidad
                 quantityInput.max = stock;
                 currentSelectedQuantity = Math.min(quantityInput.value, stock);
                 quantityInput.value = currentSelectedQuantity;
                 quantityInput.disabled = (stock <= 1); // Deshabilita si solo queda 1
-                quantityStatusEl.textContent = stock <= 1 ? "Máximo 1 unidad por pedido." : `Puedes pedir hasta ${stock} unidades.`;
+                quantityStatusEl.textContent = stock <= 1 ? "Máximo 1 unidad por pedido." : `Puedes pedir hasta ${stock} unidad.`;
 
                 updatePaymentAmounts();
                 mainButton.disabled = false;
@@ -796,3 +796,4 @@ Adjunta aquí tu comprobante de pago. ¡Gracias!`;
     </script>
 </body>
 </html>
+
