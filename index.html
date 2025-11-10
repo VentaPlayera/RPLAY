@@ -90,7 +90,6 @@
             background-color: var(--preventa-color); /* Azul */
             color: white; 
         }
-        /* ELIMINADA CLASE .ultima */
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
@@ -202,7 +201,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 
-                                <div id="productCarousel" class="carousel slide" data-bs-ride="false" data-bs-interval="false">
+                                <div id="productCarousel" class="carousel slide">
                                     <div class="carousel-indicators" id="carousel-indicators-content">
                                         </div>
                                     <div class="carousel-inner" id="carousel-inner-content">
@@ -467,8 +466,6 @@
                 productData.forEach(product => updateProductBadge(product.id));
             }
 
-            // ... (Resto de las funciones JS, incluyendo createSizeButtons, handleSizeSelection, etc.)
-
             function createSizeButtons(productID) {
                 if (!sizeOptionsContainer) return;
                 const sizes = productInventory[productID] ? Object.keys(productInventory[productID]) : [];
@@ -544,8 +541,11 @@
                 sizeStatusEl.style.display = 'block'; 
                 quantityInput.value = 1;
 
-                const carousel = bootstrap.Carousel.getInstance(document.getElementById('productCarousel'));
+                // Forzar el carrusel a la primera diapositiva al cerrar/reiniciar
+                const carouselElement = document.getElementById('productCarousel');
+                const carousel = bootstrap.Carousel.getInstance(carouselElement);
                 if (carousel) carousel.to(0);
+                else new bootstrap.Carousel(carouselElement, { interval: false }).to(0); // Asegura la inicialización estática si no existía.
             }
             
             function saveClientData() {
@@ -785,6 +785,15 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
 
                 carouselInner.innerHTML = innerHTML;
                 carouselIndicators.innerHTML = indicatorsHTML;
+                
+                // --- SOLUCIÓN CRUCIAL PARA CARRUSEL ESTÁTICO ---
+                // Inicializa el carrusel con un intervalo falso (o 0) para detener el movimiento automático.
+                const carouselElement = document.getElementById('productCarousel');
+                new bootstrap.Carousel(carouselElement, {
+                    interval: false, 
+                    ride: false 
+                });
+                // --------------------------------------------------
 
                 resetModalView(); 
                 document.getElementById('modal-main-button').style.display = 'inline-block';
