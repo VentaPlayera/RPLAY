@@ -125,10 +125,11 @@
             width: 100%; 
         }
         #productCarousel .carousel-item img {
-            max-height: 340px; /* Limitar la altura de la imagen dentro del carrusel */
-            max-width: 95%; /* Limitar el ancho de la imagen */
-            object-fit: contain;
+            max-height: 100%; /* Ajustar la altura máxima al 100% del contenedor */
+            max-width: 100%; /* Ajustar el ancho máximo al 100% del contenedor */
+            object-fit: contain; /* ¡Importante! Asegura que la imagen completa sea visible */
             border-radius: 8px;
+            /* Eliminamos `width: 95%` y `height: 340px` directamente para que `object-fit` funcione mejor */
         }
         #productCarousel .carousel-control-prev-icon,
         #productCarousel .carousel-control-next-icon {
@@ -263,7 +264,8 @@
                             <h5 class="text-primary"><i class="fas fa-university"></i> Datos de Depósito/Transferencia</h5>
                             <p class="mb-1">Banco: **BBVA**</p>
                             <p class="mb-1">Cuenta: **0123 4567 89**</p>
-                            <p class="mb-0">CLABE: **0123 4567 8901 2345 67**</p>
+                            <p class="mb-1">CLABE: **0123 4567 8901 2345 67**</p>
+                            <p class="mb-0 text-primary">Beneficiario: **RPLAY S.A. de C.V.**</p>
                         </div>
                     </div>
                 </div>
@@ -714,25 +716,25 @@
                 initializeBadges();
             }
             
-            // Función para actualizar el Carrusel de Imágenes (Ahora con 4 imágenes)
+            // Función para actualizar el Carrusel de Imágenes (Ahora con 4 imágenes y ajuste de estilo)
             function updateProductCarousel(product) {
                 carouselInnerContent.innerHTML = ''; // Limpiar carrusel anterior
 
                 const images = [
-                    // AÑADIMOS LA IMAGEN PRINCIPAL AL INICIO DEL CARRUSEL
-                    { src: product.img_main, alt: `${product.name} - Principal` }, 
-                    { src: product.img_front, alt: `${product.name} - Frente` },
-                    { src: product.img_back, alt: `${product.name} - Espalda` },
-                    { src: product.img_size_guide, alt: `${product.name} - Guía de Tallas` }
+                    { src: product.img_main, alt: `Imagen principal de ${product.name}` }, 
+                    { src: product.img_front, alt: `Parte frontal de ${product.name}` },
+                    { src: product.img_back, alt: `Parte trasera de ${product.name}` },
+                    { src: product.img_size_guide, alt: `Guía de tallas para ${product.name}` }
                 ];
 
                 images.forEach((img, index) => {
                     const carouselItem = document.createElement('div');
                     carouselItem.classList.add('carousel-item');
-                    if (index === 0) { // La primera imagen activa por defecto (Ahora img_main)
+                    if (index === 0) { // La primera imagen activa por defecto
                         carouselItem.classList.add('active');
                     }
-                    carouselItem.innerHTML = `<img src="${img.src}" class="d-block" alt="${img.alt}">`; 
+                    // Importante: No se usa la clase 'd-block' porque ya la definimos en los estilos del carrusel
+                    carouselItem.innerHTML = `<img src="${img.src}" alt="${img.alt}">`; 
                     carouselInnerContent.appendChild(carouselItem);
                 });
 
