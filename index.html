@@ -89,29 +89,22 @@
             text-decoration: line-through;
         }
         
-        /* --- ESTILOS PARA LA GALERÍA DE PESTAÑAS (NUEVO) --- */
-        .product-image-container {
-            /* Asegura que las imágenes no se superpongan y tengan un tamaño fijo */
-            height: 400px;
-            border-radius: 0 10px 10px 10px; 
+        /* --- ESTILOS PARA EL CARRUSEL EN EL MODAL --- */
+        #productCarousel .carousel-inner {
+            height: 400px; /* Altura fija para el carrusel */
+            border-radius: 10px;
             overflow: hidden;
             background-color: #fff;
-            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        .product-image-container img {
-            width: 100%;
+        #productCarousel .carousel-item img {
             height: 100%;
-            object-fit: contain; /* Asegura que la imagen completa se vea */
-            transition: opacity 0.3s ease-in-out;
+            width: 100%;
+            object-fit: contain; /* Asegura que la imagen completa se vea sin recortar */
         }
-        
-        /* Estilos de las pestañas */
-        .nav-tabs .nav-link.active {
-            color: var(--primary-color);
-            border-color: var(--primary-color) var(--primary-color) #fff;
-            font-weight: bold;
+        #productCarousel .carousel-indicators button {
+            background-color: var(--primary-color);
         }
-        .nav-tabs { border-bottom: 1px solid var(--primary-color); }
     </style>
 </head>
 <body>
@@ -144,28 +137,19 @@
                     <div id="selection-step">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <ul class="nav nav-tabs" id="imageTabs" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="front-tab" data-bs-toggle="tab" data-bs-target="#front-view" type="button" role="tab" aria-controls="front-view" aria-selected="true">Frente</button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="back-tab" data-bs-toggle="tab" data-bs-target="#back-view" type="button" role="tab" aria-controls="back-view" aria-selected="false">Espalda</button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="size-tab" data-bs-toggle="tab" data-bs-target="#size-guide-view" type="button" role="tab" aria-controls="size-guide-view" aria-selected="false">Tallas</button>
-                                    </li>
-                                </ul>
-
-                                <div class="tab-content border-start border-end border-bottom p-1 product-image-container" id="imageTabsContent">
-                                    <div class="tab-pane fade show active" id="front-view" role="tabpanel" aria-labelledby="front-tab">
-                                        <img id="modal-img-front" alt="Vista Frontal de la Playera">
-                                    </div>
-                                    <div class="tab-pane fade" id="back-view" role="tabpanel" aria-labelledby="back-tab">
-                                        <img id="modal-img-back" alt="Vista Trasera de la Playera">
-                                    </div>
-                                    <div class="tab-pane fade" id="size-guide-view" role="tabpanel" aria-labelledby="size-tab">
-                                        <img id="modal-img-size-guide" alt="Guía de Tallas">
-                                    </div>
+                                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="false">
+                                    <div class="carousel-indicators" id="carousel-indicators-content">
+                                        </div>
+                                    <div class="carousel-inner" id="carousel-inner-content">
+                                        </div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
                                 </div>
                                 <p class="text-muted small mt-2" id="modal-product-description"></p>
                             </div>
@@ -362,6 +346,8 @@
             const managementPanel = document.getElementById('manualManagementPanel');
             const modalProductName = document.getElementById('modal-product-name');
             const modalProductDesc = document.getElementById('modal-product-description');
+            const carouselInner = document.getElementById('carousel-inner-content'); // Nuevo
+            const carouselIndicators = document.getElementById('carousel-indicators-content'); // Nuevo
             
             // Variables de estado
             let currentPrice = FIXED_PRICE;
@@ -544,9 +530,9 @@
                 sizeStatusEl.style.display = 'block'; 
                 quantityInput.value = 1;
 
-                // Reinicia las pestañas a la primera (Frente)
-                const tabs = new bootstrap.Tab(document.getElementById('front-tab'));
-                tabs.show();
+                // Restablece el carrusel a la primera diapositiva
+                const carousel = bootstrap.Carousel.getInstance(document.getElementById('productCarousel'));
+                if (carousel) carousel.to(0);
             }
             
             function saveClientData() {
@@ -619,7 +605,6 @@
 
             // FUNCIÓN DE ADMINISTRACIÓN
             window.showAdminPanel = function(password) {
-                const passwordHash = "819c99d25145b5c9b740751939331908"; // Hash simple para 'admin123'
                 if (password === 'admin123') { 
                     managementPanel.style.display = 'block';
                     renderManualManagementPanel();
@@ -724,6 +709,22 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                 } 
             });
             
+            // Función de ayuda para crear una diapositiva del carrusel
+            function createCarouselItem(src, alt, isActive = false, index) {
+                return `
+                    <div class="carousel-item ${isActive ? 'active' : ''}">
+                        <img src="${src}" class="d-block w-100" alt="${alt}">
+                    </div>
+                `;
+            }
+
+            // Función de ayuda para crear un indicador del carrusel
+            function createCarouselIndicator(index, isActive = false) {
+                return `
+                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" class="${isActive ? 'active' : ''}" aria-current="${isActive ? 'true' : 'false'}" aria-label="Slide ${index + 1}"></button>
+                `;
+            }
+
             // Lógica de Modal (Apertura y llenado de datos e imágenes)
             paymentModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget; 
@@ -741,10 +742,23 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                 modalProductDesc.textContent = button.getAttribute('data-description');
                 unitPriceDisplay.textContent = `$${currentPrice.toFixed(2)} MXN`;
 
-                // **CARGA DE IMÁGENES EN LAS PESTAÑAS (NO SE SOBREPONEN)**
-                document.getElementById('modal-img-front').src = imgFront;
-                document.getElementById('modal-img-back').src = imgBack;
-                document.getElementById('modal-img-size-guide').src = sizeGuide; 
+                // **GENERAR CONTENIDO DEL CARRUSEL**
+                const images = [
+                    { src: imgFront, alt: 'Vista Frontal' },
+                    { src: imgBack, alt: 'Vista Trasera' },
+                    { src: sizeGuide, alt: 'Guía de Tallas' }
+                ];
+
+                let innerHTML = '';
+                let indicatorsHTML = '';
+
+                images.forEach((img, index) => {
+                    innerHTML += createCarouselItem(img.src, img.alt, index === 0);
+                    indicatorsHTML += createCarouselIndicator(index, index === 0);
+                });
+
+                carouselInner.innerHTML = innerHTML;
+                carouselIndicators.innerHTML = indicatorsHTML;
 
                 resetModalView(); 
                 document.getElementById('modal-main-button').style.display = 'inline-block';
