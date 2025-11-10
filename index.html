@@ -89,18 +89,22 @@
             text-decoration: line-through;
         }
         
-        /* --- ESTILOS PARA EL CARRUSEL EN EL MODAL --- */
+        /* --- ESTILOS CORREGIDOS PARA EL CARRUSEL EN EL MODAL --- */
         #productCarousel .carousel-inner {
-            height: 400px; /* Altura fija para el carrusel */
+            height: 450px; /* Aumenta ligeramente la altura para mejor visualización */
             border-radius: 10px;
             overflow: hidden;
             background-color: #fff;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
+        #productCarousel .carousel-item {
+            height: 100%;
+        }
         #productCarousel .carousel-item img {
             height: 100%;
             width: 100%;
-            object-fit: contain; /* Asegura que la imagen completa se vea sin recortar */
+            /* CLAVE DE CORRECCIÓN: Usar 'contain' asegura que la imagen se vea completa. */
+            object-fit: contain; 
         }
         #productCarousel .carousel-indicators button {
             background-color: var(--primary-color);
