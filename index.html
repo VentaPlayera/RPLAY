@@ -212,13 +212,13 @@
 const productInventory = {};
 const productData = [];
 const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"]; // Tallas por defecto si no se especifican
-const FIXED_PRICE = 250.00; 
+const FIXED_PRICE = 250.00; 
 const DEFAULT_STOCK_PER_SIZE = 1;
 
 for (let i = 1; i <= 70; i++) {
     const id = PROD_${String(i).padStart(3, '0')};
     let mainImg, frontImg, backImg;
-    let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+    let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
     let initialStockOverrides = {}; // Stock específico para este modelo/talla
     
     // Asignamos una imagen por defecto para asegurar que siempre haya una imagen
