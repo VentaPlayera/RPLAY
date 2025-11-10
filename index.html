@@ -70,7 +70,7 @@
             color: white;
         }
 
-        /* --- BADGES Y STOCK (NUEVOS ESTILOS) --- */
+        /* --- BADGES Y STOCK (SOLO AGOTADO Y PREVENTA) --- */
         .stock-badge {
             position: absolute;
             top: 15px;
@@ -82,17 +82,16 @@
             z-index: 10;
         }
         .stock-badge.agotado { 
-            background-color: #dc3545; 
+            background-color: #dc3545; /* Rojo */
             color: white; 
             animation: pulse 1.5s infinite; 
         }
-        /* ESTILO NUEVO PARA PREVENTA */
         .stock-badge.preventa { 
-            background-color: var(--preventa-color); 
+            background-color: var(--preventa-color); /* Azul */
             color: white; 
-            /* Se puede añadir una animación sutil si se desea */
-            /* box-shadow: 0 0 10px var(--preventa-color); */
         }
+        /* ELIMINADA CLASE .ultima */
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* --- MODAL Y SELECCIÓN DE TALLAS --- */
@@ -330,7 +329,7 @@
         const FIXED_PRICE = 250.00; 
         const DEFAULT_STOCK_PER_SIZE = 1; 
         const WHATSAPP_PHONE = "529991480151"; 
-        const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; // Contraseña de admin: 'admin123' (solo para propósitos de simulación)
+        const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; 
         
         // FUNCIÓN: Inicializa el inventario base
         function initializeInventory(productID, sizes, initialStockOverrides = {}) {
@@ -437,7 +436,7 @@
                 return stock - pendingOrders;
             }
             
-            // FUNCIÓN: Actualiza el badge de stock en la tarjeta principal
+            // FUNCIÓN CRUCIAL: Solo AGOTADO o PREVENTA
             function updateProductBadge(productID) {
                 const badgeEl = document.getElementById(`badge-${productID}`);
                 if (!badgeEl) return;
@@ -451,13 +450,14 @@
                 }
 
                 badgeEl.textContent = '';
-                badgeEl.className = 'stock-badge';
+                // Limpiamos TODAS las clases de estado antes de aplicar la nueva
+                badgeEl.className = 'stock-badge'; 
 
                 if (totalStock === 0) {
                     badgeEl.textContent = 'AGOTADO';
                     badgeEl.classList.add('agotado');
                 } else { 
-                    // Si hay stock disponible, siempre se muestra PREVENTA
+                    // Si hay stock disponible (> 0), siempre se muestra PREVENTA
                     badgeEl.textContent = 'PREVENTA';
                     badgeEl.classList.add('preventa');
                 }
@@ -515,6 +515,7 @@
 
                 document.getElementById('quantity-status').textContent = `Puedes seleccionar hasta ${stock} unidad${stock !== 1 ? 'es' : ''}.`;
                 
+                // Estos mensajes SÍ pueden indicar bajo stock, ya que se refieren a la talla específica
                 sizeStatusEl.style.display = 'block';
                 if (stock === 1) {
                     sizeStatusEl.textContent = '¡Solo queda 1 unidad! ¡Apúrate!';
