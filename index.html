@@ -219,6 +219,7 @@
             // CORRECCIÓN DE SINTAXIS: Usar template literal
             const id = `PROD_${String(i).padStart(3, '0')}`;
             let mainImg, frontImg, backImg;
+            let sideImg; // <--- NUEVA VARIABLE PARA LA IMAGEN LATERAL
             let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
             let initialStockOverrides = {}; // Stock específico para este modelo/talla
             
@@ -231,7 +232,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
+                sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -978,6 +979,7 @@
     </script>
 </body>
 </html>
+
 
 
 
