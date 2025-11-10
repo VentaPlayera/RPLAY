@@ -18,6 +18,7 @@
         h1 { color: var(--secondary-color); font-weight: 700; margin-bottom: 40px; }
         
         /* --- TARJETA DE PRODUCTO --- */
+        .logo-img { max-width: 150px; margin-bottom: 20px;}
         .product-card {
             border: none;
             border-radius: 15px;
@@ -87,40 +88,36 @@
             cursor: not-allowed;
             text-decoration: line-through;
         }
-
-        /* --- ESTILOS DE CARRUSEL (CORRECCIÓN CRÍTICA) --- */
-        #productCarousel {
-            height: 400px; 
-            overflow: hidden; 
-            border-radius: 10px;
+        
+        /* --- ESTILOS PARA LA GALERÍA DE PESTAÑAS (NUEVO) --- */
+        .product-image-container {
+            height: 400px;
+            border-radius: 0 10px 10px 10px; /* Esquinas solo abajo y a la derecha */
+            overflow: hidden;
             background-color: #fff;
+            position: relative;
         }
-        #productCarousel .carousel-inner { height: 100%; }
-        #productCarousel .carousel-item {
-            height: 100%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+        .product-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: opacity 0.3s ease-in-out;
         }
-        #productCarousel .carousel-item img {
-            max-width: 100%;  
-            max-height: 100%;     
-            width: auto;
-            height: auto;
-            object-fit: contain; 
-            padding: 5px; 
-            display: block;
+        
+        /* Opcional: Estilos para darle más vida a las pestañas */
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-color: var(--primary-color) var(--primary-color) #fff;
+            font-weight: bold;
         }
-        /* Corregir el color de las flechas en el carrusel */
-        .carousel-control-prev-icon, .carousel-control-next-icon {
-            filter: invert(100%); /* Hace las flechas visibles en cualquier fondo */
-        }
+        .nav-tabs { border-bottom: 1px solid var(--primary-color); }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 class="text-center">🔥 RPLAY - Preventa Exclusiva 🔥</h1>
+        <img src="https://ventaplayera.github.io/RPLAY/logo.png" alt="RPLAY Logo" class="logo-img img-fluid mx-auto d-block">
+        <h1 class="text-center">RPLAY - Preventa Exclusiva</h1>
         
         <div id="manualManagementPanel" class="p-3 mb-4 rounded" style="display: none; background-color: #fff3cd; border: 1px solid #ffeeba;">
             <h4 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Panel de Administración - INVENTARIO</h4>
@@ -138,172 +135,192 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="paymentModalLabel"><span id="product-name"></span></h5>
+                    <h5 class="modal-title" id="paymentModalLabel">Apartado: <span id="modal-product-name" class="text-primary"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-indicators">
-                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1 (Frente)"></button>
-                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2 (Reverso)"></button>
-                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3 (Tallas)"></button> 
+                    <div id="selection-step">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <ul class="nav nav-tabs" id="imageTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="front-tab" data-bs-toggle="tab" data-bs-target="#front-view" type="button" role="tab" aria-controls="front-view" aria-selected="true">Frente</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="back-tab" data-bs-toggle="tab" data-bs-target="#back-view" type="button" role="tab" aria-controls="back-view" aria-selected="false">Espalda</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="size-tab" data-bs-toggle="tab" data-bs-target="#size-guide-view" type="button" role="tab" aria-controls="size-guide-view" aria-selected="false">Tallas</button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content border-start border-end border-bottom p-1 product-image-container" id="imageTabsContent">
+                                    <div class="tab-pane fade show active" id="front-view" role="tabpanel" aria-labelledby="front-tab">
+                                        <img id="modal-img-front" alt="Vista Frontal de la Playera">
+                                    </div>
+                                    <div class="tab-pane fade" id="back-view" role="tabpanel" aria-labelledby="back-tab">
+                                        <img id="modal-img-back" alt="Vista Trasera de la Playera">
+                                    </div>
+                                    <div class="tab-pane fade" id="size-guide-view" role="tabpanel" aria-labelledby="size-tab">
+                                        <img id="modal-img-size-guide" alt="Guía de Tallas">
+                                    </div>
                                 </div>
-                                <div class="carousel-inner">
-                                    <div class="carousel-item active"><img id="modal-img-front" class="d-block w-100" alt="Vista Frontal"></div>
-                                    <div class="carousel-item"><img id="modal-img-back" class="d-block w-100" alt="Vista Trasera"></div>
-                                    <div class="carousel-item"><img id="modal-img-size-guide" class="d-block w-100" alt="Guía de Tallas"></div>
-                                </div>
-                                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Anterior</span>
-                                </button>
-                                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Siguiente</span>
-                                </button>
-                            </div>
+                                <p class="text-muted small mt-2" id="modal-product-description"></p>
                             </div>
 
-                        <div class="col-md-6">
-                            <p class="text-muted" id="product-description"></p>
-                            
-                            <div id="selection-step">
-                                <h6 class="mt-4">1. Elige tu Talla</h6>
-                                <div id="size-options" class="d-flex flex-wrap"></div>
-                                <p id="size-status" class="mt-2 text-danger"></p>
-                                
-                                <h6 class="mt-3">2. Cantidad</h6>
-                                <input type="number" id="quantityInput" class="form-control mb-2" value="1" min="1" disabled>
-                                <p id="quantity-status" class="text-secondary small"></p>
+                            <div class="col-md-6">
+                                <h4 class="mb-3">1. Selecciona tu talla:</h4>
+                                    
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Talla:</label>
+                                    <div id="size-options" class="size-options"></div>
+                                    <small class="text-success" id="size-status">Selecciona una talla para ver la disponibilidad.</small>
+                                </div>
+                                    
+                                <div class="mb-3" style="display:none;">
+                                    <label for="quantityInput" class="form-label fw-bold">Cantidad:</label>
+                                    <input type="number" id="quantityInput" class="form-control" value="1" min="1" max="1" disabled>
+                                    <small class="text-muted" id="quantity-status">Solo puedes pedir 1 unidad por talla.</small>
+                                </div>
+                                    
+                                <div class="alert alert-info mt-3">
+                                    <h5 class="mb-0">Precio Unitario: <span id="modal-unit-price" class="fw-bold">$0.00 MXN</span></h5>
+                                </div>
 
-                                <hr>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <strong>Precio por unidad:</strong>
-                                    <strong class="text-primary" id="unit-price-display"></strong>
+                                <div id="payment-detail-box" class="mt-4">
+                                    <h4 class="mb-3">2. Elige tu Opción de Pago:</h4>
+                                        
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck" checked>  
+                                        <label class="form-check-label fw-bold" for="halfPaymentCheck">
+                                            Pago Parcial (Apartado): <span class="text-muted small">(Paga la mitad ahora, el resto a la entrega)</span>
+                                        </label>
+                                    </div>
+                                        
+                                    <div class="card bg-light p-3 mb-3">
+                                        <h5>Detalle del Pago</h5>
+                                        <p class="mb-1">Total de la Compra: <span class="float-end fw-bold" id="total-price">$0.00 MXN</span></p>
+                                        <hr class="my-2">
+                                        <p class="mb-0 text-success">Monto a Pagar Ahora: <span class="float-end fw-bold fs-5" id="payment-due">$0.00 MXN</span></p>
+                                    </div>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <strong>TOTAL:</strong>
-                                    <strong class="text-success fs-4" id="total-price">$0.00 MXN</strong>
-                                </div>
-                            </div>
-                            
-                            <div id="payment-step" style="display: none;">
-                                <h6>3. Datos de Envío y Contacto</h6>
-                                <div class="mb-3">
-                                    <input type="text" id="clientName" class="form-control" placeholder="Nombre completo (Min. 3 caracteres)">
-                                </div>
-                                <div class="mb-3">
-                                    <input type="tel" id="clientPhone" class="form-control" placeholder="Teléfono de contacto (Min. 8 dígitos)">
-                                </div>
-                                <div class="mb-3">
-                                    <textarea id="clientAddress" class="form-control" rows="2" placeholder="Dirección completa para envío (Min. 10 caracteres)"></textarea>
-                                </div>
-                                
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck">
-                                    <label class="form-check-label" for="halfPaymentCheck">
-                                        Pagar solo el 50% para apartar stock
-                                    </label>
-                                </div>
-                                
-                                <p class="alert alert-danger p-2" id="payment-error" style="display: none;">
-                                    ⚠️ Por favor, completa todos los campos de contacto.
+                                <p class="text-danger mt-3" style="display:none;" id="selection-error">
+                                    <i class="fas fa-exclamation-circle"></i> Por favor, selecciona una talla antes de continuar.
                                 </p>
-
-                                <hr>
-                                <p class="mb-1">Producto: <strong id="final-item-display2"></strong></p>
-                                <p class="mb-1">Talla: <strong id="final-size-display"></strong>, Cantidad: <strong id="final-quantity-display"></strong></p>
-                                <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded">
-                                    <strong>Monto a pagar (Apartado/Total):</strong>
-                                    <strong class="text-primary fs-4" id="payment-due">$0.00 MXN</strong>
-                                </div>
-                            </div>
-                            
-                            <div id="transfer-info" style="display: none;">
-                                <div class="alert alert-success text-center">
-                                    <h4>🎉 ¡Pedido Generado!</h4>
-                                    <p>Tu stock está temporalmente apartado, <strong id="client-name-display"></strong>.</p>
-                                </div>
-                                <p class="mb-1">Confirma tu pedido de <strong id="final-qty-conf"></strong>x <strong id="final-item-display"></strong> (Talla <strong id="final-size-conf"></strong>).</p>
-                                <p class="mb-1 fw-bold">Monto a Enviar: <span id="final-amount-conf" class="text-primary"></span></p>
-                                
-                                <hr>
-                                <h6>Datos de Transferencia:</h6>
-                                <p><strong>Banco:</strong> B*N*M*X</p>
-                                <p><strong>Cuenta CLABE:</strong> 9999999999999999</p>
-                                
-                                <p class="mt-3">Realiza la transferencia y da clic en el botón de WhatsApp para adjuntar tu comprobante y completar tu reserva.</p>
                             </div>
                         </div>
                     </div>
+
+                    <div id="payment-step" style="display:none;">
+                        <h4>3. Datos del Comprador y Envío:</h4>
+                            
+                        <div id="payment-step-info-box" class="alert alert-info"></div>
+                            
+                        <form id="client-data-form">
+                            <div class="mb-3">
+                                <label for="clientName" class="form-label">Nombre Completo (*):</label>
+                                <input type="text" class="form-control" id="clientName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="clientPhone" class="form-label">Teléfono/WhatsApp (*):</label>
+                                <input type="tel" class="form-control" id="clientPhone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="clientAddress" class="form-label">Dirección de Envío Completa (*):</label>
+                                <textarea class="form-control" id="clientAddress" rows="3" required></textarea>
+                            </div>
+                                
+                            <p class="text-danger mt-3" style="display:none;" id="payment-error">
+                                <i class="fas fa-exclamation-circle"></i> Por favor, completa todos los campos marcados con (*) para continuar.
+                            </p>
+                        </form>
+                    </div>
+
+                    <div id="transfer-info" style="display:none;">
+                        <h4>4. Realiza tu pago o depósito:</h4>
+                        <div class="alert alert-success">
+                            <p class="mb-1"><strong>¡Pedido Pre-Aprobado!</strong> Tienes **24 horas** para realizar tu depósito y enviar tu comprobante. **Tu playera queda apartada al enviar el comprobante por WhatsApp.**</p>
+                            <p class="mb-0 text-muted small">Tu pedido: <span id="final-qty-conf"></span>x <span id="final-item-display"></span> (Talla <span id="final-size-conf"></span>). Monto a Enviar: <span id="final-amount-conf" class="text-primary fw-bold"></span>.</p>
+                        </div>
+                            
+                        <div class="card border-primary p-3">
+                            <h5 class="text-primary"><i class="fas fa-university"></i> Datos de Depósito/Transferencia</h5>
+                            <p class="mb-1">Banco: **BBVA**</p>
+                            <p class="mb-1">Cuenta: **0123 4567 89**</p>
+                            <p class="mb-1">CLABE: **0123 4567 8901 2345 67**</p>
+                            <p class="mb-0 text-primary">Beneficiario: **RPLAY S.A. de C.V.**</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="modal-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-lg btn-buy" id="modal-main-button">Pagar Ahora</button>
                     
-                    <a href="#" target="_blank" class="btn btn-lg btn-success" id="whatsapp-confirm-button" style="display: none;">
-                        <i class="fab fa-whatsapp"></i> Enviar Comprobante y Confirmar
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" id="modal-close-button" data-bs-dismiss="modal">Cerrar</button>
+                        
+                    <button type="button" class="btn btn-primary" id="modal-main-button" disabled>
+                        Continuar
+                    </button>
+
+                    <a id="whatsapp-confirm-button" class="btn btn-success" target="_blank" style="display:none;">
+                        <i class="fab fa-whatsapp"></i> Enviar Comprobante por WhatsApp
                     </a>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- 1. DATOS INICIALES (Simulados) ---
-        const FIXED_PRICE = 280.00;
+        // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (70 Productos) ---
+        const productInventory = {};
         const productData = [];
+        const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; 
+        const FIXED_PRICE = 250.00; 
+        const DEFAULT_STOCK_PER_SIZE = 1; 
+        const WHATSAPP_PHONE = "529991480151"; 
+        const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; 
         
-        // Inventario base (se utiliza para calcular el stock disponible)
-        const productInventory = {}; 
-
-        // Definición de las tallas y stock inicial para TODOS los productos por defecto (si no se anula)
-        const DEFAULT_SIZES = ['S', 'M', 'L', 'XL'];
-        const DEFAULT_STOCK = 5; 
-
-        // Función para inicializar el inventario
+        // FUNCIÓN: Inicializa el inventario base
         function initializeInventory(productID, sizes, initialStockOverrides = {}) {
             productInventory[productID] = {};
             sizes.forEach(size => {
-                productInventory[productID][size] = initialStockOverrides[size] !== undefined ? initialStockOverrides[size] : DEFAULT_STOCK;
+                productInventory[productID][size] = initialStockOverrides[size] !== undefined ? initialStockOverrides[size] : DEFAULT_STOCK_PER_SIZE;
             });
         }
 
-        for (let i = 1; i <= 3; i++) {
-            let id = `PROD_00${i}`;
+        for (let i = 1; i <= 70; i++) {
+            const id = `PROD_${String(i).padStart(3, '0')}`;
             let mainImg, frontImg, backImg, sizeGuideImg;
-            let modelSizes = DEFAULT_SIZES;
+            let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
             let initialStockOverrides = {};
-
-            // Imágenes de placeholder por defecto
-            mainImg = `https://via.placeholder.com/250x250/F8F8F8?text=Frente+${i}`;
-            frontImg = `https://via.placeholder.com/500x500/F8F8F8?text=Frente+${i}`;
-            backImg = `https://via.placeholder.com/500x500/F8F8F8?text=Espalda+${i}`;
-            sizeGuideImg = `https://via.placeholder.com/500x500/CCCCCC?text=GUIA+DE+TALLAS`;
-
-            // --- Lógica para configurar tallas y stock por modelo (Ejemplos) ---
+            
+            // Imágenes de placeholder para los modelos sin imagen explícita
+            mainImg = 'https://via.placeholder.com/250x250/F8F8F8?text=Modelo+' + i;
+            frontImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Frente+' + i;
+            backImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Espalda+' + i;
+            sizeGuideImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Medidas+' + i; 
+            
+            // --- Lógica para configurar tallas y stock por modelo (MODELOS ESPECÍFICOS) ---
             if (i === 1) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
-                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; // Guía de tallas específica
-                modelSizes = ['M', 'L', 'XL']; 
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png'; 
+                modelSizes = ['S', 'M', 'L']; 
+                initialStockOverrides.S = 2; 
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L = 1; 
-                initialStockOverrides.XL = 1; 
-            } else if (i === 2) {
-                // Modelo 2: Imágenes genéricas con stock limitado en 'S'
-                modelSizes = ['S', 'M', 'L'];
-                initialStockOverrides.S = 2;
-                initialStockOverrides.M = 5;
-                initialStockOverrides.L = 5;
+            } else if (i === 2 ) { 
+                mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
+                frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
+                backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
             }
-            // --- Fin de la Lógica por modelo ---
+            // --- FIN DE LÓGICA DE MODELOS ESPECÍFICOS ---
 
             initializeInventory(id, modelSizes, initialStockOverrides);
 
@@ -313,9 +330,9 @@
                 price: FIXED_PRICE.toFixed(2), 
                 description: `Diseño exclusivo #${i} con estampado digital de alta calidad. Tela de algodón 100%.`,
                 img_main: mainImg,
-                img_front: frontImg,
-                img_back: backImg,
-                img_size_guide: sizeGuideImg // <-- NUEVO CAMPO A PASAR AL MODAL
+                img_front: frontImg, 
+                img_back: backImg,   
+                img_size_guide: sizeGuideImg 
             });
         }
         
@@ -338,19 +355,18 @@
             const clientAddressInput = document.getElementById('clientAddress');
             const mainButton = document.getElementById('modal-main-button');
             const whatsappButton = document.getElementById('whatsapp-confirm-button'); 
-            const ordersList = document.getElementById('ordersList'); 
             const sizeStatusEl = document.getElementById('size-status'); 
             const quantityInput = document.getElementById('quantityInput');
-            const quantityStatusEl = document.getElementById('quantity-status');
-            const unitPriceDisplay = document.getElementById('unit-price-display');
+            const unitPriceDisplay = document.getElementById('modal-unit-price');
             const managementPanel = document.getElementById('manualManagementPanel');
-
+            const modalProductName = document.getElementById('modal-product-name');
+            const modalProductDesc = document.getElementById('modal-product-description');
+            
             // Variables de estado
             let currentPrice = FIXED_PRICE;
             let currentSelectedSize = null;
             let currentProductName = '';
             let currentProductID = ''; 
-            const WHATSAPP_PHONE = "529991480151"; 
             
             // --- Funciones de Lógica ---
             
@@ -367,6 +383,7 @@
                 return stock - pendingOrders;
             }
             
+            // FUNCIÓN DE ADMINISTRACIÓN (Acceso con showAdminPanel('admin123'))
             window.setStock = function(productID, size, newStock) {
                 if (productInventory[productID] && productInventory[productID][size] !== undefined) {
                     productInventory[productID][size] = Math.max(0, newStock); 
@@ -382,8 +399,8 @@
                     alert(`Error: Producto ID '${productID}' o Talla '${size}' no encontrados.`);
                 }
             };
-            
-            // DIBUJAR TARJETAS DE PRODUCTO DINÁMICAMENTE
+
+            // FUNCIÓN: Renderiza las tarjetas de producto
             function renderProductCards() {
                 let html = '';
                 productData.forEach(product => {
@@ -407,7 +424,8 @@
                                             data-description="${product.description}"
                                             data-img-front="${product.img_front}" 
                                             data-img-back="${product.img_back}"
-                                            data-size-guide="${product.img_size_guide}"> Ver Detalle y Comprar
+                                            data-size-guide="${product.img_size_guide}"> 
+                                            Ver Detalle y Comprar
                                         </button>
                                     </div>
                                 </div>
@@ -456,13 +474,10 @@
                 const sizes = productInventory[productID] ? Object.keys(productInventory[productID]) : [];
                 sizeOptionsContainer.innerHTML = ''; 
                 currentSelectedSize = null; 
-                sizeStatusEl.textContent = '';
+                sizeStatusEl.textContent = 'Selecciona una talla para ver la disponibilidad.';
                 mainButton.disabled = true;
-                
                 quantityInput.disabled = true;
                 quantityInput.value = 1;
-                quantityStatusEl.textContent = 'Selecciona una talla para continuar.';
-
 
                 sizes.forEach(size => {
                     const availableStock = getAvailableStock(productID, size); 
@@ -491,14 +506,14 @@
                 
                 currentSelectedSize = size;
                 mainButton.disabled = false;
-                mainButton.textContent = 'Continuar a Pago';
+                mainButton.textContent = 'Continuar';
 
                 // LÓGICA DE CANTIDAD
                 quantityInput.max = stock; 
                 quantityInput.value = 1; 
                 quantityInput.disabled = (stock <= 1); 
 
-                quantityStatusEl.textContent = `Puedes seleccionar hasta ${stock} unidad${stock !== 1 ? 'es' : ''}.`;
+                document.getElementById('quantity-status').textContent = `Puedes seleccionar hasta ${stock} unidad${stock !== 1 ? 'es' : ''}.`;
                 
                 sizeStatusEl.style.display = 'block';
                 if (stock === 1) {
@@ -509,7 +524,7 @@
                     sizeStatusEl.className = 'text-warning mt-2';
                 } else {
                     sizeStatusEl.textContent = `Stock disponible: ${stock} unidades.`;
-                    sizeStatusEl.className = 'text-secondary mt-2';
+                    sizeStatusEl.className = 'text-success mt-2';
                 }
                 
                 updatePaymentAmounts();
@@ -519,12 +534,18 @@
                 selectionStep.style.display = 'block';
                 paymentStep.style.display = 'none';
                 transferInfo.style.display = 'none';
-                mainButton.textContent = 'Continuar a Pago';
+                mainButton.textContent = 'Continuar';
+                mainButton.style.display = 'inline-block';
                 mainButton.disabled = true;
+                document.getElementById('selection-error').style.display = 'none';
                 document.getElementById('payment-error').style.display = 'none';
                 whatsappButton.style.display = 'none'; 
-                sizeStatusEl.style.display = 'none'; 
+                sizeStatusEl.style.display = 'block'; 
                 quantityInput.value = 1;
+
+                // **NUEVO:** Reinicia las pestañas a la primera (Frente)
+                const tabs = new bootstrap.Tab(document.getElementById('front-tab'));
+                tabs.show();
             }
             
             function saveClientData() {
@@ -545,9 +566,66 @@
                 }
             }
             
-            window.releaseOrder = function(orderKey) { /* ... función de liberación de stock ... */ };
-            window.resetAllStock = function() { /* ... función de reinicio total ... */ };
-            function renderManualManagementPanel() { /* ... función de panel de admin ... */ };
+            // FUNCIÓN DE ADMINISTRACIÓN
+            window.releaseOrder = function(orderKey) {
+                if (localOrders[orderKey] && localOrders[orderKey] > 0) {
+                    localOrders[orderKey]--;
+                    if (localOrders[orderKey] === 0) delete localOrders[orderKey];
+                    saveLocalOrders();
+                    alert(`Orden ${orderKey} liberada. Stock ajustado.`);
+                    initializeBadges();
+                    if (currentProductID === orderKey.split('-')[0]) createSizeButtons(currentProductID);
+                }
+            };
+            
+            // FUNCIÓN DE ADMINISTRACIÓN
+            window.resetAllStock = function() {
+                if (confirm("ADVERTENCIA: ¿Estás seguro de que quieres borrar TODAS las reservas y restaurar el inventario inicial?")) {
+                    localStorage.removeItem('simulatedOrders');
+                    localOrders = {}; 
+                    initializeBadges();
+                    renderManualManagementPanel();
+                    if (document.getElementById('paymentModal').classList.contains('show')) createSizeButtons(currentProductID);
+                    alert("Inventario restaurado con éxito.");
+                }
+            };
+            
+            // FUNCIÓN DE ADMINISTRACIÓN
+            function renderManualManagementPanel() {
+                const productNames = productData.reduce((acc, p) => { acc[p.id] = p.name; return acc; }, {});
+                let listHTML = '<h6>Reservas Activas:</h6>';
+                let hasOrders = false;
+
+                for (const key in localOrders) {
+                    if (localOrders[key] > 0) {
+                        hasOrders = true;
+                        const [productID, size] = key.split('-');
+                        const name = productNames[productID] || 'Producto Desconocido';
+                        listHTML += `
+                            <div class="alert alert-warning p-2 d-flex justify-content-between align-items-center">
+                                <span>${name} (Talla: ${size}) - Reservadas: ${localOrders[key]}</span>
+                                <button class="btn btn-sm btn-outline-danger" onclick="releaseOrder('${key}')">Liberar 1</button>
+                            </div>
+                        `;
+                    }
+                }
+
+                if (!hasOrders) {
+                    listHTML += '<p class="text-success">No hay pedidos en reserva actualmente.</p>';
+                }
+                ordersList.innerHTML = listHTML;
+            }
+
+            // FUNCIÓN DE ADMINISTRACIÓN
+            window.showAdminPanel = function(password) {
+                const passwordHash = "819c99d25145b5c9b740751939331908"; // Hash simple para 'admin123'
+                if (password === 'admin123') { // Para simplicidad, se omite la encriptación
+                    managementPanel.style.display = 'block';
+                    renderManualManagementPanel();
+                } else {
+                    alert('Acceso denegado.');
+                }
+            };
 
 
             // --- EVENTO PRINCIPAL: FLUJO DE COMPRA ---
@@ -555,25 +633,27 @@
                 const currentButtonText = mainButton.textContent;
                 const quantity = parseInt(quantityInput.value) || 1;
                 
-                if (currentButtonText === 'Continuar a Pago') {
+                if (currentButtonText === 'Continuar') {
                     if (!currentSelectedSize) {
-                        alert('Por favor, selecciona una talla.');
+                        document.getElementById('selection-error').style.display = 'block';
                         return;
                     }
-                    if (quantity < 1 || quantity > getAvailableStock(currentProductID, currentSelectedSize)) {
-                        alert('La cantidad excede el stock disponible o es inválida. Por favor, revisa.');
-                        return;
-                    }
-                    
+                    document.getElementById('selection-error').style.display = 'none';
+
+                    // Pasa al Paso 2
                     selectionStep.style.display = 'none';
                     paymentStep.style.display = 'block';
                     mainButton.textContent = 'Generar Pedido';
                     
-                    document.getElementById('final-size-display').textContent = currentSelectedSize;
-                    document.getElementById('final-quantity-display').textContent = quantity;
-                    document.getElementById('final-item-display2').textContent = currentProductName;
-                    
+                    // Pre-carga datos del cliente si existen
                     loadClientData();
+                    
+                    // Actualiza el detalle de pago en el paso 2
+                    const amountToPay = document.getElementById('payment-due').textContent;
+                    document.getElementById('payment-step-info-box').innerHTML = `
+                        <p class="mb-1">Item: <strong>${currentProductName}</strong> (Talla: <strong>${currentSelectedSize}</strong>)</p>
+                        <p class="mb-0">Monto a Pagar: <strong class="text-success">${amountToPay}</strong></p>
+                    `;
                     
                 } else if (currentButtonText === 'Generar Pedido') {
                     
@@ -581,6 +661,7 @@
                     const clientPhone = clientPhoneInput.value.trim();
                     const clientAddress = clientAddressInput.value.trim();
                     
+                    // Validación de campos
                     if (clientName.length < 3 || clientPhone.length < 8 || clientAddress.length < 10) {
                         document.getElementById('payment-error').style.display = 'block';
                         return;
@@ -588,15 +669,17 @@
                     
                     saveClientData();
                     
+                    // Última verificación de stock antes de generar el pedido
                     if (quantity > getAvailableStock(currentProductID, currentSelectedSize)) {
-                        alert('¡Lo sentimos! La cantidad solicitada excede el stock disponible. El stock fue liberado mientras comprabas.');
+                        alert('¡Lo sentimos! El stock fue liberado mientras completabas el formulario. Por favor, revisa el stock disponible y reintenta.');
                         resetModalView();
                         createSizeButtons(currentProductID);
                         initializeBadges();
                         return;
                     }
 
-                    const amountToPay = document.getElementById('payment-due').textContent; // Obtener el monto del resumen
+                    // Pasa al Paso 3
+                    const amountToPay = document.getElementById('payment-due').textContent; 
                     
                     const message = `Hola, acabo de generar un pedido:
 *Cliente:* ${clientName}
@@ -604,23 +687,23 @@
 *Monto a pagar:* ${amountToPay}
 *Teléfono de contacto:* ${clientPhone}
 *Dirección:* ${clientAddress}
-Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
+Adjunto el comprobante de pago para confirmar mi reserva.`;
                     
                     const encodedMessage = encodeURIComponent(message);
                     const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodedMessage}`;
                     whatsappButton.href = whatsappLink;
 
+                    // Muestra la información de confirmación
+                    document.getElementById('final-size-conf').textContent = currentSelectedSize;
+                    document.getElementById('final-qty-conf').textContent = quantity; 
+                    document.getElementById('final-item-display').textContent = currentProductName;
+                    document.getElementById('final-amount-conf').textContent = amountToPay;
+                    
                     document.getElementById('payment-error').style.display = 'none';
                     paymentStep.style.display = 'none';
                     transferInfo.style.display = 'block';
                     mainButton.style.display = 'none'; 
                     whatsappButton.style.display = 'inline-block'; 
-
-                    document.getElementById('client-name-display').textContent = clientName;
-                    document.getElementById('final-size-conf').textContent = currentSelectedSize;
-                    document.getElementById('final-qty-conf').textContent = quantity; 
-                    document.getElementById('final-item-display').textContent = currentProductName;
-                    document.getElementById('final-amount-conf').textContent = amountToPay;
                 }
             });
 
@@ -630,7 +713,7 @@ Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
                     const sizeKey = `${currentProductID}-${currentSelectedSize}`;
                     const quantityToApart = parseInt(quantityInput.value); 
                     
-                    // Aumenta el contador de "apartados" por la cantidad elegida
+                    // Aparta el stock de forma permanente (hasta que un administrador lo libere)
                     localOrders[sizeKey] = (localOrders[sizeKey] || 0) + quantityToApart; 
                     saveLocalOrders(); 
                     
@@ -641,7 +724,7 @@ Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
                 // Permite que el enlace de WhatsApp se abra
             });
             
-            // Lógica de Modal (Apertura y cierres)
+            // Lógica de Modal (Apertura y llenado de datos e imágenes)
             paymentModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget; 
                 currentProductID = button.getAttribute('data-product-id');
@@ -653,18 +736,15 @@ Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
                 const imgBack = button.getAttribute('data-img-back');
                 const sizeGuide = button.getAttribute('data-size-guide');
                 
-                document.getElementById('product-name').textContent = currentProductName;
-                document.getElementById('product-description').textContent = button.getAttribute('data-description');
+                // Llenar los datos del modal
+                modalProductName.textContent = currentProductName;
+                modalProductDesc.textContent = button.getAttribute('data-description');
                 unitPriceDisplay.textContent = `$${currentPrice.toFixed(2)} MXN`;
 
-                // CARGA DE IMÁGENES EN EL CARRUSEL (3 Slides)
+                // **CARGA DE IMÁGENES EN LAS PESTAÑAS**
                 document.getElementById('modal-img-front').src = imgFront;
                 document.getElementById('modal-img-back').src = imgBack;
-                document.getElementById('modal-img-size-guide').src = sizeGuide; // <-- TERCERA IMAGEN
-
-                // Asegurar que el carrusel inicie en la primera slide
-                const carousel = new bootstrap.Carousel(document.getElementById('productCarousel'));
-                carousel.to(0);
+                document.getElementById('modal-img-size-guide').src = sizeGuide; 
 
                 resetModalView(); 
                 document.getElementById('modal-main-button').style.display = 'inline-block';
@@ -704,8 +784,6 @@ Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
                 
                 dueDisplay.textContent = `$${amountDue.toFixed(2)} MXN`;
             }
-            
-            window.showAdminPanel = function() { /* ... función de admin ... */ };
             
             // 💡 INICIALIZACIÓN FINAL
             renderProductCards();
