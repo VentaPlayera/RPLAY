@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPLAY</title>
+    <title>RPLAY - Catálogo de Preventa Exclusiva</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
@@ -106,37 +106,40 @@
             text-decoration: line-through;
         }
 
-        /* --- ESTILOS CORREGIDOS PARA EL CARRUSEL EN EL MODAL (SOLUCIÓN DE FUERZA) --- */
+        /* --- ESTILOS DE CARRUSEL (CORREGIDOS Y SIMPLIFICADOS) --- */
         #productCarousel .carousel-inner {
-            height: 350px !important; /* Altura fija para el carrusel FORZADA */
+            height: 350px; /* Altura fija */
             background-color: white;
             border-radius: 8px;
             border: 1px solid #eee;
+            /* Usa Flexbox para centrar items */
             display: flex; 
-            align-items: center; /* Centrado vertical */
-            justify-content: center; /* Centrado horizontal */
+            align-items: center; 
+            justify-content: center; 
             overflow: hidden; 
         }
         #productCarousel .carousel-item {
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 100% !important; 
-            width: 100% !important; 
+            height: 100%; /* Ocupa el 100% del alto del inner */
+            width: 100%;
             text-align: center; 
         }
+        /* La imagen dentro del item se ajusta al contenedor */
         #productCarousel .carousel-item img {
-            max-height: 100% !important; /* Máximo 100% de la altura del contenedor */
-            max-width: 100% !important;  /* Máximo 100% del ancho del contenedor */
-            width: auto !important;      /* Permite el escalado correcto con contain */
-            height: auto !important;     /* Permite el escalado correcto con contain */
-            object-fit: contain !important; /* ¡CLAVE! Escala la imagen para que sea visible por completo */
+            max-height: 100%; 
+            max-width: 100%;  
+            width: auto;      
+            height: auto;     
+            object-fit: contain; /* CLAVE: Escala sin cortar y muestra la imagen completa */
             border-radius: 8px;
-            padding: 0 !important; /* Asegurar que no hay relleno adicional */
+            /* Asegurar la anulación de rellenos extra */
+            padding: 0 !important; 
         }
-        /* Ocultar cualquier posible caption que muestre el texto alt */
+        /* Ocultar captions por si acaso */
         #productCarousel .carousel-caption {
-            display: none !important; 
+            display: none; 
         }
 
         #productCarousel .carousel-control-prev-icon,
@@ -150,8 +153,8 @@
 <body>
 
     <div class="container">
-        <img src="https://ventaplayera.github.io/RPLAY/logo.png" alt="RPLAY Logo" class="logo.png">
-        <h1>RPLAY</h1>
+        <img src="https://ventaplayera.github.io/RPLAY/RPLAY.png" alt="RPLAY Logo" class="logo-img">
+        <h1>RPLAY - Catálogo de Preventa</h1>
         
         <div id="manualManagementPanel" class="p-3 mb-4 rounded" style="display: none; background-color: #fff3cd; border: 1px solid #ffeeba;">
             <h4 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Panel de Administración - INVENTARIO</h4>
@@ -299,9 +302,9 @@
         // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (70 Productos) ---
         const productInventory = {};
         const productData = [];
-        const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"];
+        const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; // Añadir S por defecto
         const FIXED_PRICE = 250.00; 
-        const DEFAULT_STOCK_PER_SIZE = 1;
+        const DEFAULT_STOCK_PER_SIZE = 1; // 1 para preventa (cada unidad se aparta)
         const WHATSAPP_PHONE = "529991480151"; 
         const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; // Hash para 'admin123'
         
@@ -315,9 +318,10 @@
             mainImg = 'https://via.placeholder.com/250x250/F8F8F8?text=Modelo+' + i;
             frontImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Frente+' + i;
             backImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Espalda+' + i;
-            sizeGuideImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Medidas+' + i; // Imagen por defecto para tabla de tallas
+            sizeGuideImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Medidas+' + i; 
             
             // --- Lógica para configurar tallas y stock por modelo (Los primeros 30 modelos con imágenes y stock) ---
+            // *Manteniendo la estructura de imágenes original*
             if (i === 1) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
@@ -604,7 +608,7 @@
                 img_main: mainImg,
                 img_front: frontImg,
                 img_back: backImg,
-                img_size_guide: sizeGuideImg // Nueva imagen de guía de tallas
+                img_size_guide: sizeGuideImg
             });
         }
         
@@ -633,14 +637,12 @@
             const ordersList = document.getElementById('ordersList'); 
             const sizeStatusEl = document.getElementById('size-status'); 
             const quantityInput = document.getElementById('quantityInput');
-            const quantityStatusEl = document.getElementById('quantity-status');
             const managementPanel = document.getElementById('manualManagementPanel');
-            const carouselInnerContent = document.getElementById('carousel-inner-content'); // Contenedor para items del carrusel
+            const carouselInnerContent = document.getElementById('carousel-inner-content');
 
             // Variables de estado
             let currentPrice = FIXED_PRICE;
             let currentSelectedSize = null;
-            let currentSelectedQuantity = 1; 
             let currentProductName = '';
             let currentProductID = ''; 
             let modalStep = 1; // 1: Selección/Pago, 2: Datos, 3: Confirmación/Transferencia
@@ -656,6 +658,7 @@
             
             function reserveStock() {
                 const orderKey = `${currentProductID}-${currentSelectedSize}`;
+                // Reservar 1 unidad
                 localOrders[orderKey] = (localOrders[orderKey] || 0) + 1; 
                 saveLocalOrders();
                 renderProductCards(); 
@@ -724,16 +727,15 @@
                 initializeBadges();
             }
             
-            // Función para actualizar el Carrusel de Imágenes (SOLUCIÓN FINAL DE ALT)
+            // FUNCIÓN DEL CARRUSEL: CORRECCIÓN DE ALT
             function updateProductCarousel(product) {
-                carouselInnerContent.innerHTML = ''; // Limpiar carrusel anterior
+                carouselInnerContent.innerHTML = ''; 
 
-                // Mantenemos los datos, pero no usaremos el ALT en la inyección para evitar el texto superpuesto
                 const images = [
-                    { src: product.img_main, alt: `Imagen principal de ${product.name}` }, 
-                    { src: product.img_front, alt: `Parte frontal de ${product.name}` },
-                    { src: product.img_back, alt: `Parte trasera de ${product.name}` },
-                    { src: product.img_size_guide, alt: `Guía de tallas para ${product.name}` }
+                    { src: product.img_main }, 
+                    { src: product.img_front },
+                    { src: product.img_back },
+                    { src: product.img_size_guide }
                 ];
 
                 images.forEach((img, index) => {
@@ -742,12 +744,12 @@
                     if (index === 0) { 
                         carouselItem.classList.add('active');
                     }
-                    // ******* MODIFICACIÓN CRÍTICA: Se elimina el atributo alt *******
+                    // *** CAMBIO CLAVE: Inyección de la imagen SIN el atributo alt ***
+                    // Esto resuelve la superposición del texto "Guía de tallas..."
                     carouselItem.innerHTML = `<img src="${img.src}" class="w-100">`; 
                     carouselInnerContent.appendChild(carouselItem);
                 });
 
-                // Reiniciar el carrusel de Bootstrap para que detecte los nuevos items
                 const bsCarousel = bootstrap.Carousel.getInstance(document.getElementById('productCarousel'));
                 if (bsCarousel) {
                     bsCarousel.to(0); 
@@ -774,6 +776,8 @@
                     return;
                 }
                 
+                let firstAvailableSize = null;
+
                 sizes.forEach(size => {
                     const stock = getAvailableStock(productID, size);
                     const button = document.createElement('span');
@@ -786,14 +790,16 @@
                         button.title = 'Agotado';
                     } else {
                         button.addEventListener('click', () => handleSizeSelection(size, productID));
+                        if (firstAvailableSize === null) {
+                            firstAvailableSize = size;
+                        }
                     }
                     sizeOptionsContainer.appendChild(button);
                 });
                 
-                const availableSizes = sizes.filter(size => getAvailableStock(productID, size) > 0);
-                if (availableSizes.length > 0) {
-                    // Seleccionar la primera talla disponible por defecto
-                    handleSizeSelection(availableSizes[0], productID);
+                // Selecciona automáticamente la primera talla disponible si existe
+                if (firstAvailableSize) {
+                    handleSizeSelection(firstAvailableSize, productID);
                 }
             }
             
@@ -809,17 +815,15 @@
 
                 currentSelectedSize = size;
                 
-                // Mensaje simplificado de stock
                 if (stock > 0) {
-                     sizeStatusEl.textContent = `Talla ${size} disponible. (1 unidad máxima por pedido).`;
+                     sizeStatusEl.textContent = `Talla ${size} disponible para apartado. (1 unidad máxima).`;
                 } else {
                      sizeStatusEl.textContent = `Talla ${size} agotada. Selecciona otra.`;
                 }
                 
-                // Cantidad fija en 1
+                // Cantidad fija en 1 para preventa
                 quantityInput.max = 1;
                 quantityInput.value = 1;
-                currentSelectedQuantity = 1;
                 quantityInput.disabled = true; 
 
                 updatePaymentAmounts();
@@ -849,7 +853,7 @@
                 
                 const infoBox = document.getElementById('payment-step-info-box');
                 
-                infoBox.innerHTML = `Estás comprando **1** pieza talla **${currentSelectedSize}** por **$${paymentDue.toFixed(2)} MXN**${paymentType}. Llena tus datos para guardar el pedido y ver las instrucciones de pago por transferencia.`;
+                infoBox.innerHTML = `Estás apartando **1** pieza talla **${currentSelectedSize}** por **$${paymentDue.toFixed(2)} MXN**${paymentType}. Llena tus datos para guardar el pedido y ver las instrucciones de pago por transferencia.`;
             }
             
             function resetModalView() {
@@ -861,11 +865,11 @@
                 mainButton.style.display = 'inline-block';
                 whatsappButton.style.display = 'none';
                 
-                mainButton.textContent = 'Continuar'; // Botón de inicio
+                mainButton.textContent = 'Continuar'; 
                 mainButton.disabled = true;
                 
                 document.getElementById('client-data-form').reset();
-                halfPaymentCheck.checked = true; // Asegurar que el 50% esté marcado al resetear
+                halfPaymentCheck.checked = true; 
             }
             
             // --- Event Listeners ---
@@ -884,7 +888,7 @@
                     document.getElementById('modal-unit-price').textContent = `$${product.price} MXN`; 
                     document.getElementById('modal-product-description').textContent = product.description;
                     
-                    updateProductCarousel(product); // Carga del carrusel de imágenes
+                    updateProductCarousel(product); 
                     createSizeButtons(currentProductID);
                     updatePaymentAmounts(); 
                 } else {
@@ -902,13 +906,10 @@
                 document.getElementById('selection-error').style.display = 'none';
 
                 if (modalStep === 1) {
-                    if (!currentSelectedSize) {
+                    if (!currentSelectedSize || getAvailableStock(currentProductID, currentSelectedSize) < 1) {
                         document.getElementById('selection-error').style.display = 'block';
-                        return;
-                    }
-                    if (getAvailableStock(currentProductID, currentSelectedSize) < 1) { 
-                        alert("¡Lo sentimos! El stock disponible ha cambiado. Esta talla ya no está disponible.");
-                        createSizeButtons(currentProductID); 
+                        document.getElementById('selection-error').textContent = 'Por favor, selecciona una talla disponible.';
+                        createSizeButtons(currentProductID); // Refresca tallas por si el stock cambió
                         return;
                     }
 
@@ -937,21 +938,17 @@
                     mainButton.style.display = 'none';
                     whatsappButton.style.display = 'inline-block';
                     
-                    // Nota: updatePaymentAmounts() ya fue llamado en el paso 1 y en el evento change del checkbox.
+                    // Lógica para enviar el pedido a WhatsApp se ejecuta al hacer clic en whatsappButton
                 }
             });
             
-            // Aunque está oculto, mantenemos el listener para asegurar que la cantidad siempre sea 1
-            quantityInput.addEventListener('input', function() {
-                this.value = 1; 
-                currentSelectedQuantity = 1;
-                updatePaymentAmounts();
-            });
+            quantityInput.addEventListener('input', updatePaymentAmounts);
 
             halfPaymentCheck.addEventListener('change', updatePaymentAmounts);
             
             
             whatsappButton.addEventListener('click', function (event) {
+                // Al confirmar y hacer clic en WhatsApp, se reserva el stock
                 reserveStock(); 
                 
                 const total = currentPrice * 1;
@@ -959,7 +956,7 @@
                 const paymentDue = total * paymentFactor;
                 const paymentType = halfPaymentCheck.checked ? 'Apartado (50%)' : 'Pago Total (100%)';
 
-                const orderDetails = `*Playera:* ${currentProductName}\n*Talla:* ${currentSelectedSize}\n*Cantidad:* 1\n*Total:* $${total.toFixed(2)} MXN\n*Monto a Pagar:* $${paymentDue.toFixed(2)} MXN (${paymentType})\n\n*Datos del Cliente:*\n*Nombre:* ${clientNameInput.value.trim()}\n*Teléfono:* ${clientPhoneInput.value.trim()}\n*Dirección:* ${clientAddressInput.value.trim()}\n\n¡Adjunto mi comprobante de pago!\nGracias.`;
+                const orderDetails = `*APARTADO RPLAY*\n*Playera:* ${currentProductName}\n*Talla:* ${currentSelectedSize}\n*Cantidad:* 1\n*Total:* $${total.toFixed(2)} MXN\n*Monto a Pagar Ahora:* $${paymentDue.toFixed(2)} MXN (${paymentType})\n\n*Datos del Cliente:*\n*Nombre:* ${clientNameInput.value.trim()}\n*Teléfono:* ${clientPhoneInput.value.trim()}\n*Dirección:* ${clientAddressInput.value.trim()}\n\n¡Adjunto mi comprobante de pago!`;
 
                 const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(orderDetails)}`;
                 
@@ -967,9 +964,8 @@
             });
 
             // --- PANEL DE ADMINISTRACIÓN (CONTRASEÑA) - ACCESO OCULTO
-            // El acceso ahora se activa solo con doble clic en la imagen del logo.
             document.querySelector('.logo-img').addEventListener('dblclick', function(event) {
-                event.preventDefault(); // Evita la acción por defecto del doble clic
+                event.preventDefault(); 
                 
                 const password = prompt("Introduce la contraseña de administrador:");
                 if (password && simpleHash(password) === ADMIN_HASH) {
@@ -1026,7 +1022,7 @@
 
             window.resetAllStock = function() {
                 if (confirm("¿Estás seguro de que quieres borrar TODAS las reservas y restaurar el inventario original?")) {
-                    localOrders = {}; // Vaciar todas las reservas
+                    localOrders = {}; 
                     saveLocalOrders();
                     renderProductCards(); 
                     renderManualManagementPanel(); 
@@ -1039,4 +1035,3 @@
     </script>
 </body>
 </html>
-
