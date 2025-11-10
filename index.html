@@ -20,7 +20,7 @@
             margin: 0 auto 20px auto;
             max-width: 200px;
             height: auto;
-            cursor: pointer; /* Añadido cursor: pointer para indicar que el logo es interactivo (opcional) */
+            cursor: pointer; 
         }
         h1 {
             color: #d63384;
@@ -184,16 +184,16 @@
                                 <p class="text-muted small mt-2" id="modal-product-description"></p>
                             </div>
                             <div class="col-md-6">
-                                <h4 class="mb-3">Selecciona tu talla y cantidad:</h4>
+                                <h4 class="mb-3">1. Selecciona tu talla:</h4>
                                 
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Talla:</label>
                                     <div id="size-options" class="size-options">
                                         </div>
-                                    <small class="text-success" id="size-status">Selecciona una talla para ver el stock.</small>
+                                    <small class="text-success" id="size-status">Selecciona una talla para ver la disponibilidad.</small>
                                 </div>
                                 
-                                <div class="mb-3">
+                                <div class="mb-3" style="display:none;">
                                     <label for="quantityInput" class="form-label fw-bold">Cantidad:</label>
                                     <input type="number" id="quantityInput" class="form-control" value="1" min="1" max="1" disabled>
                                     <small class="text-muted" id="quantity-status">Solo puedes pedir 1 unidad por talla.</small>
@@ -202,7 +202,24 @@
                                 <div class="alert alert-info mt-3">
                                     <h5 class="mb-0">Precio Unitario: <span id="modal-unit-price" class="fw-bold">$0.00 MXN</span></h5>
                                 </div>
-                                
+
+                                <div id="payment-detail-box" class="mt-4">
+                                    <h4 class="mb-3">2. Elige tu Opción de Pago:</h4>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck" checked> 
+                                        <label class="form-check-label fw-bold" for="halfPaymentCheck">
+                                            Pago Parcial (Apartado): <span class="text-muted small">(Paga la mitad ahora, el resto a la entrega)</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="card bg-light p-3 mb-3">
+                                        <h5>Detalle del Pago</h5>
+                                        <p class="mb-1">Total de la Compra: <span class="float-end fw-bold" id="total-price">$0.00 MXN</span></p>
+                                        <hr class="my-2">
+                                        <p class="mb-0 text-success">Monto a Pagar Ahora: <span class="float-end fw-bold fs-5" id="payment-due">$0.00 MXN</span></p>
+                                    </div>
+                                </div>
                                 <p class="text-danger mt-3" style="display:none;" id="selection-error">
                                     <i class="fas fa-exclamation-circle"></i> Por favor, selecciona una talla antes de continuar.
                                 </p>
@@ -211,7 +228,7 @@
                     </div>
 
                     <div id="payment-step" style="display:none;">
-                        <h4>2. Datos del Comprador y Envío:</h4>
+                        <h4>3. Datos del Comprador y Envío:</h4>
                         
                         <div id="payment-step-info-box" class="alert alert-info">
                             </div>
@@ -237,23 +254,9 @@
                     </div>
 
                     <div id="transfer-info" style="display:none;">
-                        <h4>3. Realiza tu pago o depósito:</h4>
+                        <h4>4. Realiza tu pago o depósito:</h4>
                         <div class="alert alert-success">
                             <p class="mb-1"><strong>¡Pedido Pre-Aprobado!</strong> Tienes **24 horas** para realizar tu depósito y enviar tu comprobante. **Tu playera queda apartada al enviar el comprobante por WhatsApp.**</p>
-                        </div>
-                        
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck" checked> 
-                            <label class="form-check-label fw-bold" for="halfPaymentCheck">
-                                Pago Parcial (Apartado): <span class="text-muted small">(Paga la mitad ahora, el resto a la entrega)</span>
-                            </label>
-                        </div>
-                        
-                        <div class="card bg-light p-3 mb-3">
-                            <h5>Detalle del Pago</h5>
-                            <p class="mb-1">Total de la Compra: <span class="float-end fw-bold" id="total-price">$0.00 MXN</span></p>
-                            <hr class="my-2">
-                            <p class="mb-0 text-success">Monto a Pagar Ahora: <span class="float-end fw-bold fs-5" id="payment-due">$0.00 MXN</span></p>
                         </div>
                         
                         <div class="card border-primary p-3">
@@ -269,7 +272,7 @@
                     <button type="button" class="btn btn-secondary" id="modal-close-button" data-bs-dismiss="modal">Cerrar</button>
                     
                     <button type="button" class="btn btn-primary" id="modal-main-button" disabled>
-                        Apartar y Ver Datos de Pago
+                        Continuar
                     </button>
 
                     <a id="whatsapp-confirm-button" class="btn btn-success" target="_blank" style="display:none;">
@@ -630,7 +633,7 @@
             let currentSelectedQuantity = 1; 
             let currentProductName = '';
             let currentProductID = ''; 
-            let modalStep = 1; // 1: Selección, 2: Datos, 3: Confirmación
+            let modalStep = 1; // 1: Selección/Pago, 2: Datos, 3: Confirmación/Transferencia
             
             // --- Funciones de Lógica de Inventario y Pedidos ---
             
@@ -747,7 +750,7 @@
                 sizeOptionsContainer.innerHTML = '';
                 currentSelectedSize = null;
                 mainButton.disabled = true;
-                sizeStatusEl.textContent = 'Selecciona una talla para ver el stock.';
+                sizeStatusEl.textContent = 'Selecciona una talla para ver la disponibilidad.';
 
                 const sizes = productInventory[productID] ? Object.keys(productInventory[productID]).sort() : []; 
                 const sizeErrorEl = document.getElementById('selection-error');
@@ -793,23 +796,21 @@
 
                 currentSelectedSize = size;
                 
-                if (stock === 1) {
-                     sizeStatusEl.textContent = `¡Queda la última unidad! ¡Aparta la tuya!`;
-                } else if (stock > 1) {
-                     sizeStatusEl.textContent = `¡${stock} unidades disponibles! (Solo puedes pedir 1).`;
+                // Mensaje simplificado de stock
+                if (stock > 0) {
+                     sizeStatusEl.textContent = `Talla ${size} disponible. (1 unidad máxima por pedido).`;
                 } else {
-                     sizeStatusEl.textContent = `Agotado. Selecciona otra talla.`;
+                     sizeStatusEl.textContent = `Talla ${size} agotada. Selecciona otra.`;
                 }
                 
+                // Cantidad fija en 1
                 quantityInput.max = 1;
                 quantityInput.value = 1;
                 currentSelectedQuantity = 1;
-                
                 quantityInput.disabled = true; 
-                quantityStatusEl.textContent = "Solo puedes pedir 1 unidad por talla.";
 
                 updatePaymentAmounts();
-                mainButton.disabled = false;
+                mainButton.disabled = stock <= 0; // Deshabilita si no hay stock
             }
 
             function updatePaymentAmounts() {
@@ -821,7 +822,7 @@
                 document.getElementById('total-price').textContent = `$${total.toFixed(2)} MXN`;
                 document.getElementById('payment-due').textContent = `$${paymentDue.toFixed(2)} MXN`;
                 
-                if (modalStep >= 2) { 
+                if (modalStep === 2) { 
                     updatePaymentStepInfo(); 
                 }
             }
@@ -847,7 +848,7 @@
                 mainButton.style.display = 'inline-block';
                 whatsappButton.style.display = 'none';
                 
-                mainButton.textContent = 'Apartar y Ver Datos de Pago';
+                mainButton.textContent = 'Continuar'; // Botón de inicio
                 mainButton.disabled = true;
                 
                 document.getElementById('client-data-form').reset();
@@ -923,10 +924,11 @@
                     mainButton.style.display = 'none';
                     whatsappButton.style.display = 'inline-block';
                     
-                    updatePaymentAmounts();
+                    // Nota: updatePaymentAmounts() ya fue llamado en el paso 1 y en el evento change del checkbox.
                 }
             });
             
+            // Aunque está oculto, mantenemos el listener para asegurar que la cantidad siempre sea 1
             quantityInput.addEventListener('input', function() {
                 this.value = 1; 
                 currentSelectedQuantity = 1;
