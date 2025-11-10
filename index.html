@@ -724,10 +724,11 @@
                 initializeBadges();
             }
             
-            // Función para actualizar el Carrusel de Imágenes (Con ajustes de fuerza)
+            // Función para actualizar el Carrusel de Imágenes (SOLUCIÓN FINAL DE ALT)
             function updateProductCarousel(product) {
                 carouselInnerContent.innerHTML = ''; // Limpiar carrusel anterior
 
+                // Mantenemos los datos, pero no usaremos el ALT en la inyección para evitar el texto superpuesto
                 const images = [
                     { src: product.img_main, alt: `Imagen principal de ${product.name}` }, 
                     { src: product.img_front, alt: `Parte frontal de ${product.name}` },
@@ -741,8 +742,8 @@
                     if (index === 0) { 
                         carouselItem.classList.add('active');
                     }
-                    // IMPORTANTE: Clase w-100 añadida para ayudar al escalado.
-                    carouselItem.innerHTML = `<img src="${img.src}" alt="${img.alt}" class="w-100">`; 
+                    // ******* MODIFICACIÓN CRÍTICA: Se elimina el atributo alt *******
+                    carouselItem.innerHTML = `<img src="${img.src}" class="w-100">`; 
                     carouselInnerContent.appendChild(carouselItem);
                 });
 
