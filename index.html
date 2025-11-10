@@ -8,7 +8,7 @@
     <link rel="icon" type='image/png' href="https://ventaplayera.github.io/RPLAY/logo.png">
     <style>
         /* Estilos Generales */
-        <body> { background-color: #f7f7f7; }
+        body { background-color: #f7f7f7; }
         .price { font-size: 1.5rem; font-weight: 700; color: #ff3366; }
         .btn-buy { background-color: #ff3366; color: white; border: none; transition: background-color 0.3s; }
         .btn-buy:hover { background-color: #e6004c; color: white; }
@@ -68,7 +68,7 @@
     <div class="container my-5">
         
         <div class="d-flex align-items-center justify-content-center mb-5">
-             <div class="d-flex align-items-center justify-content-center mb-5">
+              <div class="d-flex align-items-center justify-content-center mb-5">
     <img src="https://imgur.com/mpCQaZg.jpg" alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
 </div>
             <h1 style="color: #ff3366; margin: 0;"> <link rel="icon" type="logo.png" href='logo.png'>RPLAY</h1>
@@ -208,217 +208,194 @@
     
     <script>
         
-        // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (34 Productos) ---
-const productInventory = {};
-const productData = [];
-const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"]; // Tallas por defecto si no se especifican
-const FIXED_PRICE = 250.00; 
-const DEFAULT_STOCK_PER_SIZE = 1;
+        // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (70 Productos) ---
+        const productInventory = {};
+        const productData = [];
+        const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"]; // Tallas por defecto si no se especifican
+        const FIXED_PRICE = 250.00; 
+        const DEFAULT_STOCK_PER_SIZE = 1;
 
-for (let i = 1; i <= 70; i++) {
-    const id = PROD_${String(i).padStart(3, '0')};
-    let mainImg, frontImg, backImg;
-    let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
-    let initialStockOverrides = {}; // Stock específico para este modelo/talla
-    
-    // Asignamos una imagen por defecto para asegurar que siempre haya una imagen
-    mainImg = 'https://via.placeholder.com/250x250/F4E3F5?text=Modelo+' + i;
-    frontImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Frente+' + i;
-    backImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Espalda+' + i;
+        for (let i = 1; i <= 70; i++) {
+            // CORRECCIÓN DE SINTAXIS: Usar template literal
+            const id = `PROD_${String(i).padStart(3, '0')}`;
+            let mainImg, frontImg, backImg;
+            let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+            let initialStockOverrides = {}; // Stock específico para este modelo/talla
+            
+            // Asignamos una imagen por defecto para asegurar que siempre haya una imagen
+            mainImg = 'https://via.placeholder.com/250x250/F4E3F5?text=Modelo+' + i;
+            frontImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Frente+' + i;
+            backImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Espalda+' + i;
 
             // ==========================================================
             // INICIO DE ASIGNACIÓN DE RUTAS DE IMAGEN ÚNICAS
-            // *** RECUERDA CAMBIAR LAS RUTAS './images/...' POR LAS TUYAS ***
             // ==========================================================
+            // Se han reescrito los bloques para usar el ID del producto
             if (i === 1) { 
-                // Playera Modelo No. 1
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
-                modelSizes = ['M', 'L', 'XL']; // <--- TALLAS PERSONALIZADAS
-        initialStockOverrides.M = 1; 
-        initialStockOverrides.L=1;
-        initialStockOverrides.XL=1;
-                // Unidades específicas para una talla
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
             } else if (i === 2) { 
-                // Playera Modelo No. 2
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
-                modelSizes = ['M', 'L', 'XL']; // <--- TALLAS PERSONALIZADAS
+                modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
             } else if (i === 3) { 
-                // Playera Modelo No. 3
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png';
-                modelSizes = ['M', 'L', 'XL']; // <--- TALLAS PERSONALIZADAS
+                modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }  else if (i === 4) { 
-                // Playera Modelo No. 4
+            } else if (i === 4) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Lucy4.png';
-            }  else if (i === 5) { 
-                // Playera Modelo No. 5
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 5) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Raul2.png';
-            }  else if (i === 6) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 6) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Raul4.png';
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
             } else if (i === 7) { 
-                // Playera Modelo No. 5
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Abi2.png';
-            }  else if (i === 8) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 8) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 9) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 9) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dani2.png';
-            }  else if (i === 10) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 10) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dani4.png';
-            }  else if (i === 11) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 11) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dali2.png';
-            }  else if (i === 12) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 12) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dali4.png';
-            }  else if (i === 13) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 13) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Yose2.png';
-            }  else if (i === 14) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 14) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Yose4.png';
-            }  else if (i === 15) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 15) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Keila2.png';
-            }  else if (i === 16) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 16) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Keila4.png';
-            }  else if (i === 17) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 17) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Kenji2.png';
-            }  else if (i === 18) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 18) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Kenji4.png';
-            }  else if (i === 19) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 19) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Alli2.png';
-            }  else if (i === 20) { 
-                // Playera Modelo No. 6
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
+            } else if (i === 20) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Alli4.png';
-            }  else if (i === 21) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 22) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 23) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 24) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 25) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 26) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 27) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 28) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 29) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 30) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i ===31) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 32) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 33) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-            }  else if (i === 34) { 
-                // Playera Modelo No. 6
-                mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                frontImg = 'https://ventaplayera.github.io/RPLAY/Abil3.png';
-                backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
+                modelSizes = ['M', 'L', 'XL'];
+                initialStockOverrides.M = 1; 
+                initialStockOverrides.L=1;
+                initialStockOverrides.XL=1;
             } 
-            /*
-            *** AÑADE MÁS BLOQUES 'else if' AQUÍ PARA CADA MODELO QUE QUIERAS PERSONALIZAR ***
+            // Para los modelos 21 al 70, se usa una imagen y stock por defecto
+            // Las imágenes predeterminadas se asignan al inicio del loop
             
-            */
-           // 1. Crear el objeto de stock para este producto
+            // 1. Crear el objeto de stock para este producto
             const stock = {};
             modelSizes.forEach(size => {
                 // Usa el override si existe, de lo contrario, usa el stock por defecto
@@ -428,11 +405,12 @@ for (let i = 1; i <= 70; i++) {
             // 2. Asignar al inventario global
             productInventory[id] = stock;
             // 3. Añadir a la lista de productos
+            // CORRECCIÓN DE SINTAXIS: Usar template literals
             productData.push({
                 id: id,
-                name: Playera Modelo No. ${i},
+                name: `Playera Modelo No. ${i}`,
                 price: FIXED_PRICE.toFixed(2), 
-                description: Diseño exclusivo #${i} con estampado digital de alta calidad. Tela de algodón 100%.,
+                description: `Diseño exclusivo #${i} con estampado digital de alta calidad. Tela de algodón 100%.`,
                 img_main: mainImg,
                 img_front: frontImg,
                 img_back: backImg
@@ -440,7 +418,7 @@ for (let i = 1; i <= 70; i++) {
         }
         
         // --- 2. INVENTARIO PERSISTENTE (Pedidos Ya Confirmados) ---
-        // Carga los pedidos guardados para persistencia (el stock no se reinicia al cargar la página)
+        // Carga los pedidos guardados para persistencia
         let localOrders = JSON.parse(localStorage.getItem('simulatedOrders')) || {};
         
         // --- 3. Lógica del Sistema ---
@@ -465,18 +443,21 @@ for (let i = 1; i <= 70; i++) {
             // REFERENCIAS PARA CANTIDAD
             const quantityInput = document.getElementById('quantityInput');
             const quantityStatusEl = document.getElementById('quantity-status');
+            const paymentError = document.getElementById('payment-error');
             
             // 🔒 ELEMENTOS DE ADMINISTRACIÓN OCULTOS
             const managementPanel = document.getElementById('manualManagementPanel');
 
             // Variables de estado
-            let currentPrice = FIXED_PRICE;
+            let currentPrice = FIXED_PRICE; // Se actualiza al abrir el modal
             let currentSelectedSize = null;
             let currentProductName = '';
             let currentProductID = ''; 
+            let currentTotalAmount = 0;
+            let currentPaymentDue = 0;
             const WHATSAPP_PHONE = "529991480151"; 
             
-            // --- Funciones de Lógica ---
+            // --- Funciones de Lógica de Stock/Pedidos ---
             
             function saveLocalOrders() {
                 localStorage.setItem('simulatedOrders', JSON.stringify(localOrders));
@@ -491,7 +472,8 @@ for (let i = 1; i <= 70; i++) {
              */
             function getAvailableStock(productID, size) {
                 const stock = productInventory[productID] && productInventory[productID][size] !== undefined ? productInventory[productID][size] : 0;
-                const pendingOrders = localOrders[${productID}-${size}] || 0; 
+                // CORRECCIÓN: Usar template literal para la clave
+                const pendingOrders = localOrders[`${productID}-${size}`] ? localOrders[`${productID}-${size}`].quantity : 0; 
                 return stock - pendingOrders;
             }
             
@@ -510,16 +492,62 @@ for (let i = 1; i <= 70; i++) {
                         resetModalView();
                     }
                     
-                    console.log(✅ Stock inicial modificado: ${productID}, Talla ${size}. Nuevo Stock: ${productInventory[productID][size]});
-                    alert(Stock de ${productID} (Talla ${size}) cambiado a ${newStock}.);
+                    console.log(`✅ Stock inicial modificado: ${productID}, Talla ${size}. Nuevo Stock: ${productInventory[productID][size]}`);
+                    alert(`Stock de ${productID} (Talla ${size}) cambiado a ${newStock}.`);
 
                 } else {
-                    console.error(Error: Producto ID '${productID}' o Talla '${size}' no encontrados.);
-                    alert(Error: Producto ID '${productID}' o Talla '${size}' no encontrados.);
+                    console.error(`Error: Producto ID '${productID}' o Talla '${size}' no encontrados.`);
+                    alert(`Error: Producto ID '${productID}' o Talla '${size}' no encontrados.`);
                 }
             };
             // ----------------------------------------------------
 
+            // FUNCIÓN: Renderiza los pedidos pendientes en el panel de administración
+            function renderManualManagementPanel() {
+                let orderHtml = '';
+                let hasOrders = false;
+                
+                for (const key in localOrders) {
+                    const order = localOrders[key];
+                    if (order && order.status === 'pending') {
+                        hasOrders = true;
+                        orderHtml += `
+                            <div class="alert alert-warning d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>${order.productName} (Talla ${order.size}, Cantidad ${order.quantity})</strong>
+                                    <p class="mb-0 small">Cliente: ${order.clientName} | Tel: ${order.clientPhone}</p>
+                                    <p class="mb-0 small">Monto Pagado: $${order.paymentDue.toFixed(2)}</p>
+                                </div>
+                                <button class="btn btn-danger btn-sm" onclick="releaseStock('${key}')">Liberar Stock</button>
+                            </div>
+                        `;
+                    }
+                }
+
+                ordersList.innerHTML = orderHtml || '<p class="text-center text-secondary" id="noOrdersMessage">No hay pedidos pendientes actualmente.</p>';
+            }
+
+            // FUNCIÓN: Libera el stock de un pedido pendiente (Admin)
+            window.releaseStock = function(orderKey) {
+                if (confirm('¿Estás seguro de liberar el stock para este pedido? Esto lo eliminará de la lista y el stock volverá a estar disponible.')) {
+                    delete localOrders[orderKey];
+                    saveLocalOrders();
+                    initializeBadges();
+                    if (currentProductID) createSizeButtons(currentProductID); // Refresca si el modal está abierto
+                }
+            }
+
+            // FUNCIÓN: Reinicia todo el inventario (Admin)
+            window.resetAllStock = function() {
+                if (confirm('ADVERTENCIA: ¿Estás seguro de REINICIAR TODO EL INVENTARIO? Esto eliminará todos los pedidos apartados y restablecerá el stock inicial.')) {
+                    localStorage.removeItem('simulatedOrders');
+                    localOrders = {};
+                    initializeBadges();
+                    renderManualManagementPanel();
+                    alert('Inventario y pedidos apartados REINICIADOS con éxito.');
+                }
+            }
+            
             // DIBUJAR TARJETAS DE PRODUCTO DINÁMICAMENTE
             function renderProductCards() {
                 let html = '';
@@ -557,381 +585,302 @@ for (let i = 1; i <= 70; i++) {
 
             // FUNCIÓN: Actualiza el badge de stock en la tarjeta principal
             function updateProductBadge(productID) {
-                const badgeEl = document.getElementById(badge-${productID});
-                if (!badgeEl) return;
-                
-                let totalStock = 0;
-                let isLastUnit = false;
+                const badg = document.getElementById(`badge-${productID}`);
+                if (!badg) return;
 
-                if (productInventory[productID]) {
-                    Object.keys(productInventory[productID]).forEach(size => {
-                        const available = getAvailableStock(productID, size);
-                        totalStock += available;
-                        if (available === 1) isLastUnit = true;
-                    });
+                const availableSizes = Object.keys(productInventory[productID] || {});
+                let totalAvailable = 0;
+                availableSizes.forEach(size => {
+                    totalAvailable += getAvailableStock(productID, size); 
+                });
+
+                badg.className = 'stock-badge';
+                if (totalAvailable <= 0) {
+                    badg.classList.add('agotado');
+                    badg.textContent = 'AGOTADO';
+                } else if (totalAvailable <= 3) { 
+                    badg.classList.add('ultima');
+                    badg.textContent = `¡ÚLTIMAS ${totalAvailable} PZAS!`;
+                } else {
+                    badg.textContent = '';
                 }
-
-                badgeEl.textContent = '';
-                badgeEl.className = 'stock-badge';
-
-                if (totalStock === 0) {
-                    badgeEl.textContent = 'AGOTADO';
-                    badgeEl.classList.add('agotado');
-                } else if (isLastUnit || totalStock <= 5) { 
-                    badgeEl.textContent = '¡POCAS UNIDADES!';
-                    badgeEl.classList.add('ultima');
+                
+                // Deshabilita el botón si está agotado
+                const buyButton = document.querySelector(`.card[data-product-id="${productID}"] .btn-buy`);
+                if (buyButton) {
+                    buyButton.disabled = totalAvailable <= 0;
+                    buyButton.textContent = totalAvailable <= 0 ? 'AGOTADO' : 'Ver Detalle y Comprar';
                 }
             }
 
+            // FUNCIÓN: Inicializa todos los badges al cargar la página o al modificar el stock
             function initializeBadges() {
-                productData.forEach(product => updateProductBadge(product.id));
-            }
-            
-            // FUNCIÓN: Renderiza los botones de talla y maneja stock
-            function createSizeButtons(productID) {
-                if (!sizeOptionsContainer) return;
-                const sizes = productInventory[productID] ? Object.keys(productInventory[productID]) : [];
-                sizeOptionsContainer.innerHTML = ''; 
-                currentSelectedSize = null; 
-                sizeStatusEl.textContent = '';
-                mainButton.disabled = true;
-                
-                // Asegurar que el input de cantidad esté disponible pero sin datos de stock máximo
-                quantityInput.disabled = true;
-                quantityInput.value = 1;
-                quantityStatusEl.textContent = 'Selecciona una talla para continuar.';
-
-
-                sizes.forEach(size => {
-                    const availableStock = getAvailableStock(productID, size); 
-                    const button = document.createElement('span');
-                    button.textContent = size;
-                    button.classList.add('size-btn');
-                    button.setAttribute('data-size', size);
-                    
-                    if (availableStock <= 0) {
-                        button.classList.add('disabled');
-                        button.title = 'Talla Agotada';
-                        button.textContent = ${size} (Agotada); 
-                    } else {
-                        if (availableStock === 1) {
-                            button.title = '¡Última Unidad!';
-                        }
-                        button.addEventListener('click', () => handleSizeSelection(button, size, availableStock));
-                    }
-                    sizeOptionsContainer.appendChild(button);
+                productData.forEach(product => {
+                    updateProductBadge(product.id);
                 });
             }
 
-            function handleSizeSelection(selectedButton, size, stock) {
-                document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('selected'));
-                selectedButton.classList.add('selected');
-                
-                currentSelectedSize = size;
-                mainButton.disabled = false;
-                mainButton.textContent = 'Continuar a Pago';
+            // Función para crear y mostrar los botones de talla
+            function createSizeButtons(productID) {
+                sizeOptionsContainer.innerHTML = '';
+                currentSelectedSize = null; // Reinicia la selección
+                const sizes = productInventory[productID];
+                let allAgotado = true;
 
-                // *** LÓGICA DE CANTIDAD ***
-                quantityInput.max = stock; // Establece el máximo al stock disponible
-                quantityInput.value = 1;   // Reinicia a 1 por defecto
-                quantityInput.disabled = (stock <= 1); // Deshabilita si solo hay 1 unidad
+                for (const size in sizes) {
+                    const availableStock = getAvailableStock(productID, size);
+                    const disabledClass = availableStock <= 0 ? 'disabled' : '';
+                    if (availableStock > 0) allAgotado = false;
 
-                quantityStatusEl.textContent = Puedes seleccionar hasta ${stock} unidad${stock !== 1 ? 'es' : ''}.;
-                // *******************************
-                
-                sizeStatusEl.style.display = 'block';
-                if (stock === 1) {
-                    sizeStatusEl.textContent = '¡Solo queda 1 unidad! ¡Apúrate!';
-                    sizeStatusEl.className = 'text-danger mt-2';
-                } else if (stock <= 3) {
-                    sizeStatusEl.textContent = Quedan ${stock} unidades.;
-                    sizeStatusEl.className = 'text-warning mt-2';
-                } else {
-                    sizeStatusEl.textContent = Stock disponible: ${stock} unidades.;
-                    sizeStatusEl.className = 'text-secondary mt-2';
+                    const sizeBtn = document.createElement('span');
+                    sizeBtn.className = `size-btn ${disabledClass}`;
+                    sizeBtn.textContent = size;
+                    sizeBtn.setAttribute('data-size', size);
+                    sizeBtn.setAttribute('data-stock', availableStock);
+                    
+                    if (availableStock > 0) {
+                        sizeBtn.addEventListener('click', function() {
+                            if (sizeBtn.classList.contains('disabled')) return;
+                            
+                            // Limpiar la selección previa
+                            document.querySelectorAll('#size-options .size-btn').forEach(btn => {
+                                btn.classList.remove('selected');
+                            });
+                            
+                            // Seleccionar la nueva talla
+                            sizeBtn.classList.add('selected');
+                            currentSelectedSize = size;
+                            
+                            // Ajustar la cantidad al stock disponible de la talla
+                            const maxStock = availableStock;
+                            quantityInput.setAttribute('max', maxStock);
+                            
+                            // Si la cantidad actual supera el nuevo máximo, ajustarla a 1
+                            if (parseInt(quantityInput.value) > maxStock) {
+                                quantityInput.value = 1;
+                            } else if (parseInt(quantityInput.value) < 1) {
+                                quantityInput.value = 1;
+                            }
+                            
+                            sizeStatusEl.textContent = `Stock disponible: ${availableStock}`;
+                            updatePriceDisplays();
+                            updateModalState();
+                        });
+                    }
+                    sizeOptionsContainer.appendChild(sizeBtn);
                 }
-                
-                // Asegurar que el precio se actualice con la cantidad actual (1)
-                updatePaymentAmounts();
+
+                if (allAgotado) {
+                    sizeStatusEl.textContent = 'Este producto está agotado en todas las tallas.';
+                    mainButton.disabled = true;
+                } else {
+                    sizeStatusEl.textContent = 'Selecciona una talla para continuar.';
+                    mainButton.disabled = true;
+                }
             }
             
+            // FUNCIÓN CRUCIAL: Actualiza los precios y habilita/deshabilita el botón principal
+            function updatePriceDisplays() {
+                const quantity = parseInt(quantityInput.value) || 1;
+                
+                // 1. Validar la cantidad con el stock de la talla seleccionada
+                let maxStock = 0;
+                if (currentSelectedSize) {
+                    maxStock = getAvailableStock(currentProductID, currentSelectedSize);
+                    quantityInput.setAttribute('max', maxStock);
+                    
+                    if (quantity > maxStock) {
+                        quantityInput.value = maxStock > 0 ? maxStock : 1; // Ajustar la cantidad
+                        quantityStatusEl.textContent = maxStock > 0 ? `Máximo disponible: ${maxStock} piezas.` : '¡Esta talla se acaba de agotar!';
+                    } else if (quantity < 1) {
+                        quantityInput.value = 1;
+                        quantityStatusEl.textContent = '';
+                    } else {
+                        quantityStatusEl.textContent = `Máximo disponible: ${maxStock}`;
+                    }
+                } else {
+                    quantityInput.setAttribute('max', 10); // Valor por defecto
+                    quantityStatusEl.textContent = 'Selecciona una talla primero.';
+                }
+                
+                // 2. Calcular los montos
+                const finalQuantity = parseInt(quantityInput.value);
+                currentTotalAmount = currentPrice * finalQuantity;
+                currentPaymentDue = halfPaymentCheck.checked ? currentTotalAmount / 2 : currentTotalAmount;
+
+                // 3. Actualizar el DOM
+                document.getElementById('total-price').textContent = `$${currentTotalAmount.toFixed(2)} MXN`;
+                document.getElementById('payment-due').textContent = `$${currentPaymentDue.toFixed(2)} MXN`;
+
+                updateModalState();
+            }
+
+            // FUNCIÓN CRUCIAL: Controla el estado del botón principal y la navegación en el modal
+            function updateModalState() {
+                const quantity = parseInt(quantityInput.value) || 1;
+                const maxStock = currentSelectedSize ? getAvailableStock(currentProductID, currentSelectedSize) : 0;
+                
+                const step1Valid = currentSelectedSize !== null && quantity > 0 && quantity <= maxStock;
+                
+                if (selectionStep.style.display !== 'none') {
+                    // Estado inicial: Selección de talla/cantidad
+                    mainButton.textContent = 'Pagar Ahora';
+                    mainButton.disabled = !step1Valid;
+                    whatsappButton.style.display = 'none';
+                    mainButton.onclick = step1Valid ? moveToPaymentStep : null;
+                } else if (paymentStep.style.display !== 'none') {
+                    // Estado intermedio: Ingreso de datos
+                    mainButton.textContent = 'Confirmar Pedido';
+                    mainButton.disabled = false; // Se validará al hacer clic en makeOrder
+                    whatsappButton.style.display = 'none';
+                    mainButton.onclick = makeOrder;
+                } else if (transferInfo.style.display !== 'none') {
+                    // Estado final: Información de transferencia
+                    mainButton.style.display = 'none';
+                    whatsappButton.style.display = 'inline-block';
+                    document.getElementById('modal-close-button').textContent = 'Cerrar';
+                }
+            }
+
+            // Función para pasar del paso 1 al paso 2
+            function moveToPaymentStep() {
+                selectionStep.style.display = 'none';
+                paymentStep.style.display = 'block';
+                
+                // Actualizar los datos de resumen en el paso 2
+                document.getElementById('final-quantity-display').textContent = quantityInput.value;
+                document.getElementById('final-size-display').textContent = currentSelectedSize;
+                document.getElementById('final-price-display').textContent = `$${currentPaymentDue.toFixed(2)} MXN`;
+
+                updateModalState();
+            }
+
+            // Función para finalizar el pedido
+            function makeOrder() {
+                const clientName = clientNameInput.value.trim();
+                const clientPhone = clientPhoneInput.value.trim();
+                const clientAddress = clientAddressInput.value.trim();
+
+                if (!clientName || !clientPhone || !clientAddress) {
+                    paymentError.style.display = 'block';
+                    return;
+                }
+                paymentError.style.display = 'none';
+                
+                // 1. Guardar pedido y reservar stock
+                const orderKey = `${currentProductID}-${currentSelectedSize}`;
+                const quantity = parseInt(quantityInput.value);
+                
+                // CORRECCIÓN: Si ya hay un pedido para esta talla, sumar la cantidad
+                if (localOrders[orderKey]) {
+                    localOrders[orderKey].quantity += quantity;
+                } else {
+                    localOrders[orderKey] = {
+                        productID: currentProductID,
+                        productName: currentProductName,
+                        size: currentSelectedSize,
+                        quantity: quantity,
+                        clientName: clientName,
+                        clientPhone: clientPhone,
+                        clientAddress: clientAddress,
+                        paymentDue: currentPaymentDue,
+                        totalAmount: currentTotalAmount,
+                        isHalfPayment: halfPaymentCheck.checked,
+                        status: 'pending'
+                    };
+                }
+                saveLocalOrders();
+                initializeBadges(); // Actualiza los badges de la página principal
+                
+                // 2. Mostrar información de transferencia
+                paymentStep.style.display = 'none';
+                transferInfo.style.display = 'block';
+                mainButton.style.display = 'none';
+                
+                // 3. Rellenar los datos de confirmación
+                document.getElementById('client-name-display').textContent = clientName;
+                document.getElementById('final-qty-conf').textContent = quantity;
+                document.getElementById('final-item-display').textContent = currentProductName;
+                document.getElementById('final-size-conf').textContent = currentSelectedSize;
+                document.getElementById('final-amount-conf').textContent = `$${currentPaymentDue.toFixed(2)} MXN`;
+
+                // 4. Generar enlace de WhatsApp
+                const whatsappMessage = encodeURIComponent(
+                    `¡Hola! Acabo de hacer un pedido en RPLAY.\n\n` +
+                    `*Mi Nombre:* ${clientName}\n` +
+                    `*Teléfono:* ${clientPhone}\n` +
+                    `*Dirección:* ${clientAddress}\n\n` +
+                    `*Detalle del Pedido:*\n` +
+                    `Producto: ${currentProductName}\n` +
+                    `Talla: ${currentSelectedSize}\n` +
+                    `Cantidad: ${quantity} pieza(s)\n` +
+                    `Monto a pagar ahora: $${currentPaymentDue.toFixed(2)} MXN\n\n` +
+                    `Adjunto mi comprobante de pago por ${halfPaymentCheck.checked ? 'apartado' : 'total'}.`
+                );
+                whatsappButton.href = `https://wa.me/${WHATSAPP_PHONE}?text=${whatsappMessage}`;
+                
+                updateModalState();
+            }
+
+            // Función para restablecer el modal al cerrarse
             function resetModalView() {
+                // Paso 1
                 selectionStep.style.display = 'block';
                 paymentStep.style.display = 'none';
                 transferInfo.style.display = 'none';
+
+                // Botones
+                mainButton.style.display = 'inline-block';
                 mainButton.textContent = 'Pagar Ahora';
                 mainButton.disabled = true;
-                document.getElementById('payment-error').style.display = 'none';
-                whatsappButton.style.display = 'none'; 
-                sizeStatusEl.style.display = 'none'; 
-                quantityInput.value = 1; // Resetear cantidad
-            }
-            
-            function saveClientData() {
-                const data = {
-                    name: clientNameInput.value,
-                    phone: clientPhoneInput.value,
-                    address: clientAddressInput.value
-                };
-                localStorage.setItem('clientFormData', JSON.stringify(data));
-            }
-
-            function loadClientData() {
-                const data = JSON.parse(localStorage.getItem('clientFormData'));
-                if (data) {
-                    clientNameInput.value = data.name || '';
-                    clientPhoneInput.value = data.phone || '';
-                    clientAddressInput.value = data.address || '';
-                }
-            }
-            
-            // FUNCIÓN: LIBERAR UN PEDIDO ESPECÍFICO (Gestión Manual)
-            window.releaseOrder = function(orderKey) {
-                if (confirm(¿Estás seguro de liberar el stock para el pedido ${orderKey}? Esto devolverá la unidad al inventario disponible.)) {
-                    // La clave (PROD_001-M-2) tiene la cantidad apartada
-                    const [productID, size, quantityAparted] = orderKey.split('-');
-                    const qty = parseInt(quantityAparted); 
-                    const sizeKey = ${productID}-${size};
-                    
-                    if (localOrders[sizeKey] && localOrders[sizeKey] >= qty) {
-                        localOrders[sizeKey] -= qty;
-                        if (localOrders[sizeKey] === 0) {
-                            delete localOrders[sizeKey];
-                        }
-                        saveLocalOrders(); 
-                        initializeBadges();
-                        if (currentProductID === productID) {
-                            createSizeButtons(currentProductID);
-                        }
-                        alert(Stock de ${qty} unidad(es) de ${productID} (Talla ${size}) liberado con éxito.);
-                    }
-                }
-            };
-
-            // FUNCIÓN: REINICIO TOTAL DE STOCK (Borra localOrders y recarga)
-            window.resetAllStock = function() {
-                if (confirm('ADVERTENCIA: ¿Estás seguro de REINICIAR TODO el inventario? Esto borrará todos los pedidos pendientes.')) {
-                    // Borra los pedidos apartados y los datos de cliente
-                    localStorage.removeItem('simulatedOrders'); 
-                    localStorage.removeItem('clientFormData');
-                    
-                    alert('El inventario y los datos de cliente han sido reiniciados. Recargando la página para mostrar el stock completo.');
-                    window.location.reload(); 
-                }
-            };
-            
-            // FUNCIÓN: RENDERIZAR EL PANEL DE GESTIÓN MANUAL
-            function renderManualManagementPanel() {
-                let html = '';
-                const keys = Object.keys(localOrders).filter(key => localOrders[key] > 0);
+                whatsappButton.style.display = 'none';
+                document.getElementById('modal-close-button').textContent = 'Cerrar';
                 
-                if (keys.length === 0) {
-                    ordersList.innerHTML = '<p class="text-center text-secondary" id="noOrdersMessage">No hay pedidos pendientes actualmente.</p>';
-                    return;
-                }
-
-                keys.forEach(key => {
-                    const [productID, size] = key.split('-');
-                    const quantity = localOrders[key];
-                    
-                    const productInfo = productData.find(p => p.id === productID);
-                    const productName = productInfo ? productInfo.name : productID;
-                    
-                    // Se crea una clave única para la función releaseOrder
-                    const orderKeyForButton = ${productID}-${size}-${quantity}; 
-
-                    html += `
-                        <div class="d-flex justify-content-between align-items-center p-2 mb-2 border-bottom">
-                            <div>
-                                <strong>${productName}</strong> (Talla: ${size})
-                                <span class="badge bg-warning text-dark ms-2">${quantity} Unidad(es) Apartada(s)</span>
-                            </div>
-                            <button class="btn btn-sm btn-outline-danger" onclick="releaseOrder('${orderKeyForButton}')">Liberar ${quantity} Stock</button>
-                        </div>
-                    `;
-                });
-
-                ordersList.innerHTML = html;
-            }
-
-
-            // --- EVENTO PRINCIPAL: FLUJO DE COMPRA ---
-            mainButton.addEventListener('click', () => {
-                const currentButtonText = mainButton.textContent;
-                const quantity = parseInt(quantityInput.value) || 1;
+                // Variables de estado
+                currentSelectedSize = null;
+                quantityInput.value = 1;
+                quantityStatusEl.textContent = '';
+                sizeStatusEl.textContent = 'Selecciona una talla para continuar.';
+                paymentError.style.display = 'none';
                 
-                if (currentButtonText === 'Continuar a Pago' || currentButtonText === 'Pagar Ahora') {
-                    if (!currentSelectedSize) {
-                        alert('Por favor, selecciona una talla.');
-                        return;
-                    }
-                    if (quantity < 1) {
-                         alert('La cantidad mínima es 1.');
-                         return;
-                    }
-                    if (quantity > getAvailableStock(currentProductID, currentSelectedSize)) {
-                         alert('La cantidad excede el stock disponible. Por favor, revisa.');
-                         return;
-                    }
-                    
-                    selectionStep.style.display = 'none';
-                    paymentStep.style.display = 'block';
-                    mainButton.textContent = 'Generar Pedido';
-                    
-                    document.getElementById('final-size-display').textContent = currentSelectedSize;
-                    document.getElementById('final-quantity-display').textContent = quantity; // Muestra la cantidad
-                    
-                    loadClientData();
-                    
-                } else if (currentButtonText === 'Generar Pedido') {
-                    
-                    const clientName = clientNameInput.value.trim();
-                    const clientPhone = clientPhoneInput.value.trim();
-                    const clientAddress = clientAddressInput.value.trim();
-                    
-                    if (clientName.length < 3 || clientPhone.length < 8 || clientAddress.length < 10) {
-                        document.getElementById('payment-error').style.display = 'block';
-                        return;
-                    }
-                    
-                    saveClientData();
-                    
-                    // Doble chequeo de stock antes de generar el pedido (por si se agotó en el inter)
-                    if (quantity > getAvailableStock(currentProductID, currentSelectedSize)) {
-                        alert('¡Lo sentimos! La cantidad solicitada excede el stock disponible.');
-                        resetModalView();
-                        createSizeButtons(currentProductID);
-                        initializeBadges();
-                        return;
-                    }
-
-                    const amountToPay = document.getElementById('final-amount-conf').textContent;
-                    
-                    const message = `Hola, acabo de generar un pedido:
-Cliente: ${clientName}
-Producto: ${currentProductName} (${quantity} piezas, Talla: ${currentSelectedSize})
-Monto a pagar: ${amountToPay}
-Teléfono de contacto: ${clientPhone}
-Dirección: ${clientAddress}
-Por favor, confírmame los datos. Adjunto el comprobante de pago.`;
-                    
-                    const encodedMessage = encodeURIComponent(message);
-                    const whatsappLink = https://wa.me/${WHATSAPP_PHONE}?text=${encodedMessage};
-                    whatsappButton.href = whatsappLink;
-
-                    document.getElementById('payment-error').style.display = 'none';
-                    paymentStep.style.display = 'none';
-                    transferInfo.style.display = 'block';
-                    mainButton.style.display = 'none'; 
-                    whatsappButton.style.display = 'inline-block'; 
-
-                    document.getElementById('client-name-display').textContent = clientName;
-                    document.getElementById('final-size-conf').textContent = currentSelectedSize;
-                    document.getElementById('final-qty-conf').textContent = quantity; // Muestra la cantidad final
-                    document.getElementById('final-item-display').textContent = currentProductName;
-                }
-            });
-
-            // --- EVENTO CRUCIAL: DESCUENTO DE INVENTARIO ---
-            whatsappButton.addEventListener('click', function(e) {
-                if (transferInfo.style.display === 'block' && currentProductID && currentSelectedSize) {
-                    const sizeKey = ${currentProductID}-${currentSelectedSize};
-                    const quantityToApart = parseInt(quantityInput.value); 
-                    
-                    // Aumenta el contador de "apartados" por la cantidad elegida
-                    localOrders[sizeKey] = (localOrders[sizeKey] || 0) + quantityToApart; 
-                    saveLocalOrders(); 
-                    
-                    // Refresca la vista
-                    createSizeButtons(currentProductID);
-                    initializeBadges();
-                } else {
-                    e.preventDefault(); 
-                }
-            });
-            // ----------------------------------------------------------------------------------
-
-            // Lógica de Modal (Apertura y cierres)
+                // Inputs de usuario
+                clientNameInput.value = '';
+                clientPhoneInput.value = '';
+                clientAddressInput.value = '';
+            }
+            
+            // --- Event Listeners del Modal ---
+            
+            // Cuando se abre el modal
             paymentModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget; 
+                const button = event.relatedTarget;
+                
+                // 1. Cargar datos del producto
                 currentProductID = button.getAttribute('data-product-id');
-                currentPrice = parseFloat(button.getAttribute('data-price'));
                 currentProductName = button.getAttribute('data-name');
+                // CORRECCIÓN: Cargar el precio del producto
+                currentPrice = parseFloat(button.getAttribute('data-price')); 
                 
                 document.getElementById('product-name').textContent = currentProductName;
                 document.getElementById('product-description').textContent = button.getAttribute('data-description');
                 document.getElementById('modal-img-front').src = button.getAttribute('data-img-front');
                 document.getElementById('modal-img-back').src = button.getAttribute('data-img-back');
 
-                resetModalView(); 
-                document.getElementById('modal-main-button').style.display = 'inline-block';
-                
+                // 2. Resetear la vista y generar botones
+                resetModalView();
                 createSizeButtons(currentProductID);
-                updatePaymentAmounts();
+                updatePriceDisplays(); // Inicializa los precios
             });
-
-            // Evento para actualizar montos cuando se cambia la cantidad o el check de mitad de pago
-            quantityInput.addEventListener('input', updatePaymentAmounts);
-            halfPaymentCheck.addEventListener('change', updatePaymentAmounts);
             
-            function updatePaymentAmounts() {
-                const dueDisplay = document.getElementById('payment-due');
-                const finalPriceDisplay = document.getElementById('final-price-display');
-                const finalAmountConf = document.getElementById('final-amount-conf');
-                
-                const quantity = parseInt(quantityInput.value) || 1; // Lee la cantidad del input
+            // Cuando se cambia la cantidad o el estado de pago
+            quantityInput.addEventListener('input', updatePriceDisplays);
+            halfPaymentCheck.addEventListener('change', updatePriceDisplays);
 
-                // Validación de cantidad para no exceder el máximo (stock disponible)
-                const maxStock = parseInt(quantityInput.max);
-                if (quantity > maxStock) {
-                    quantityInput.value = maxStock;
-                    // Llamar recursivamente para recalcular con el valor máximo
-                    return updatePaymentAmounts(); 
-                }
-                
-                const total = currentPrice * quantity;
-                
-                // Actualiza el precio total en el modal
-                document.getElementById('total-price').textContent = $${total.toFixed(2)} MXN; 
-
-                let amountDue = total;
-                if (halfPaymentCheck.checked) {
-                    amountDue = total / 2;
-                }
-                
-                dueDisplay.textContent = $${amountDue.toFixed(2)} MXN;
-                finalPriceDisplay.textContent = $${amountDue.toFixed(2)} MXN;
-                finalAmountConf.textContent = $${amountDue.toFixed(2)} MXN;
-            }
-            
-            // 🔒 LÓGICA DE ACTIVACIÓN SECRETA DEL MODO ADMINISTRADOR (VÍA CONSOLA)
-            window.showAdminPanel = function() {
-                const password = prompt("Ingrese la clave de administrador para activar el panel:");
-                const SECRET_KEY = "ADMIN123"; 
-                
-                if (password === SECRET_KEY) {
-                    if (managementPanel.style.display === 'none' || managementPanel.style.display === '') {
-                        managementPanel.style.display = 'block';
-                        renderManualManagementPanel();
-                        alert('Modo Administrador Activado.');
-                    } else {
-                        managementPanel.style.display = 'none';
-                        alert('Modo Administrador Desactivado.');
-                    }
-                } else {
-                    alert('Clave incorrecta. Acceso denegado.');
-                }
-            };
-            // ---------------------------------------------------------
-            
-            // 💡 INICIALIZACIÓN FINAL
+            // Llamada inicial para renderizar y actualizar el estado
             renderProductCards();
             initializeBadges();
+            renderManualManagementPanel(); // Inicializa el panel de administración
         });
     </script>
 </body>
-
 </html>
-
-
-
