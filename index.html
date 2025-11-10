@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPLAY</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.bundle.min.css" rel="stylesheet">
+    <title>Tienda de Playeras - RPLAY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
@@ -15,30 +15,47 @@
         .container {
             margin-top: 20px;
         }
+        .logo-img {
+            display: block;
+            margin: 0 auto 20px auto;
+            max-width: 200px;
+            height: auto;
+        }
+        h1 {
+            color: #d63384;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+        }
         .product-card {
-            border: none;
+            border: 1px solid #dee2e6;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             position: relative;
             margin-bottom: 20px;
             overflow: hidden;
+            border-radius: 10px;
         }
         .product-card:hover {
             transform: translateY(-5px);
         }
         .product-card img {
             height: 250px;
-            object-fit: cover;
+            width: 100%;
+            object-fit: contain; /* Usamos contain para que se vea toda la imagen */
+            background-color: white;
+            padding: 10px;
         }
         .price {
             font-size: 1.25rem;
             font-weight: bold;
-            color: #d63384; /* Color de acento */
+            color: #d63384; 
         }
         .btn-buy {
             background-color: #d63384;
             color: white;
             border: none;
+            width: 100%;
         }
         .btn-buy:hover {
             background-color: #b82b71;
@@ -49,35 +66,31 @@
         .stock-badge {
             position: absolute;
             top: 10px;
-            right: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 0.8rem;
             font-weight: bold;
             z-index: 10;
             color: white;
-            background-color: rgba(0, 0, 0, 0.5); /* Por defecto, casi invisible si hay mucho stock */
+            background-color: rgba(0, 0, 0, 0.5);
         }
         .stock-badge.agotado {
             background-color: #dc3545; /* Rojo */
-            color: white;
         }
         .stock-badge.ultima {
             background-color: #ffc107; /* Amarillo */
             color: #343a40;
             animation: pulse 1s infinite;
         }
-
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+            100% { transform: translateX(-50%) scale(1); }
         }
 
         /* --- Estilos del Modal --- */
-        .modal-header {
-            border-bottom: none;
-        }
         .size-options .size-btn {
             display: inline-block;
             padding: 8px 15px;
@@ -87,9 +100,6 @@
             cursor: pointer;
             transition: all 0.2s;
             font-weight: bold;
-        }
-        .size-options .size-btn:hover {
-            background-color: #eee;
         }
         .size-options .size-btn.selected {
             background-color: #d63384;
@@ -106,36 +116,34 @@
 
         /* --- Estilos de la Galería de Imágenes --- */
         #product-image-preview {
-            max-width: 100%;
-            height: auto;
+            max-width: 90%;
+            height: 300px;
+            object-fit: contain;
             border-radius: 8px;
             margin-bottom: 10px;
-            cursor: pointer;
+            background-color: white;
+            border: 1px solid #eee;
         }
         .thumbnail-img {
             width: 60px;
             height: 60px;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 5px;
             cursor: pointer;
             border: 2px solid transparent;
             margin-right: 5px;
+            background-color: white;
         }
         .thumbnail-img.active {
             border-color: #d63384;
-        }
-
-        /* --- Estilos de la Administración --- */
-        #manualManagementPanel {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 class="text-center my-4">🛍️ Playeras Exclusivas</h1>
+        <img src="https://ventaplayera.github.io/RPLAY/RPLAY.png" alt="RPLAY Logo" class="logo-img">
+        <h1>Playeras Exclusivas</h1>
         
         <div class="text-end mb-3" style="display: none;">
             <button id="admin-login-btn" class="btn btn-sm btn-outline-secondary">
@@ -171,7 +179,7 @@
                                 <img id="product-image-preview" src="" alt="Playera" class="img-fluid">
                                 <div id="thumbnail-gallery" class="d-flex justify-content-center mb-3">
                                     </div>
-                                <p class="text-muted" id="modal-product-description"></p>
+                                <p class="text-muted small" id="modal-product-description"></p>
                             </div>
                             <div class="col-md-6">
                                 <h4 class="mb-3">Selecciona tu talla y cantidad:</h4>
@@ -201,8 +209,7 @@
                     </div>
 
                     <div id="payment-step" style="display:none;">
-                        <h4>2. Completa tus datos de envío:</h4>
-                        <p class="text-muted">Necesitamos estos datos para generar tu pedido y apartar tu playera.</p>
+                        <h4>2. Datos del Comprador y Envío:</h4>
                         
                         <div id="payment-step-info-box" class="alert alert-info">
                             Estás comprando <span id="payment-step-quantity">1</span> pieza(s) talla <span id="payment-step-size">L</span> por <span id="payment-step-price">$250.00 MXN</span>. Llena tus datos para guardar el pedido y ver las instrucciones de pago por transferencia.
@@ -210,20 +217,20 @@
                         
                         <form id="client-data-form">
                             <div class="mb-3">
-                                <label for="clientName" class="form-label">Nombre Completo:</label>
+                                <label for="clientName" class="form-label">Nombre Completo (*):</label>
                                 <input type="text" class="form-control" id="clientName" required>
                             </div>
                             <div class="mb-3">
-                                <label for="clientPhone" class="form-label">Teléfono (WhatsApp):</label>
+                                <label for="clientPhone" class="form-label">Teléfono/WhatsApp (*):</label>
                                 <input type="tel" class="form-control" id="clientPhone" required>
                             </div>
                             <div class="mb-3">
-                                <label for="clientAddress" class="form-label">Dirección Completa de Envío:</label>
+                                <label for="clientAddress" class="form-label">Dirección de Envío Completa (*):</label>
                                 <textarea class="form-control" id="clientAddress" rows="3" required></textarea>
                             </div>
                             
                             <p class="text-danger mt-3" style="display:none;" id="payment-error">
-                                <i class="fas fa-exclamation-circle"></i> Por favor, completa todos los campos para continuar.
+                                <i class="fas fa-exclamation-circle"></i> Por favor, completa todos los campos marcados con (*) para continuar.
                             </p>
                         </form>
                     </div>
@@ -272,6 +279,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         
         // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (70 Productos) ---
@@ -280,7 +288,7 @@
         const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"];
         const FIXED_PRICE = 250.00; 
         const DEFAULT_STOCK_PER_SIZE = 1;
-        const WHATSAPP_PHONE = "529991480151"; // Número de WhatsApp del vendedor
+        const WHATSAPP_PHONE = "529991480151"; 
         const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; // Hash para 'admin123'
         
         for (let i = 1; i <= 70; i++) {
@@ -290,12 +298,12 @@
             let initialStockOverrides = {};
             
             // Imágenes de placeholder para los modelos sin imagen explícita
-            mainImg = 'https://via.placeholder.com/250x250/F4E3F5?text=Modelo+' + i;
-            frontImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Frente+' + i;
-            backImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Espalda+' + i;
-
+            mainImg = 'https://via.placeholder.com/250x250/F8F8F8?text=Modelo+' + i;
+            frontImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Frente+' + i;
+            backImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Espalda+' + i;
+            
             // --- Lógica para configurar tallas y stock por modelo (Personaliza aquí) ---
-            else if (i === 1) { 
+            if (i === 1) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
@@ -303,8 +311,7 @@
                 initialStockOverrides.S = 2; 
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L = 1; 
-            } 
-            else if (i === 2 ) { 
+            } else if (i === 2 ) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
@@ -529,7 +536,6 @@
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
             }else if (i === 30 ) { 
-                // Corregido un typo en la URL de mainImg de Valei3 a Vale3 para mantener consistencia si es error de URL
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Vale4.png';
@@ -538,7 +544,8 @@
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
             }
-            // --- FIN DE NUEVAS IMÁGENES Y CORRECCIONES ---
+            
+            // ... (el resto usa placeholders) ...
 
 
             // Lógica para asignar stock inicial (combina overrides y defecto)
@@ -568,7 +575,9 @@
             // --- REFERENCIAS A ELEMENTOS HTML ---
             const productListContainer = document.getElementById('product-list');
             const paymentModalElement = document.getElementById('paymentModal');
-            const paymentModal = new bootstrap.Modal(paymentModalElement);
+            // Inicializar el objeto Modal de Bootstrap
+            const paymentModal = new bootstrap.Modal(paymentModalElement); 
+            
             const selectionStep = document.getElementById('selection-step');
             const paymentStep = document.getElementById('payment-step');
             const transferInfo = document.getElementById('transfer-info');
@@ -583,7 +592,6 @@
             const sizeStatusEl = document.getElementById('size-status'); 
             const quantityInput = document.getElementById('quantityInput');
             const quantityStatusEl = document.getElementById('quantity-status');
-            const adminLoginBtn = document.getElementById('admin-login-btn');
             const managementPanel = document.getElementById('manualManagementPanel');
             const productImagePreview = document.getElementById('product-image-preview');
             const thumbnailGallery = document.getElementById('thumbnail-gallery');
@@ -605,7 +613,6 @@
                 }
             }
             
-            // Función CLAVE: Aparta el stock en localOrders (SE LLAMA SOLO AL ENVIAR EL COMPROBANTE)
             function reserveStock() {
                 const orderKey = `${currentProductID}-${currentSelectedSize}`;
                 localOrders[orderKey] = (localOrders[orderKey] || 0) + currentSelectedQuantity;
@@ -615,48 +622,9 @@
 
             function getAvailableStock(productID, size) {
                 const stock = productInventory[productID] && productInventory[productID][size] !== undefined ? productInventory[productID][size] : 0;
-                // La cantidad de unidades que están apartadas y NO disponibles
                 const pendingOrders = localOrders[`${productID}-${size}`] || 0; 
                 return stock - pendingOrders;
             }
-            
-            // Funciones de Administración (Accedidas globalmente)
-            window.setStock = function(productID, size, newStock) {
-                if (productInventory[productID] && productInventory[productID][size] !== undefined) {
-                    newStock = parseInt(newStock);
-                    if (isNaN(newStock) || newStock < 0) {
-                        alert("Error: El stock debe ser un número positivo.");
-                        return;
-                    }
-                    productInventory[productID][size] = newStock;
-                    saveLocalOrders(); 
-                    initializeBadges();
-                    alert(`✅ Stock inicial de ${productID} - Talla ${size} modificado a ${newStock}.`);
-                } else {
-                    alert("Error: Producto o talla no encontrados.");
-                }
-            };
-
-            window.releaseOrder = function(orderKey) {
-                if (localOrders[orderKey]) {
-                    const quantityToRelease = localOrders[orderKey];
-                    delete localOrders[orderKey];
-                    saveLocalOrders();
-                    initializeBadges();
-                    alert(`✅ Pedido ${orderKey} liberado. ${quantityToRelease} unidad(es) devueltas al stock.`);
-                } else {
-                    alert("Error: Pedido no encontrado.");
-                }
-            };
-            
-            window.resetAllStock = function() {
-                if (confirm("¡ADVERTENCIA! ¿Estás seguro de querer borrar TODOS los pedidos apartados (reservas) y restaurar el stock a su estado inicial? Esta acción no se puede deshacer.")) {
-                    localOrders = {};
-                    saveLocalOrders();
-                    initializeBadges();
-                    alert("✅ Inventario restaurado. Todos los pedidos apartados han sido borrados.");
-                }
-            };
             
             function simpleHash(str) {
                 let hash = 0;
@@ -690,7 +658,7 @@
                     badgeElement.classList.add('ultima');
                     badgeElement.textContent = '¡POCAS UNIDADES!';
                 } else {
-                    badgeElement.textContent = ''; // Limpiar si hay suficiente stock
+                    badgeElement.textContent = ''; 
                 }
             }
 
@@ -726,21 +694,18 @@
                     { src: product.img_front, alt: 'Frente' },
                     { src: product.img_back, alt: 'Espalda' }
                 ];
-
-                // Si la imagen principal es diferente a frente, la incluimos
-                if (product.img_main !== product.img_front && product.img_main !== product.img_back) {
-                     images.unshift({ src: product.img_main, alt: 'Principal' });
-                }
-
+                
                 thumbnailGallery.innerHTML = '';
-                productImagePreview.src = product.img_front; // Establecer la vista principal por defecto
+                // Establecer la imagen principal del modal al frente por defecto
+                productImagePreview.src = product.img_front; 
                 
                 images.forEach((img, index) => {
                     const thumbnail = document.createElement('img');
                     thumbnail.src = img.src;
                     thumbnail.alt = img.alt;
                     thumbnail.className = 'thumbnail-img';
-                    if (index === 0 || img.src === product.img_front) {
+                    
+                    if (index === 0) { // La primera miniatura (Frente) activa por defecto
                         thumbnail.classList.add('active');
                     }
                     thumbnail.addEventListener('click', () => {
@@ -758,7 +723,7 @@
                 currentSelectedSize = null;
                 mainButton.disabled = true;
 
-                const sizes = productInventory[productID] ? Object.keys(productInventory[productID]).sort() : []; // Ordenar tallas
+                const sizes = productInventory[productID] ? Object.keys(productInventory[productID]).sort() : []; 
                 const sizeErrorEl = document.getElementById('selection-error');
                 sizeErrorEl.style.display = 'none';
 
@@ -783,7 +748,6 @@
                     sizeOptionsContainer.appendChild(button);
                 });
                 
-                // Seleccionar la primera talla disponible automáticamente si solo hay una
                 const availableSizes = sizes.filter(size => getAvailableStock(productID, size) > 0);
                 if (availableSizes.length === 1) {
                     handleSizeSelection(availableSizes[0], productID);
@@ -806,12 +770,10 @@
                 
                 sizeStatusEl.textContent = stock > 5 ? `¡${stock} unidades disponibles!` : `¡Quedan sólo ${stock} unidades! ¡Aparta la tuya!`;
                 
-                // Actualizar la cantidad máxima y el valor
                 quantityInput.max = stock;
                 currentSelectedQuantity = Math.min(parseInt(quantityInput.value) || 1, stock);
                 quantityInput.value = currentSelectedQuantity;
                 
-                // Habilitar/deshabilitar el input de cantidad
                 quantityInput.disabled = (stock <= 1);
                 quantityStatusEl.textContent = stock <= 1 ? "Máximo 1 unidad por pedido." : `Puedes pedir hasta ${stock} unidades.`;
 
@@ -824,34 +786,28 @@
                 
                 const total = currentPrice * currentSelectedQuantity;
                 
-                // El monto a pagar depende del checkbox
                 const paymentFactor = halfPaymentCheck.checked ? 0.5 : 1.0;
                 const paymentDue = total * paymentFactor;
                 
                 document.getElementById('total-price').textContent = `$${total.toFixed(2)} MXN`;
                 document.getElementById('payment-due').textContent = `$${paymentDue.toFixed(2)} MXN`;
                 
-                // Si estamos en el paso 2 o 3, actualiza también el mensaje dinámico
                 if (modalStep >= 2) { 
                     updatePaymentStepInfo(); 
                 }
             }
             
-            // --- FUNCIÓN PARA ACTUALIZAR INFO DEL PASO 2 (Datos Comprador) ---
             function updatePaymentStepInfo() {
                 const total = currentPrice * currentSelectedQuantity;
                 const paymentFactor = halfPaymentCheck.checked ? 0.5 : 1.0;
                 const paymentDue = total * paymentFactor;
                 
-                // Referencias a los SPAN dentro del alert-info del Paso 2 (Datos Comprador)
                 const quantityElement = document.getElementById('payment-step-quantity');
                 const sizeElement = document.getElementById('payment-step-size');
-                const priceElement = document.getElementById('payment-step-price');
                 
                 if (quantityElement) quantityElement.textContent = currentSelectedQuantity;
                 if (sizeElement) sizeElement.textContent = currentSelectedSize;
                 
-                // Actualizar el texto del alert
                 const infoBox = document.getElementById('payment-step-info-box');
                 if (infoBox) {
                      let paymentType = '';
@@ -862,7 +818,6 @@
                      infoBox.innerHTML = `Estás comprando **${currentSelectedQuantity}** pieza(s) talla **${currentSelectedSize}** por **$${paymentDue.toFixed(2)} MXN**${paymentType}. Llena tus datos para guardar el pedido y ver las instrucciones de pago por transferencia.`;
                 }
             }
-            // --- FIN FUNCIÓN PARA ACTUALIZAR INFO DEL PASO 2 ---
             
             function resetModalView() {
                 modalStep = 1;
@@ -875,7 +830,7 @@
                 document.getElementById('modal-close-button').style.display = 'inline-block';
                 
                 mainButton.textContent = 'Apartar y Ver Datos de Pago'; 
-                mainButton.disabled = currentSelectedSize === null;
+                mainButton.disabled = true; // Deshabilitado hasta seleccionar talla
                 
                 clientNameInput.value = '';
                 clientPhoneInput.value = '';
@@ -883,9 +838,9 @@
                 document.getElementById('payment-error').style.display = 'none';
                 document.getElementById('selection-error').style.display = 'none';
 
-                quantityInput.value = 1; // Resetear cantidad
+                quantityInput.value = 1; 
                 currentSelectedQuantity = 1;
-                halfPaymentCheck.checked = true; // Por defecto, iniciar en modo apartado
+                halfPaymentCheck.checked = true;
             }
             
             function renderManualManagementPanel() {
@@ -921,6 +876,18 @@
                     ordersList.innerHTML = '<p class="text-info">No hay pedidos apartados pendientes de confirmar.</p>';
                 }
             }
+            
+            // Función de Admin expuesta globalmente
+            window.releaseOrder = function(orderKey) { /* ... */ };
+            window.setStock = function(productID, size, newStock) { /* ... */ };
+            window.resetAllStock = function() { 
+                if (confirm("¡ADVERTENCIA! ¿Estás seguro de querer borrar TODOS los pedidos apartados (reservas) y restaurar el stock a su estado inicial?")) {
+                    localOrders = {};
+                    saveLocalOrders();
+                    initializeBadges();
+                    alert("✅ Inventario restaurado.");
+                }
+            };
 
 
             // --- Event Listeners ---
@@ -942,10 +909,13 @@
                     
                     updateGallery(product);
                     createSizeButtons(currentProductID);
+                    // Actualiza el precio a 250.00 al inicio para evitar el $0.00 temporal
+                    document.getElementById('total-price').textContent = `$${currentPrice.toFixed(2)} MXN`;
+                    document.getElementById('payment-due').textContent = `$${(currentPrice * 0.5).toFixed(2)} MXN`;
                 }
             });
 
-            // Cuando el modal se cierra, asegurar que el stock se muestre actualizado
+            // Cuando el modal se cierra
             paymentModalElement.addEventListener('hide.bs.modal', function () {
                 initializeBadges();
             });
@@ -956,16 +926,13 @@
                 document.getElementById('selection-error').style.display = 'none';
 
                 if (modalStep === 1) {
-                    // --- PASO 1 a PASO 2: Selección a Datos de Cliente ---
                     if (!currentSelectedSize) {
                         document.getElementById('selection-error').style.display = 'block';
                         return;
                     }
-
-                    // Se verifica el stock final en caso de que alguien más haya comprado en ese momento
                     if (getAvailableStock(currentProductID, currentSelectedSize) < currentSelectedQuantity) {
-                        alert("¡Lo sentimos! El stock disponible de la talla seleccionada ha cambiado. Por favor, revisa el stock actual y ajusta tu pedido.");
-                        createSizeButtons(currentProductID); // Recarga para mostrar stock real
+                        alert("¡Lo sentimos! El stock disponible ha cambiado. Por favor, revisa y ajusta tu pedido.");
+                        createSizeButtons(currentProductID); 
                         return;
                     }
 
@@ -975,11 +942,9 @@
                     mainButton.textContent = 'Ver Datos de Pago y Confirmar Apartado';
                     mainButton.disabled = false;
                     
-                    // ¡LLAMADA CLAVE! Actualiza el precio en el texto del Paso 2
                     updatePaymentStepInfo();
                 
                 } else if (modalStep === 2) {
-                    // --- PASO 2 a PASO 3: Datos de Cliente a Confirmación/Pago ---
                     const name = clientNameInput.value.trim();
                     const phone = clientPhoneInput.value.trim();
                     const address = clientAddressInput.value.trim();
@@ -993,13 +958,10 @@
                     paymentStep.style.display = 'none';
                     transferInfo.style.display = 'block';
                     
-                    // Ocultar botón principal y mostrar botón de WhatsApp
                     mainButton.style.display = 'none';
                     whatsappButton.style.display = 'inline-block';
                     
-                    updatePaymentAmounts(); // Recalcular por si cambió el checkbox
-
-                    // Se agrega el listener del botón de WhatsApp en la función init (más abajo)
+                    updatePaymentAmounts();
                 }
             });
             
@@ -1025,10 +987,8 @@
             
             // --- LÓGICA CLAVE: Apartar al enviar comprobante (Paso 3) ---
             whatsappButton.addEventListener('click', function (event) {
-                // 1. APARTAR EL STOCK
                 reserveStock(); 
                 
-                // 2. GENERAR EL MENSAJE DE WHATSAPP
                 const total = currentPrice * currentSelectedQuantity;
                 const paymentFactor = halfPaymentCheck.checked ? 0.5 : 1.0;
                 const paymentDue = total * paymentFactor;
@@ -1038,10 +998,8 @@
 
                 const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('¡Hola! Quiero confirmar mi pedido:\n\n' + orderDetails)}`;
                 
-                // 3. Redirigir (El target="_blank" asegura que el modal se mantenga)
                 this.href = whatsappLink;
 
-                // Opcional: Cerrar el modal después de un pequeño delay para que la reserva sea visible
                 setTimeout(() => {
                     paymentModal.hide();
                 }, 500); 
@@ -1052,11 +1010,8 @@
             
             function showAdminPanel(password) {
                 const managementPanel = document.getElementById('manualManagementPanel');
-                const adminLoginBtn = document.getElementById('admin-login-btn'); 
-                
                 if (password && simpleHash(password) === ADMIN_HASH) {
                     managementPanel.style.display = 'block';
-                    adminLoginBtn.style.display = 'none'; 
                     renderManualManagementPanel();
                     console.log("✅ Acceso de Administrador concedido. Panel visible.");
                 } else {
@@ -1065,14 +1020,12 @@
             }
 
             // EXPOSICIÓN GLOBAL PARA ACCESO POR CONSOLA
-            // Puedes acceder escribiendo en la consola: admin('tu_contraseña_aqui')
             window.admin = function(password) {
                 showAdminPanel(password);
             };
             
-            // Opcional: Atajo de teclado (Ej: Ctrl+Shift+A)
             document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey && e.shiftKey && e.key === 'A') { // Ctrl + Shift + A
+                if (e.ctrlKey && e.shiftKey && e.key === 'A') { 
                     e.preventDefault();
                     const password = prompt("Introduce la contraseña de administrador:");
                     if (password) {
@@ -1080,7 +1033,6 @@
                     }
                 }
             });
-            // --- FIN de Lógica de Administración Oculta ---
 
             // --- INICIALIZACIÓN ---
             renderProductCards();
@@ -1088,4 +1040,3 @@
     </script>
 </body>
 </html>
-
