@@ -714,11 +714,13 @@
                 initializeBadges();
             }
             
-            // Función para actualizar el Carrusel de Imágenes
+            // Función para actualizar el Carrusel de Imágenes (Ahora con 4 imágenes)
             function updateProductCarousel(product) {
                 carouselInnerContent.innerHTML = ''; // Limpiar carrusel anterior
 
                 const images = [
+                    // AÑADIMOS LA IMAGEN PRINCIPAL AL INICIO DEL CARRUSEL
+                    { src: product.img_main, alt: `${product.name} - Principal` }, 
                     { src: product.img_front, alt: `${product.name} - Frente` },
                     { src: product.img_back, alt: `${product.name} - Espalda` },
                     { src: product.img_size_guide, alt: `${product.name} - Guía de Tallas` }
@@ -727,7 +729,7 @@
                 images.forEach((img, index) => {
                     const carouselItem = document.createElement('div');
                     carouselItem.classList.add('carousel-item');
-                    if (index === 0) { // La primera imagen activa por defecto (Frente)
+                    if (index === 0) { // La primera imagen activa por defecto (Ahora img_main)
                         carouselItem.classList.add('active');
                     }
                     carouselItem.innerHTML = `<img src="${img.src}" class="d-block" alt="${img.alt}">`; 
