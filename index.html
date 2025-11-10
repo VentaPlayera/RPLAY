@@ -405,7 +405,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            } else if (i >= 21 ) { 
+            } else if (i === 21 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png';
@@ -414,7 +414,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 22 ) { 
+            }else if (i === 22 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png';
@@ -423,7 +423,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 23 ) { 
+            }else if (i === 23 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png';
@@ -432,7 +432,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 24 ) { 
+            }else if (i === 24 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png';
@@ -441,7 +441,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 25 ) { 
+            }else if (i === 25 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png';
@@ -450,7 +450,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 26 ) { 
+            }else if (i === 26 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png';
@@ -459,7 +459,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 27 ) { 
+            }else if (i === 27 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png';
@@ -468,7 +468,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 28 ) { 
+            }else if (i === 28 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png';
@@ -477,7 +477,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 29 ) { 
+            }else if (i === 29 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png';
@@ -486,7 +486,7 @@
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
-            }else if (i >= 30 ) { 
+            }else if (i === 30 ) { 
                 // Los modelos 21 al 34 usan las mismas imágenes que el modelo 8.
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Valei3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
@@ -941,14 +941,49 @@ Adjunta aquí tu comprobante de pago. ¡Gracias!`;
                     }
                 }
             });
+            // --- Lógica de Administración Oculta (Puerta Trasera) ---
             
+            function showAdminPanel(password) {
+                const managementPanel = document.getElementById('manualManagementPanel');
+                const adminLoginBtn = document.getElementById('admin-login-btn'); // Aunque esté oculto, lo referenciamos.
+                
+                if (password && simpleHash(password) === ADMIN_HASH) {
+                    managementPanel.style.display = 'block';
+                    // Ocultar el botón de login si se decide mostrarlo alguna vez, 
+                    // aunque en el HTML ya está oculto por defecto.
+                    adminLoginBtn.style.display = 'none'; 
+                    renderManualManagementPanel();
+                    console.log("✅ Acceso de Administrador concedido. Panel visible.");
+                } else {
+                    console.error("❌ Acceso denegado. Contraseña incorrecta o ausente.");
+                }
+            }
+
+            // EXPOSICIÓN GLOBAL PARA ACCESO POR CONSOLA
+            // Puedes acceder escribiendo en la consola: admin('tu_contraseña_aqui')
+            window.admin = function(password) {
+                showAdminPanel(password);
+            };
+            
+            // Opcional: Atajo de teclado (Ej: Ctrl+Shift+A)
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.shiftKey && e.key === 'A') { // Ctrl + Shift + A
+                    e.preventDefault();
+                    const password = prompt("Introduce la contraseña de administrador:");
+                    if (password) {
+                        showAdminPanel(password);
+                    }
+                }
+            });
+            // --- FIN de Lógica de Administración Oculta ---
+
             // --- INICIALIZACIÓN ---
             renderProductCards();
         });
-        
     </script>
 </body>
 </html>
+
 
 
 
