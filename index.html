@@ -106,37 +106,37 @@
             text-decoration: line-through;
         }
 
-        /* --- ESTILOS CORREGIDOS PARA EL CARRUSEL EN EL MODAL --- */
+        /* --- ESTILOS CORREGIDOS PARA EL CARRUSEL EN EL MODAL (SOLUCIÓN DE FUERZA) --- */
         #productCarousel .carousel-inner {
-            height: 350px; /* Altura fija para el carrusel */
+            height: 350px !important; /* Altura fija para el carrusel FORZADA */
             background-color: white;
             border-radius: 8px;
             border: 1px solid #eee;
             display: flex; 
             align-items: center; /* Centrado vertical */
             justify-content: center; /* Centrado horizontal */
-            overflow: hidden; /* Asegura que nada se desborde del inner */
+            overflow: hidden; 
         }
         #productCarousel .carousel-item {
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 100%; 
-            width: 100%; 
-            text-align: center; /* Centra el contenido si no es una imagen grande */
+            height: 100% !important; 
+            width: 100% !important; 
+            text-align: center; 
         }
         #productCarousel .carousel-item img {
-            max-height: 100%; /* La imagen no excederá la altura del carousel-item */
-            max-width: 100%;  /* La imagen no excederá el ancho del carousel-item */
-            width: auto;      /* Permite que la imagen tome su ancho natural o se escale */
-            height: auto;     /* Permite que la imagen tome su alto natural o se escale */
-            object-fit: contain; /* ¡CLAVE! Escala la imagen para que sea visible por completo */
+            max-height: 100% !important; /* Máximo 100% de la altura del contenedor */
+            max-width: 100% !important;  /* Máximo 100% del ancho del contenedor */
+            width: auto !important;      /* Permite el escalado correcto con contain */
+            height: auto !important;     /* Permite el escalado correcto con contain */
+            object-fit: contain !important; /* ¡CLAVE! Escala la imagen para que sea visible por completo */
             border-radius: 8px;
-            /* margin: auto; */ /* No es estrictamente necesario con flexbox en padre */
+            padding: 0 !important; /* Asegurar que no hay relleno adicional */
         }
-        /* Esto es para evitar que el texto "alt" se muestre como un caption si no lo queremos */
+        /* Ocultar cualquier posible caption que muestre el texto alt */
         #productCarousel .carousel-caption {
-            display: none; 
+            display: none !important; 
         }
 
         #productCarousel .carousel-control-prev-icon,
@@ -724,7 +724,7 @@
                 initializeBadges();
             }
             
-            // Función para actualizar el Carrusel de Imágenes (Con ajustes para mostrar correctamente)
+            // Función para actualizar el Carrusel de Imágenes (Con ajustes de fuerza)
             function updateProductCarousel(product) {
                 carouselInnerContent.innerHTML = ''; // Limpiar carrusel anterior
 
@@ -741,9 +741,8 @@
                     if (index === 0) { 
                         carouselItem.classList.add('active');
                     }
-                    // IMPORTANTE: Eliminamos la clase 'd-block' del img, ya que los estilos flexbox del padre lo centran.
-                    // También nos aseguramos de no añadir un carousel-caption si no lo necesitamos.
-                    carouselItem.innerHTML = `<img src="${img.src}" alt="${img.alt}">`; 
+                    // IMPORTANTE: Clase w-100 añadida para ayudar al escalado.
+                    carouselItem.innerHTML = `<img src="${img.src}" alt="${img.alt}" class="w-100">`; 
                     carouselInnerContent.appendChild(carouselItem);
                 });
 
