@@ -39,6 +39,14 @@
         .stock-badge.in-stock { background-color: green; }
         .stock-badge.low-stock { background-color: orange; }
         .stock-badge.out-stock { background-color: red; }
+
+        /* --- CORRECCIÓN DE VISUALIZACIÓN DE IMAGEN EN EL MODAL --- */
+        .modal-image {
+            object-fit: contain; /* Asegura que la imagen se ajuste sin cortar */
+            height: 450px;       /* Altura fija para el contenedor del carrusel */
+            width: 100%;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -46,7 +54,7 @@
     <div class="container my-5">
         
         <div class="d-flex align-items-center justify-content-center mb-5">
-             <img src="https://imgur.com/mpCQaZg.jpg" alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
+            <img src="https://imgur.com/mpCQaZg.jpg" alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
         </div>
         <h1 class="text-center mb-5" style="color: #ff3366;">RPLAY</h1>
         
@@ -84,17 +92,19 @@
                                 <div class="carousel-indicators">
                                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
                                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button> </div>
+                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                                </div>
 
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <img id="modal-img-front" src="" class="d-block w-100" alt="Delantera de la Playera">
+                                        <img id="modal-img-front" src="" class="d-block w-100 modal-image" alt="Delantera de la Playera">
                                     </div>
                                     <div class="carousel-item">
-                                        <img id="modal-img-back" src="" class="d-block w-100" alt="Espalda de la Playera">
+                                        <img id="modal-img-back" src="" class="d-block w-100 modal-image" alt="Espalda de la Playera">
                                     </div>
                                     <div class="carousel-item">
-                                        <img id="modal-img-side" src="" class="d-block w-100" alt="Vista Lateral de la Playera"> </div>
+                                        <img id="modal-img-side" src="" class="d-block w-100 modal-image" alt="Vista Lateral de la Playera">
+                                    </div>
                                 </div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -204,7 +214,7 @@
             for (let i = 1; i <= 70; i++) {
                 const id = `PROD_${String(i).padStart(3, '0')}`;
                 let mainImg, frontImg, backImg;
-                let sideImg; // <--- NUEVA VARIABLE: IMAGEN LATERAL
+                let sideImg; 
                 let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
                 let initialStockOverrides = {}; 
                 
@@ -212,17 +222,17 @@
                 mainImg = `https://via.placeholder.com/250x250/F4E3F5?text=Modelo+${i}`;
                 frontImg = `https://via.placeholder.com/500x500/F4E3F5?text=Frente+${i}`;
                 backImg = `https://via.placeholder.com/500x500/F4E3F5?text=Espalda+${i}`;
-                sideImg = `https://via.placeholder.com/500x500/E3F5F4?text=Lateral+${i}`; // <--- IMAGEN LATERAL POR DEFECTO
+                sideImg = `https://via.placeholder.com/500x500/E3F5F4?text=Lateral+${i}`; 
 
                 // ==========================================================
                 // INICIO DE ASIGNACIÓN DE RUTAS DE IMAGEN ÚNICAS
                 // ==========================================================
-                // Se han reescrito los bloques para usar el ID del producto
+                
                 if (i === 1) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Xime_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -231,7 +241,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Xime_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -240,7 +250,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Lucy_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Lucy_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -249,7 +259,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Lucy4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Lucy_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Lucy_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -258,7 +268,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Raul2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Raul_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Raul_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -267,7 +277,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Raul4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Raul_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Raul_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -276,7 +286,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Abi2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Abi_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Abi_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -285,7 +295,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Abi_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Abi_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -294,7 +304,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dani2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dani_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dani_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -303,7 +313,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dani4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dani_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dani_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -312,7 +322,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dali2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dali_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dali_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -321,7 +331,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dali4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dali_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Dali_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -330,7 +340,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Yose2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Yose_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Yose_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -339,7 +349,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Yose4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Yose_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Yose_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -348,7 +358,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Keila2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Keila_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Keila_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -357,7 +367,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Keila4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Keila_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Keila_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -366,7 +376,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Kenji2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Kenji_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Kenji_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -375,7 +385,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Kenji4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Kenji_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Kenji_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -384,7 +394,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Alli2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Alli_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Alli_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -393,7 +403,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Alli4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Alli_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Alli_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -402,7 +412,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Ale2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Ale_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Ale_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -411,7 +421,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Ale4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Ale_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Ale_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -420,7 +430,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Miri2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Miri_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Miri_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -429,7 +439,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Miri4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Miri_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Miri_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -438,7 +448,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Didi2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Didi_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Didi_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -447,7 +457,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Didi4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Didi_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Didi_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -456,7 +466,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Vale2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Vale_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Vale_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -465,7 +475,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Vale4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Vale_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Vale_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -474,7 +484,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Caro2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Caro_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Caro_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -483,7 +493,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Caro4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Caro_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Caro_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -492,7 +502,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Katy_Side1.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Katy_Side1.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -501,7 +511,7 @@
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/Katy_Side2.png'; // <--- TERCERA IMAGEN
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/Katy_Side2.png'; 
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; 
                     initialStockOverrides.L=1;
@@ -514,7 +524,6 @@
                 modelSizes.forEach(size => {
                     stock[size] = initialStockOverrides[size] !== undefined ? initialStockOverrides[size] : DEFAULT_STOCK_PER_SIZE;
                 });
-                // ==========================================================
                 // 2. Asignar al inventario global
                 productInventory[id] = stock;
                 // 3. Añadir a la lista de productos
@@ -526,7 +535,7 @@
                     img_main: mainImg,
                     img_front: frontImg,
                     img_back: backImg,
-                    img_side: sideImg // <--- PROPUESTA AGREGADA
+                    img_side: sideImg 
                 });
             }
         }
@@ -544,7 +553,6 @@
                 productInventory[id][size] = count;
                 updateProductBadge(id);
                 if (currentProductID === id && currentProductSize === size) {
-                    // Si la talla en el modal es afectada, actualiza el estado.
                     updateQuantityStatus();
                 }
             }
@@ -561,10 +569,9 @@
             const product = productData.find(p => p.id === id);
             if (!product) return;
 
-            let totalStock = 0;
-            productData.find(p => p.id === id).modelSizes.forEach(size => {
-                totalStock += getStock(id, size);
-            });
+            // Nota: Aquí se está asumiendo que product.modelSizes ya está definido o se usa la lista del inventario.
+            const sizes = Object.keys(productInventory[id] || {});
+            let totalStock = sizes.reduce((sum, size) => sum + getStock(id, size), 0);
 
             stockElement.textContent = totalStock > 0 ? `${totalStock} en stock` : 'Agotado';
             stockElement.className = 'stock-badge';
@@ -582,12 +589,6 @@
         function renderProductCards() {
             let html = '';
             productData.forEach(product => {
-                // Aquí necesitamos buscar las tallas del producto si las modificamos.
-                const productSizes = productInventory[product.id] ? Object.keys(productInventory[product.id]) : DEFAULT_GLOBAL_SIZES;
-                
-                // Actualizamos la data de tallas para que el badge funcione
-                product.modelSizes = productSizes;
-
                 html += `
                     <div class="col-lg-3 col-md-4 col-sm-6 d-flex">
                         <div class="card product-card flex-fill" data-product-id="${product.id}">
@@ -633,8 +634,7 @@
             const sizeOptions = document.getElementById('size-options');
             sizeOptions.innerHTML = '';
             
-            const product = productData.find(p => p.id === id);
-            if (!product) return;
+            if (!productInventory[id]) return;
 
             Object.keys(productInventory[id]).forEach(size => {
                 const stock = getStock(id, size);
@@ -682,12 +682,13 @@
                 statusElement.classList.remove('text-secondary');
                 statusElement.classList.add('text-danger');
                 quantityInput.max = stock;
-                quantityInput.value = stock; // Ajusta el valor si es demasiado alto
-                currentQuantity = stock;
+                if (currentQuantity > stock) quantityInput.value = stock; // Ajusta el valor si es demasiado alto
+                currentQuantity = parseInt(quantityInput.value);
             } else if (stock > 0) {
                 statusElement.textContent = `Stock disponible: ${stock}.`;
                 statusElement.classList.remove('text-danger');
                 statusElement.classList.add('text-secondary');
+                quantityInput.max = 10; // Máx. por pedido
             } else {
                 statusElement.textContent = `Agotado en talla ${currentProductSize}.`;
                 statusElement.classList.remove('text-secondary');
@@ -724,9 +725,11 @@
             
             document.getElementById('product-name').textContent = currentProductName;
             document.getElementById('product-description').textContent = button.getAttribute('data-description');
+            
+            // Carga de las tres imágenes
             document.getElementById('modal-img-front').src = button.getAttribute('data-img-front');
             document.getElementById('modal-img-back').src = button.getAttribute('data-img-back');
-            document.getElementById('modal-img-side').src = button.getAttribute('data-img-side'); // <--- CARGA DE TERCERA IMAGEN
+            document.getElementById('modal-img-side').src = button.getAttribute('data-img-side'); 
 
             // 2. Resetear la vista y generar botones
             resetModalView();
@@ -735,7 +738,7 @@
         });
 
         quantityInput.addEventListener('input', () => {
-            if (currentProductID && currentProductSize) {
+            if (currentProductID) {
                 updateQuantityStatus();
                 updatePriceDisplays();
             }
@@ -744,7 +747,7 @@
         halfPaymentCheck.addEventListener('change', updatePriceDisplays);
 
 
-        // --- 5. LÓGICA DE FLUJO DE COMPRA (Paso 1: Seleccionar, Paso 2: Datos, Paso 3: Confirmación) ---
+        // --- 5. LÓGICA DE FLUJO DE COMPRA ---
 
         modalMainButton.addEventListener('click', () => {
             if (modalMainButton.textContent === 'Pagar Ahora') {
@@ -761,7 +764,7 @@
                 document.getElementById('final-price-display').textContent = `$${paymentDue.toFixed(2)} MXN`;
                 
                 modalMainButton.textContent = 'Confirmar Pedido';
-                modalMainButton.disabled = false; // Habilitar para el siguiente paso
+                modalMainButton.disabled = false; 
 
             } else if (modalMainButton.textContent === 'Confirmar Pedido') {
                 // Paso 2: Validar datos y generar orden
@@ -784,7 +787,20 @@
 
         // --- 6. GESTIÓN DE ORDEN E INVENTARIO PERSISTENTE ---
         const PENDING_ORDERS = JSON.parse(localStorage.getItem('RPLAY_PENDING_ORDERS')) || [];
+        // NOTA: El inventario se inicializa en generateInitialInventory y se sobreescribe con el almacenado.
         const INVENTORY_STORAGE = JSON.parse(localStorage.getItem('RPLAY_INVENTORY')) || {};
+
+        // Función para cargar el inventario guardado después de la inicialización
+        function loadInventoryStorage() {
+             Object.keys(INVENTORY_STORAGE).forEach(productId => {
+                if (productInventory[productId]) {
+                    Object.keys(INVENTORY_STORAGE[productId]).forEach(size => {
+                        productInventory[productId][size] = INVENTORY_STORAGE[productId][size];
+                    });
+                }
+            });
+        }
+
 
         function generateOrder(name, phone, address) {
             const orderID = Date.now();
@@ -804,7 +820,7 @@
                 clientPhone: phone,
                 clientAddress: address,
                 timestamp: Date.now(),
-                expiration: Date.now() + (24 * 60 * 60 * 1000) // Expira en 24 horas
+                expiration: Date.now() + (24 * 60 * 60 * 1000) 
             };
 
             // 1. Descontar stock del inventario global
@@ -833,6 +849,7 @@
             // Botón de WhatsApp
             const message = `¡Hola! Acabo de generar un pedido de playeras RPLAY (#${order.id}).\n\n- Producto: ${order.productName}\n- Talla: ${order.size}\n- Cantidad: ${order.quantity}\n- Monto pagado/apartado: $${order.paymentDue.toFixed(2)} MXN.\n- Mi nombre es: ${order.clientName}\n- Mi dirección es: ${order.clientAddress}`;
             
+            // IMPORTANTE: REEMPLAZA EL NÚMERO GENÉRICO CON EL TUYO (ej: 5218123456789)
             const whatsappUrl = `https://api.whatsapp.com/send?phone=521XXXXXXXXXX&text=${encodeURIComponent(message)}`;
             document.getElementById('whatsapp-confirm-button').href = whatsappUrl;
             document.getElementById('whatsapp-confirm-button').style.display = 'block';
@@ -880,11 +897,14 @@
             });
         }
 
-        function releaseStock(orderId, productId, size, quantity) {
-            // 1. Devolver el stock
-            productInventory[productId][size] += quantity;
-            localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
-            updateProductBadge(productId);
+        window.releaseStock = (orderId, productId, size, quantity) => {
+             // 1. Devolver el stock
+            if (productInventory[productId] && productInventory[productId][size] !== undefined) {
+                productInventory[productId][size] += quantity;
+                localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
+                updateProductBadge(productId);
+            }
+           
 
             // 2. Remover la orden
             const index = PENDING_ORDERS.findIndex(order => order.id === orderId);
@@ -894,7 +914,19 @@
             }
             // 3. Re-renderizar
             renderOrdersList();
-            renderProductCards(); // Opcional, solo para asegurar que los badges se actualicen
+            renderProductCards(); 
+        }
+
+        window.resetAllStock = () => {
+            if (confirm("ADVERTENCIA: ¿Estás seguro de que quieres REINICIAR TODO EL INVENTARIO A SU ESTADO INICIAL? Esto borra el stock y todas las órdenes pendientes.")) {
+                localStorage.removeItem('RPLAY_INVENTORY');
+                localStorage.removeItem('RPLAY_PENDING_ORDERS');
+                window.location.reload();
+            }
+        }
+
+        window.setStock = (id, size, count) => {
+            setStock(id, size, count);
         }
 
         function resetModalView() {
@@ -920,21 +952,17 @@
             document.getElementById('modal-close-button').textContent = 'Cerrar';
 
             // Reiniciar carrusel a la primera imagen
-            const carousel = new bootstrap.Carousel(document.getElementById('productCarousel'));
-            carousel.to(0);
-        }
-
-        function resetAllStock() {
-            if (confirm("ADVERTENCIA: ¿Estás seguro de que quieres REINICIAR TODO EL INVENTARIO A SU ESTADO INICIAL? Esto borra el stock y todas las órdenes pendientes.")) {
-                localStorage.removeItem('RPLAY_INVENTORY');
-                localStorage.removeItem('RPLAY_PENDING_ORDERS');
-                window.location.reload();
+            const carouselElement = document.getElementById('productCarousel');
+            if (carouselElement) {
+                const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement);
+                carousel.to(0);
             }
         }
         
         // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
             generateInitialInventory();
+            loadInventoryStorage(); // Carga stock guardado
             renderOrdersList();
             renderProductCards();
         });
@@ -942,5 +970,3 @@
     </script>
 </body>
 </html>
-
-
