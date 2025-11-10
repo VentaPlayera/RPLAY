@@ -90,21 +90,37 @@
         }
         
         /* --- ESTILOS CORREGIDOS PARA EL CARRUSEL EN EL MODAL --- */
-        #productCarousel .carousel-inner {
-            height: 450px; /* Aumenta ligeramente la altura para mejor visualización */
+        #productCarousel {
+            max-width: 100%; /* Asegura que no desborde */
+            margin: auto; /* Centra el carrusel */
+            background-color: #fff; /* Fondo blanco para las imágenes */
             border-radius: 10px;
-            overflow: hidden;
-            background-color: #fff;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        #productCarousel .carousel-item {
-            height: 100%;
+
+        #productCarousel .carousel-inner {
+            height: 450px; /* Altura fija para el área del carrusel */
+            display: flex; /* Flexbox para centrar contenido */
+            align-items: center; /* Centrado vertical */
+            justify-content: center; /* Centrado horizontal */
+            overflow: hidden; /* Oculta cualquier desborde */
+            border-radius: 10px;
         }
+
+        #productCarousel .carousel-item {
+            height: 100%; /* El item debe ocupar toda la altura del inner */
+            display: flex; /* También flexbox para su contenido */
+            align-items: center; /* Centra verticalmente la imagen dentro del item */
+            justify-content: center; /* Centra horizontalmente la imagen dentro del item */
+        }
+
         #productCarousel .carousel-item img {
-            height: 100%;
-            width: 100%;
-            /* CLAVE DE CORRECCIÓN: Usar 'contain' asegura que la imagen se vea completa. */
-            object-fit: contain; 
+            max-width: 100%; /* Asegura que la imagen no desborde horizontalmente */
+            max-height: 100%; /* Asegura que la imagen no desborde verticalmente */
+            object-fit: contain; /* CLAVE: Escala la imagen para que quepa completamente */
+            width: auto; /* Permite que el ancho se ajuste proporcionalmente */
+            height: auto; /* Permite que la altura se ajuste proporcionalmente */
+            display: block; /* Elimina espacios extra debajo de la imagen */
         }
         #productCarousel .carousel-indicators button {
             background-color: var(--primary-color);
