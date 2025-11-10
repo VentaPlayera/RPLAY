@@ -141,32 +141,40 @@
             opacity: 0.6;
         }
 
-        /* --- ESTILOS DE CARRUSEL (Aseguramos la estabilidad) --- */
-        #productCarousel .carousel-inner {
-            height: 400px; /* Un poco más alto para mejor vista */
-            background-color: #fff;
+        /* --- ESTILOS DE CARRUSEL (CORRECCIÓN V3: ESTABLE Y ROBUSTA) --- */
+        #productCarousel {
+            height: 400px; /* Altura fija para el carrusel completo */
+            overflow: hidden; /* Asegura que nada se salga */
             border-radius: 10px;
+            background-color: #fff;
             border: 1px solid #eee;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            overflow: hidden; 
         }
+
+        #productCarousel .carousel-inner {
+            height: 100%; /* Ocupa el 100% del contenedor fijo */
+            background-color: transparent;
+        }
+        
         #productCarousel .carousel-item {
-            display: flex; 
+            height: 100%; /* Ocupa el 100% del inner */
+            display: flex; /* Usamos flexbox para centrar contenido */
             align-items: center; 
             justify-content: center; 
-            height: 100%; 
-            width: 100%;
         }
+
+        /* La CLAVE: La imagen debe ajustarse perfectamente al contenedor sin salirse */
         #productCarousel .carousel-item img {
-            max-height: 100%; 
             max-width: 100%;  
-            object-fit: contain;
-            padding: 0 !important; 
+            max-height: 100%;     
+            width: auto;
+            height: auto;
+            object-fit: contain; /* CLAVE: Escala la imagen completa dentro del área */
+            padding: 5px !important; /* Asegura un pequeño margen, si es necesario */
+            display: block;
         }
-        .modal-header {
-            border-bottom: 3px solid var(--primary-color);
+        /* Ocultar captions/alt text si se genera por error */
+        #productCarousel .carousel-caption {
+            display: none !important;
         }
     </style>
 </head>
@@ -1046,3 +1054,4 @@
     </script>
 </body>
 </html>
+
