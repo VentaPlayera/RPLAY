@@ -308,7 +308,7 @@
             let initialStockOverrides = {};
             
             // Imágenes de placeholder para los modelos sin imagen explícita
-            mainImg = 'https://via.placeholder.com/250x250/F8F8F8?text=Modelo+' + i;
+            mainImg = 'https://via.placeholder.com/250x250/F8F8F8?text=Frente+' + i;
             frontImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Frente+' + i;
             backImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Espalda+' + i;
             sizeGuideImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Medidas+' + i; 
@@ -319,16 +319,16 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
-                 
-                modelSizes = ['S', 'M', 'L']; 
-                initialStockOverrides.S = 2; 
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
+                modelSizes = ['M', 'L', 'XL']; 
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L = 1; 
+                initialStockOverrides.XL = 1; 
             } else if (i === 2 ) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
-                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -337,7 +337,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png';
-                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -346,7 +346,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Lucy4.png';
-                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -1019,6 +1019,7 @@
     </script>
 </body>
 </html>
+
 
 
 
