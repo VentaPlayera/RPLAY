@@ -59,7 +59,7 @@
         </div>
         <h1 class="text-center mb-5" style="color: #ff3366;">RPLAY</h1>
         
-        <div class="container mb-5" id="manualManagementPanel">
+        <div class="container mb-5" id="manualManagementPanel" style="display:none;">
             <h3 class="text-danger mb-3">Administración de Pedidos Apartados</h3>
             <p class="text-muted small">Haz clic en "Liberar Stock" si el cliente no confirmó el pago (gestión manual de las 24 horas).</p>
             <div id="ordersList" class="p-3 border rounded bg-white">
@@ -547,6 +547,7 @@
         let currentPrice = 0;
         let currentProductName = '';
         
+        // La función setStock se mantiene para uso en consola si es necesario, aunque el panel esté oculto
         function setStock(id, size, count) {
             if (productInventory[id] && productInventory[id][size] !== undefined) {
                 productInventory[id][size] = count;
@@ -568,12 +569,11 @@
             const sizes = Object.keys(productInventory[id] || {});
             let totalStock = sizes.reduce((sum, size) => sum + getStock(id, size), 0);
 
-            stockElement.textContent = totalStock > 0 ? `${totalStock} en stock` : 'Agotado';
+            // CAMBIO AQUÍ: "preventa" en lugar de "en stock"
+            stockElement.textContent = totalStock > 0 ? `preventa` : 'Agotado'; // Solo dice "preventa" si hay stock
             stockElement.className = 'stock-badge';
-            if (totalStock > 3) {
-                stockElement.classList.add('in-stock');
-            } else if (totalStock > 0) {
-                stockElement.classList.add('low-stock');
+            if (totalStock > 0) { // Cualquier stock > 0 se considera "preventa"
+                stockElement.classList.add('in-stock'); // Se mantiene el color verde para "preventa"
             } else {
                 stockElement.classList.add('out-stock');
             }
@@ -681,7 +681,7 @@
                 if (currentQuantity > stock) quantityInput.value = stock; 
                 currentQuantity = parseInt(quantityInput.value);
             } else if (stock > 0) {
-                statusElement.textContent = `Stock disponible: ${stock}.`;
+                statusElement.textContent = `Disponible para preventa: ${stock}.`; // CAMBIO AQUÍ
                 statusElement.classList.remove('text-danger');
                 statusElement.classList.add('text-secondary');
                 quantityInput.max = 10; 
@@ -732,7 +732,7 @@
             createSizeButtons(currentProductID);
             updatePriceDisplays();
 
-            // *** MENSAJE DE DEPURACIÓN CRÍTICO (Ver en Consola F12) ***
+            // Mensaje de depuración de imágenes (mantengo por si hay problemas de carga de URLs)
             console.log("--- DEBUG DE IMAGEN ---");
             console.log("URL Frente:", button.getAttribute('data-img-front'));
             console.log("URL Espalda:", button.getAttribute('data-img-back'));
@@ -857,15 +857,18 @@
             modalMainButton.style.display = 'none';
             document.getElementById('modal-close-button').textContent = 'Listo';
 
-            // Actualizar panel de administración
+            // Actualizar panel de administración (Aunque el panel esté oculto, esta función puede usarse si se decide mostrarlo en el futuro)
             renderOrdersList();
         }
 
         // --- 7. FUNCIONES DE UTILIDAD Y ADMINISTRACIÓN ---
 
+        // Esta función se mantiene, pero solo se llama si el panel de administración fuera visible.
         function renderOrdersList() {
             const list = document.getElementById('ordersList');
             const noOrdersMessage = document.getElementById('noOrdersMessage');
+            if (!list || !noOrdersMessage) return; // Asegura que los elementos existan si el panel se oculta completamente
+
             list.innerHTML = '';
             
             if (PENDING_ORDERS.length === 0) {
@@ -898,6 +901,8 @@
             });
         }
 
+        // Estas funciones se mantienen como "window.fucntionName" para que puedan ser ejecutadas desde la consola del navegador (F12)
+        // si un administrador necesita interactuar con ellas manualmente, a pesar de que el panel visual esté oculto.
         window.releaseStock = (orderId, productId, size, quantity) => {
              // 1. Devolver el stock
             if (productInventory[productId] && productInventory[productId][size] !== undefined) {
@@ -906,15 +911,14 @@
                 updateProductBadge(productId);
             }
            
-
             // 2. Remover la orden
             const index = PENDING_ORDERS.findIndex(order => order.id === orderId);
             if (index > -1) {
                 PENDING_ORDERS.splice(index, 1);
                 localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
             }
-            // 3. Re-renderizar
-            renderOrdersList();
+            // 3. Re-renderizar (esto afectaría al panel si estuviera visible)
+            renderOrdersList(); 
             renderProductCards(); 
         }
 
@@ -964,7 +968,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             generateInitialInventory();
             loadInventoryStorage();
-            renderOrdersList();
+            // No llamamos a renderOrdersList() aquí si el panel está oculto por defecto,
+            // solo se llamaría si el panel se hace visible dinámicamente o si es estrictamente necesario para la lógica interna.
             renderProductCards();
         });
 
