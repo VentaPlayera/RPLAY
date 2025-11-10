@@ -40,12 +40,13 @@
         .stock-badge.low-stock { background-color: orange; }
         .stock-badge.out-stock { background-color: red; }
 
-        /* --- CORRECCIÓN DE VISUALIZACIÓN DE IMAGEN EN EL MODAL --- */
+        /* --- CORRECCIÓN REFORZADA: IMAGEN DEL MODAL --- */
         .modal-image {
             object-fit: contain; /* Asegura que la imagen se ajuste sin cortar */
             height: 450px;       /* Altura fija para el contenedor del carrusel */
-            width: 100%;
-            display: block;
+            width: 100%;         /* Ocupa todo el ancho */
+            display: block;      /* Comportamiento de bloque */
+            background-color: #f0f0f0; /* Fondo para que se vea si falla la carga */
         }
     </style>
 </head>
@@ -97,13 +98,13 @@
 
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <img id="modal-img-front" src="" class="d-block w-100 modal-image" alt="Delantera de la Playera">
+                                        <img id="modal-img-front" src="" class="modal-image" alt="Delantera de la Playera">
                                     </div>
                                     <div class="carousel-item">
-                                        <img id="modal-img-back" src="" class="d-block w-100 modal-image" alt="Espalda de la Playera">
+                                        <img id="modal-img-back" src="" class="modal-image" alt="Espalda de la Playera">
                                     </div>
                                     <div class="carousel-item">
-                                        <img id="modal-img-side" src="" class="d-block w-100 modal-image" alt="Vista Lateral de la Playera">
+                                        <img id="modal-img-side" src="" class="modal-image" alt="Vista Lateral de la Playera">
                                     </div>
                                 </div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
@@ -213,12 +214,11 @@
         function generateInitialInventory() {
             for (let i = 1; i <= 70; i++) {
                 const id = `PROD_${String(i).padStart(3, '0')}`;
-                let mainImg, frontImg, backImg;
-                let sideImg; 
+                let mainImg, frontImg, backImg, sideImg; 
                 let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
                 let initialStockOverrides = {}; 
                 
-                // Imágenes por defecto (si no hay una específica)
+                // Imágenes por defecto
                 mainImg = `https://via.placeholder.com/250x250/F4E3F5?text=Modelo+${i}`;
                 frontImg = `https://via.placeholder.com/500x500/F4E3F5?text=Frente+${i}`;
                 backImg = `https://via.placeholder.com/500x500/F4E3F5?text=Espalda+${i}`;
@@ -517,7 +517,6 @@
                     initialStockOverrides.L=1;
                     initialStockOverrides.XL=1;
                 } 
-                // Para los modelos 33 al 70 se usarán las imágenes por defecto
                 
                 // 1. Crear el objeto de stock para este producto
                 const stock = {};
@@ -566,10 +565,6 @@
             const stockElement = document.getElementById(`badge-${id}`);
             if (!stockElement) return;
 
-            const product = productData.find(p => p.id === id);
-            if (!product) return;
-
-            // Nota: Aquí se está asumiendo que product.modelSizes ya está definido o se usa la lista del inventario.
             const sizes = Object.keys(productInventory[id] || {});
             let totalStock = sizes.reduce((sum, size) => sum + getStock(id, size), 0);
 
@@ -609,7 +604,8 @@
                                         data-description="${product.description}"
                                         data-img-front="${product.img_front}" 
                                         data-img-back="${product.img_back}"
-                                        data-img-side="${product.img_side}"> Ver Detalle y Comprar
+                                        data-img-side="${product.img_side}">
+                                        Ver Detalle y Comprar
                                     </button>
                                 </div>
                             </div>
@@ -618,7 +614,7 @@
                 `;
             });
             PRODUCT_LIST_CONTAINER.innerHTML = html;
-            productData.forEach(product => updateProductBadge(product.id)); // Inicializar badges
+            productData.forEach(product => updateProductBadge(product.id)); 
         }
 
 
@@ -682,13 +678,13 @@
                 statusElement.classList.remove('text-secondary');
                 statusElement.classList.add('text-danger');
                 quantityInput.max = stock;
-                if (currentQuantity > stock) quantityInput.value = stock; // Ajusta el valor si es demasiado alto
+                if (currentQuantity > stock) quantityInput.value = stock; 
                 currentQuantity = parseInt(quantityInput.value);
             } else if (stock > 0) {
                 statusElement.textContent = `Stock disponible: ${stock}.`;
                 statusElement.classList.remove('text-danger');
                 statusElement.classList.add('text-secondary');
-                quantityInput.max = 10; // Máx. por pedido
+                quantityInput.max = 10; 
             } else {
                 statusElement.textContent = `Agotado en talla ${currentProductSize}.`;
                 statusElement.classList.remove('text-secondary');
@@ -735,6 +731,13 @@
             resetModalView();
             createSizeButtons(currentProductID);
             updatePriceDisplays();
+
+            // *** MENSAJE DE DEPURACIÓN CRÍTICO (Ver en Consola F12) ***
+            console.log("--- DEBUG DE IMAGEN ---");
+            console.log("URL Frente:", button.getAttribute('data-img-front'));
+            console.log("URL Espalda:", button.getAttribute('data-img-back'));
+            console.log("URL Lateral:", button.getAttribute('data-img-side'));
+            console.log("-----------------------");
         });
 
         quantityInput.addEventListener('input', () => {
@@ -787,10 +790,8 @@
 
         // --- 6. GESTIÓN DE ORDEN E INVENTARIO PERSISTENTE ---
         const PENDING_ORDERS = JSON.parse(localStorage.getItem('RPLAY_PENDING_ORDERS')) || [];
-        // NOTA: El inventario se inicializa en generateInitialInventory y se sobreescribe con el almacenado.
         const INVENTORY_STORAGE = JSON.parse(localStorage.getItem('RPLAY_INVENTORY')) || {};
 
-        // Función para cargar el inventario guardado después de la inicialización
         function loadInventoryStorage() {
              Object.keys(INVENTORY_STORAGE).forEach(productId => {
                 if (productInventory[productId]) {
@@ -962,7 +963,7 @@
         // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
             generateInitialInventory();
-            loadInventoryStorage(); // Carga stock guardado
+            loadInventoryStorage();
             renderOrdersList();
             renderProductCards();
         });
