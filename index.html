@@ -146,37 +146,150 @@
 </head>
 <body>
 
-  <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-    
-    <div class="carousel-indicators">
-        <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1 (Frente)"></button>
-        <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2 (Reverso)"></button>
-        <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3 (Tallas)"></button> 
+  <div class="container">
+        <img src="https://ventaplayera.github.io/RPLAY/RPLAY.png" alt="RPLAY Logo" class="logo-img img-fluid mx-auto d-block">
+        <h1>RPLAY - Preventa Exclusiva</h1>
+        
+        <div id="manualManagementPanel" class="p-3 mb-4 rounded" style="display: none; background-color: #fff3cd; border: 1px solid #ffeeba;">
+            <h4 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Panel de Administración - INVENTARIO</h4>
+            <div id="ordersList" class="my-3">
+                </div>
+            <button class="btn btn-sm btn-danger w-100 mt-2" onclick="resetAllStock()">
+                <i class="fas fa-trash-restore-alt"></i> Borrar TODAS las Reservas y Restaurar Inventario
+            </button>
+        </div>
+        
+        <div id="product-list" class="row">
+            </div>
     </div>
 
-    <div class="carousel-inner">
-        <div class="carousel-item active">
-            <img id="modal-img-front" class="d-block w-100" alt="Vista Frontal de la Playera">
-        </div>
-        
-        <div class="carousel-item">
-            <img id="modal-img-back" class="d-block w-100" alt="Vista Trasera de la Playera">
-        </div>
-        
-        <div class="carousel-item">
-            <img id="modal-img-size-guide" class="d-block w-100" alt="Guía de Tallas del Producto">
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Apartado: <span id="modal-product-name" class="text-primary"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div id="selection-step">
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <div id="productCarousel" class="carousel slide" data-bs-interval="false">
+                                    <div class="carousel-inner" id="carousel-inner-content">
+                                        </div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                </div>
+                                <p class="text-muted small mt-2" id="modal-product-description"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="mb-3">1. Selecciona tu talla:</h4>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Talla:</label>
+                                    <div id="size-options" class="size-options">
+                                        </div>
+                                    <small class="text-success" id="size-status">Selecciona una talla para ver la disponibilidad.</small>
+                                </div>
+                                
+                                <div class="mb-3" style="display:none;">
+                                    <label for="quantityInput" class="form-label fw-bold">Cantidad:</label>
+                                    <input type="number" id="quantityInput" class="form-control" value="1" min="1" max="1" disabled>
+                                    <small class="text-muted" id="quantity-status">Solo puedes pedir 1 unidad por talla.</small>
+                                </div>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <h5 class="mb-0">Precio Unitario: <span id="modal-unit-price" class="fw-bold">$0.00 MXN</span></h5>
+                                </div>
+
+                                <div id="payment-detail-box" class="mt-4">
+                                    <h4 class="mb-3">2. Elige tu Opción de Pago:</h4>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck" checked> 
+                                        <label class="form-check-label fw-bold" for="halfPaymentCheck">
+                                            Pago Parcial (Apartado): <span class="text-muted small">(Paga la mitad ahora, el resto a la entrega)</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="card bg-light p-3 mb-3">
+                                        <h5>Detalle del Pago</h5>
+                                        <p class="mb-1">Total de la Compra: <span class="float-end fw-bold" id="total-price">$0.00 MXN</span></p>
+                                        <hr class="my-2">
+                                        <p class="mb-0 text-success">Monto a Pagar Ahora: <span class="float-end fw-bold fs-5" id="payment-due">$0.00 MXN</span></p>
+                                    </div>
+                                </div>
+                                <p class="text-danger mt-3" style="display:none;" id="selection-error">
+                                    <i class="fas fa-exclamation-circle"></i> Por favor, selecciona una talla antes de continuar.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="payment-step" style="display:none;">
+                        <h4>3. Datos del Comprador y Envío:</h4>
+                        
+                        <div id="payment-step-info-box" class="alert alert-info">
+                            </div>
+                        
+                        <form id="client-data-form">
+                            <div class="mb-3">
+                                <label for="clientName" class="form-label">Nombre Completo (*):</label>
+                                <input type="text" class="form-control" id="clientName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="clientPhone" class="form-label">Teléfono/WhatsApp (*):</label>
+                                <input type="tel" class="form-control" id="clientPhone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="clientAddress" class="form-label">Dirección de Envío Completa (*):</label>
+                                <textarea class="form-control" id="clientAddress" rows="3" required></textarea>
+                            </div>
+                            
+                            <p class="text-danger mt-3" style="display:none;" id="payment-error">
+                                <i class="fas fa-exclamation-circle"></i> Por favor, completa todos los campos marcados con (*) para continuar.
+                            </p>
+                        </form>
+                    </div>
+
+                    <div id="transfer-info" style="display:none;">
+                        <h4>4. Realiza tu pago o depósito:</h4>
+                        <div class="alert alert-success">
+                            <p class="mb-1"><strong>¡Pedido Pre-Aprobado!</strong> Tienes **24 horas** para realizar tu depósito y enviar tu comprobante. **Tu playera queda apartada al enviar el comprobante por WhatsApp.**</p>
+                        </div>
+                        
+                        <div class="card border-primary p-3">
+                            <h5 class="text-primary"><i class="fas fa-university"></i> Datos de Depósito/Transferencia</h5>
+                            <p class="mb-1">Banco: **BBVA**</p>
+                            <p class="mb-1">Cuenta: **0123 4567 89**</p>
+                            <p class="mb-1">CLABE: **0123 4567 8901 2345 67**</p>
+                            <p class="mb-0 text-primary">Beneficiario: **RPLAY S.A. de C.V.**</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" id="modal-close-button" data-bs-dismiss="modal">Cerrar</button>
+                    
+                    <button type="button" class="btn btn-primary" id="modal-main-button" disabled>
+                        Continuar
+                    </button>
+
+                    <a id="whatsapp-confirm-button" class="btn btn-success" target="_blank" style="display:none;">
+                        <i class="fab fa-whatsapp"></i> Enviar Comprobante por WhatsApp
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
-    </button>
-</div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         
@@ -906,6 +1019,7 @@
     </script>
 </body>
 </html>
+
 
 
 
