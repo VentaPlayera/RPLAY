@@ -223,10 +223,13 @@
             let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
             let initialStockOverrides = {}; // Stock específico para este modelo/talla
             
-          
-            // ==========================================================
-            // INICIO DE ASIGNACIÓN DE RUTAS DE IMAGEN ÚNICAS
-            // ==========================================================
+          // -------------------------------------------------------------
+            // [AÑADE AQUÍ LA INICIALIZACIÓN DE sideImg y tus bloques IF/ELSE IF]
+            // Ejemplo de inicialización por defecto (opcional, pero recomendado):
+            mainImg = 'https://via.placeholder.com/250x250/F4E3F5?text=Modelo+' + i; // Si no hay imagen
+            frontImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Frente+' + i;
+            backImg = 'https://via.placeholder.com/500x500/F4E3F5?text=Espalda+' + i;
+            sideImg = 'https://via.placeholder.com/500x500/E3F5F4?text=Lateral+' + i;
             // Se han reescrito los bloques para usar el ID del producto
             if (i === 1) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
@@ -979,6 +982,7 @@
     </script>
 </body>
 </html>
+
 
 
 
