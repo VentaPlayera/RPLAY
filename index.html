@@ -3,116 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPLAY - Catálogo de Preventa Exclusiva</title>
+    <title>RPLAY - Preventa Exclusiva Dynamic Edition</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* --- Estilos Generales --- */
+        /* --- ESTILOS MEJORADOS Y DINÁMICOS --- */
+        :root {
+            --primary-color: #d63384; /* Rosa fuerte */
+            --secondary-color: #343a40; /* Negro/Gris oscuro */
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+
         body {
             background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
         }
         .container {
             margin-top: 20px;
         }
         .logo-img {
-            display: block;
-            margin: 0 auto 20px auto;
-            max-width: 200px;
+            max-width: 200px; 
             height: auto;
             cursor: pointer; 
+            margin-bottom: 30px !important;
+            transition: transform var(--transition-speed);
+        }
+        .logo-img:hover {
+            transform: scale(1.05); /* Efecto en el logo */
         }
         h1 {
-            color: #d63384;
-            font-size: 2.5rem; 
-            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 2.8rem; 
+            font-weight: 900;
             text-align: center;
-            margin-bottom: 30px; 
+            margin-bottom: 40px; 
+            letter-spacing: 1px;
         }
+        
+        /* --- TARJETA DE PRODUCTO (DINÁMICA) --- */
         .product-card {
-            border: 1px solid #dee2e6;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            border: none;
+            box-shadow: var(--card-shadow);
+            transition: all var(--transition-speed) ease-in-out;
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             overflow: hidden;
-            border-radius: 10px;
+            border-radius: 15px;
+            background: white;
         }
+
+        /* EFECTO HOVER: Se eleva y la sombra se intensifica */
         .product-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
+
         .product-card img {
-            height: 250px;
+            height: 300px; /* Un poco más grandes */
             width: 100%;
             object-fit: contain; 
-            background-color: white;
-            padding: 10px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            transition: opacity var(--transition-speed);
         }
+        
+        /* Efecto de desvanecimiento suave al hacer hover */
+        .product-card:hover img {
+            opacity: 0.9; 
+        }
+
+        .product-card .card-body {
+            padding: 20px;
+        }
+
         .price {
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            color: #d63384; 
+            color: var(--primary-color); 
         }
         .btn-buy {
-            background-color: #d63384;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             width: 100%;
+            border-radius: 8px;
+            padding: 10px;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
         }
         .btn-buy:hover {
             background-color: #b82b71;
+            transform: scale(1.02); /* Pequeña animación al hacer clic */
             color: white;
         }
 
         /* --- Estilos de Stock (Badges) --- */
         .stock-badge {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 15px;
+            left: 15px;
             padding: 5px 10px;
             border-radius: 5px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            z-index: 10;
+            font-size: 0.85rem;
+            background-color: var(--secondary-color);
             color: white;
-            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10;
         }
         .stock-badge.agotado {
-            background-color: #dc3545; /* Rojo */
+            background-color: #dc3545; 
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Animación para AGOTADO */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         /* --- Estilos del Modal --- */
         .size-options .size-btn {
-            display: inline-block;
-            padding: 8px 15px;
+            padding: 10px 20px;
             margin: 5px;
             border: 2px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: bold;
+            border-radius: 50px; /* Botones más redondeados */
+            font-weight: 600;
         }
         .size-options .size-btn.selected {
-            background-color: #d63384;
+            background-color: var(--primary-color);
             color: white;
-            border-color: #d63384;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(214, 51, 132, 0.5);
         }
         .size-options .size-btn.disabled {
-            background-color: #f1f1f1;
-            color: #999;
-            border-color: #eee;
-            cursor: not-allowed;
-            text-decoration: line-through;
+            filter: grayscale(100%);
+            opacity: 0.6;
         }
 
-        /* --- ESTILOS DE CARRUSEL (CORREGIDOS Y SIMPLIFICADOS) --- */
+        /* --- ESTILOS DE CARRUSEL (Aseguramos la estabilidad) --- */
         #productCarousel .carousel-inner {
-            height: 350px; /* Altura fija */
-            background-color: white;
-            border-radius: 8px;
+            height: 400px; /* Un poco más alto para mejor vista */
+            background-color: #fff;
+            border-radius: 10px;
             border: 1px solid #eee;
-            /* Usa Flexbox para centrar items */
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -122,39 +156,25 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 100%; /* Ocupa el 100% del alto del inner */
+            height: 100%; 
             width: 100%;
-            text-align: center; 
         }
-        /* La imagen dentro del item se ajusta al contenedor */
         #productCarousel .carousel-item img {
             max-height: 100%; 
             max-width: 100%;  
-            width: auto;      
-            height: auto;     
-            object-fit: contain; /* CLAVE: Escala sin cortar y muestra la imagen completa */
-            border-radius: 8px;
-            /* Asegurar la anulación de rellenos extra */
+            object-fit: contain;
             padding: 0 !important; 
         }
-        /* Ocultar captions por si acaso */
-        #productCarousel .carousel-caption {
-            display: none; 
-        }
-
-        #productCarousel .carousel-control-prev-icon,
-        #productCarousel .carousel-control-next-icon {
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            padding: 10px;
+        .modal-header {
+            border-bottom: 3px solid var(--primary-color);
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <img src="https://ventaplayera.github.io/RPLAY/RPLAY.png" alt="RPLAY Logo" class="logo-img">
-        <h1>RPLAY - Catálogo de Preventa</h1>
+        <img src="https://ventaplayera.github.io/RPLAY/RPLAY.png" alt="RPLAY Logo" class="logo-img img-fluid mx-auto d-block">
+        <h1>RPLAY - Preventa Exclusiva</h1>
         
         <div id="manualManagementPanel" class="p-3 mb-4 rounded" style="display: none; background-color: #fff3cd; border: 1px solid #ffeeba;">
             <h4 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Panel de Administración - INVENTARIO</h4>
@@ -173,7 +193,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="paymentModalLabel">Comprar: <span id="modal-product-name" class="text-primary"></span></h5>
+                    <h5 class="modal-title" id="paymentModalLabel">Apartado: <span id="modal-product-name" class="text-primary"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -302,9 +322,9 @@
         // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (70 Productos) ---
         const productInventory = {};
         const productData = [];
-        const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; // Añadir S por defecto
+        const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; 
         const FIXED_PRICE = 250.00; 
-        const DEFAULT_STOCK_PER_SIZE = 1; // 1 para preventa (cada unidad se aparta)
+        const DEFAULT_STOCK_PER_SIZE = 1; 
         const WHATSAPP_PHONE = "529991480151"; 
         const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; // Hash para 'admin123'
         
@@ -321,7 +341,7 @@
             sizeGuideImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Medidas+' + i; 
             
             // --- Lógica para configurar tallas y stock por modelo (Los primeros 30 modelos con imágenes y stock) ---
-            // *Manteniendo la estructura de imágenes original*
+            // *Mantenemos la lógica de imágenes para la prueba*
             if (i === 1) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
@@ -594,7 +614,6 @@
                 initialStockOverrides.XL=1;
             }
             
-            // Lógica para asignar stock inicial (combina overrides y defecto)
             const stock = {};
             modelSizes.forEach(size => {
                 stock[size] = initialStockOverrides[size] !== undefined ? initialStockOverrides[size] : DEFAULT_STOCK_PER_SIZE;
@@ -604,7 +623,7 @@
                 id: id,
                 name: `Playera Modelo No. ${i}`,
                 price: FIXED_PRICE.toFixed(2), 
-                description: `Diseño exclusivo #${i} con estampado digital de alta calidad. Tela de algodón 100% de la mejor calidad.`,
+                description: `Diseño exclusivo #${i} con estampado digital de alta calidad. ¡Asegura tu talla en la preventa!`,
                 img_main: mainImg,
                 img_front: frontImg,
                 img_back: backImg,
@@ -645,7 +664,7 @@
             let currentSelectedSize = null;
             let currentProductName = '';
             let currentProductID = ''; 
-            let modalStep = 1; // 1: Selección/Pago, 2: Datos, 3: Confirmación/Transferencia
+            let modalStep = 1; 
             
             // --- Funciones de Lógica de Inventario y Pedidos ---
             
@@ -658,7 +677,6 @@
             
             function reserveStock() {
                 const orderKey = `${currentProductID}-${currentSelectedSize}`;
-                // Reservar 1 unidad
                 localOrders[orderKey] = (localOrders[orderKey] || 0) + 1; 
                 saveLocalOrders();
                 renderProductCards(); 
@@ -694,12 +712,12 @@
                     totalAvailable += getAvailableStock(productID, size);
                 });
 
-                badgeElement.className = 'stock-badge';
+                badgeElement.className = 'stock-badge position-absolute';
                 if (totalAvailable <= 0) {
                     badgeElement.classList.add('agotado');
                     badgeElement.textContent = 'AGOTADO';
                 } else {
-                    badgeElement.textContent = ''; // No mostrar nada si hay stock
+                    badgeElement.textContent = 'PREVENTA'; // Mostrar un texto más genérico y optimista
                 }
             }
             function initializeBadges() { productData.forEach(p => updateProductBadge(p.id)); }
@@ -711,13 +729,13 @@
                     col.className = 'col-6 col-md-4 col-lg-3'; 
                     col.innerHTML = `
                         <div class="card product-card" data-product-id="${product.id}">
-                            <span class="stock-badge" id="badge-${product.id}"></span>
+                            <span class="stock-badge position-absolute" id="badge-${product.id}"></span>
                             <img src="${product.img_main}" class="card-img-top" alt="${product.name}">
                             <div class="card-body text-center">
                                 <h5 class="card-title mb-1">${product.name}</h5>
                                 <p class="price mb-2">$${product.price} MXN</p>
                                 <button type="button" class="btn btn-buy" data-bs-toggle="modal" data-bs-target="#paymentModal" data-product-id="${product.id}">
-                                    Ver Detalle y Comprar
+                                    <i class="fas fa-shopping-bag"></i> Apartar Ahora
                                 </button>
                             </div>
                         </div>
@@ -727,7 +745,7 @@
                 initializeBadges();
             }
             
-            // FUNCIÓN DEL CARRUSEL: CORRECCIÓN DE ALT
+            // FUNCIÓN DEL CARRUSEL: CORRECCIÓN DE ALT (Mantenemos la solución estable)
             function updateProductCarousel(product) {
                 carouselInnerContent.innerHTML = ''; 
 
@@ -744,8 +762,6 @@
                     if (index === 0) { 
                         carouselItem.classList.add('active');
                     }
-                    // *** CAMBIO CLAVE: Inyección de la imagen SIN el atributo alt ***
-                    // Esto resuelve la superposición del texto "Guía de tallas..."
                     carouselItem.innerHTML = `<img src="${img.src}" class="w-100">`; 
                     carouselInnerContent.appendChild(carouselItem);
                 });
@@ -797,7 +813,6 @@
                     sizeOptionsContainer.appendChild(button);
                 });
                 
-                // Selecciona automáticamente la primera talla disponible si existe
                 if (firstAvailableSize) {
                     handleSizeSelection(firstAvailableSize, productID);
                 }
@@ -821,13 +836,12 @@
                      sizeStatusEl.textContent = `Talla ${size} agotada. Selecciona otra.`;
                 }
                 
-                // Cantidad fija en 1 para preventa
                 quantityInput.max = 1;
                 quantityInput.value = 1;
                 quantityInput.disabled = true; 
 
                 updatePaymentAmounts();
-                mainButton.disabled = stock <= 0; // Deshabilita si no hay stock
+                mainButton.disabled = stock <= 0; 
             }
 
             function updatePaymentAmounts() {
@@ -909,7 +923,7 @@
                     if (!currentSelectedSize || getAvailableStock(currentProductID, currentSelectedSize) < 1) {
                         document.getElementById('selection-error').style.display = 'block';
                         document.getElementById('selection-error').textContent = 'Por favor, selecciona una talla disponible.';
-                        createSizeButtons(currentProductID); // Refresca tallas por si el stock cambió
+                        createSizeButtons(currentProductID); 
                         return;
                     }
 
@@ -937,8 +951,6 @@
                     
                     mainButton.style.display = 'none';
                     whatsappButton.style.display = 'inline-block';
-                    
-                    // Lógica para enviar el pedido a WhatsApp se ejecuta al hacer clic en whatsappButton
                 }
             });
             
@@ -948,7 +960,6 @@
             
             
             whatsappButton.addEventListener('click', function (event) {
-                // Al confirmar y hacer clic en WhatsApp, se reserva el stock
                 reserveStock(); 
                 
                 const total = currentPrice * 1;
@@ -1035,4 +1046,3 @@
     </script>
 </body>
 </html>
-
