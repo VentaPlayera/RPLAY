@@ -114,28 +114,28 @@
             text-decoration: line-through;
         }
 
-        /* --- Estilos de la Galería de Imágenes --- */
-        #product-image-preview {
-            max-width: 90%;
-            height: 300px;
+        /* --- Estilos del Carrusel de Imágenes en el Modal --- */
+        #productCarousel .carousel-inner {
+            height: 350px; /* Altura fija para el carrusel */
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            display: flex; /* Para centrar la imagen verticalmente */
+            align-items: center; /* Centrado vertical */
+            justify-content: center; /* Centrado horizontal */
+        }
+        #productCarousel .carousel-item img {
+            max-height: 340px; /* Limitar la altura de la imagen dentro del carrusel */
+            max-width: 95%; /* Limitar el ancho de la imagen */
             object-fit: contain;
             border-radius: 8px;
-            margin-bottom: 10px;
-            background-color: white;
-            border: 1px solid #eee;
+            margin: auto; /* Centrar la imagen dentro del item */
         }
-        .thumbnail-img {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            margin-right: 5px;
-            background-color: white;
-        }
-        .thumbnail-img.active {
-            border-color: #d63384;
+        #productCarousel .carousel-control-prev-icon,
+        #productCarousel .carousel-control-next-icon {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            padding: 10px;
         }
     </style>
 </head>
@@ -170,10 +170,19 @@
                     <div id="selection-step">
                         <div class="row">
                             <div class="col-md-6 text-center">
-                                <img id="product-image-preview" src="https://via.placeholder.com/250x250/F8F8F8?text=Cargando..." alt="Playera" class="img-fluid">
-                                <div id="thumbnail-gallery" class="d-flex justify-content-center mb-3">
-                                    </div>
-                                <p class="text-muted small" id="modal-product-description"></p>
+                                <div id="productCarousel" class="carousel slide" data-bs-interval="false">
+                                    <div class="carousel-inner" id="carousel-inner-content">
+                                        </div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                </div>
+                                <p class="text-muted small mt-2" id="modal-product-description"></p>
                             </div>
                             <div class="col-md-6">
                                 <h4 class="mb-3">Selecciona tu talla y cantidad:</h4>
@@ -286,7 +295,7 @@
         
         for (let i = 1; i <= 70; i++) {
             const id = `PROD_${String(i).padStart(3, '0')}`;
-            let mainImg, frontImg, backImg;
+            let mainImg, frontImg, backImg, sizeGuideImg;
             let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
             let initialStockOverrides = {};
             
@@ -294,12 +303,14 @@
             mainImg = 'https://via.placeholder.com/250x250/F8F8F8?text=Modelo+' + i;
             frontImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Frente+' + i;
             backImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Espalda+' + i;
+            sizeGuideImg = 'https://via.placeholder.com/500x500/F8F8F8?text=Medidas+' + i; // Imagen por defecto para tabla de tallas
             
-            // --- Lógica para configurar tallas y stock por modelo (Personaliza aquí) ---
+            // --- Lógica para configurar tallas y stock por modelo (Los primeros 30 modelos con imágenes y stock) ---
             if (i === 1) { 
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png'; 
                 modelSizes = ['S', 'M', 'L']; 
                 initialStockOverrides.S = 2; 
                 initialStockOverrides.M = 1; 
@@ -308,6 +319,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -316,6 +328,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -324,6 +337,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Lucy4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -332,6 +346,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Raul2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -340,6 +355,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Raul4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -348,6 +364,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Abi2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -356,6 +373,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -364,6 +382,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dani2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -372,6 +391,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dani4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -380,6 +400,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dali2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -388,6 +409,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Dali4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -396,6 +418,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Yose2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -404,6 +427,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Yose4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -412,6 +436,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Keila2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -420,6 +445,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Keila4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -428,6 +454,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Kenji2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -436,6 +463,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Kenji4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -444,6 +472,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Alli2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -452,6 +481,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Alli4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -460,6 +490,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Ale2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -468,6 +499,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Ale4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -476,6 +508,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Miri2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -484,6 +517,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Miri4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -492,6 +526,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Didi2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -500,6 +535,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Didi4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -508,6 +544,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Caro2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -516,6 +553,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Caro4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -524,6 +562,7 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Vale2.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
@@ -532,14 +571,13 @@
                 mainImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png'; 
                 frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
                 backImg = 'https://ventaplayera.github.io/RPLAY/Vale4.png';
+                sizeGuideImg = 'https://ventaplayera.github.io/RPLAY/Medidas.png';
                 modelSizes = ['M', 'L', 'XL'];
                 initialStockOverrides.M = 1; 
                 initialStockOverrides.L=1;
                 initialStockOverrides.XL=1;
             }
-            // ... (Continúa la lógica hasta i=70 con placeholders si es necesario) ...
-
-
+            
             // Lógica para asignar stock inicial (combina overrides y defecto)
             const stock = {};
             modelSizes.forEach(size => {
@@ -553,7 +591,8 @@
                 description: `Diseño exclusivo #${i} con estampado digital de alta calidad. Tela de algodón 100% de la mejor calidad.`,
                 img_main: mainImg,
                 img_front: frontImg,
-                img_back: backImg
+                img_back: backImg,
+                img_size_guide: sizeGuideImg // Nueva imagen de guía de tallas
             });
         }
         
@@ -584,13 +623,12 @@
             const quantityInput = document.getElementById('quantityInput');
             const quantityStatusEl = document.getElementById('quantity-status');
             const managementPanel = document.getElementById('manualManagementPanel');
-            const productImagePreview = document.getElementById('product-image-preview');
-            const thumbnailGallery = document.getElementById('thumbnail-gallery');
+            const carouselInnerContent = document.getElementById('carousel-inner-content'); // Contenedor para items del carrusel
 
             // Variables de estado
             let currentPrice = FIXED_PRICE;
             let currentSelectedSize = null;
-            let currentSelectedQuantity = 1;
+            let currentSelectedQuantity = 1; 
             let currentProductName = '';
             let currentProductID = ''; 
             let modalStep = 1; // 1: Selección, 2: Datos, 3: Confirmación
@@ -606,7 +644,6 @@
             
             function reserveStock() {
                 const orderKey = `${currentProductID}-${currentSelectedSize}`;
-                // Solo reservamos 1 unidad, ya que quantityInput.max es 1
                 localOrders[orderKey] = (localOrders[orderKey] || 0) + 1; 
                 saveLocalOrders();
                 renderProductCards(); 
@@ -618,7 +655,6 @@
                 return stock - pendingOrders;
             }
             
-            // Función de Hash para la contraseña de Admin
             function simpleHash(str) {
                 let hash = 0;
                 for (let i = 0; i < str.length; i++) {
@@ -632,7 +668,28 @@
 
             // --- Funciones de Renderizado y UI ---
             
-            function updateProductBadge(productID) { /* ... (Lógica de Badges) ... */ }
+            function updateProductBadge(productID) {
+                const badgeElement = document.getElementById(`badge-${productID}`);
+                if (!badgeElement) return;
+
+                let totalAvailable = 0;
+                const productSizes = productInventory[productID] ? Object.keys(productInventory[productID]) : [];
+                
+                productSizes.forEach(size => {
+                    totalAvailable += getAvailableStock(productID, size);
+                });
+
+                badgeElement.className = 'stock-badge';
+                if (totalAvailable <= 0) {
+                    badgeElement.classList.add('agotado');
+                    badgeElement.textContent = 'AGOTADO';
+                } else if (totalAvailable <= 3 && totalAvailable > 0) {
+                    badgeElement.classList.add('ultima');
+                    badgeElement.textContent = '¡POCAS UNIDADES!';
+                } else {
+                    badgeElement.textContent = ''; 
+                }
+            }
             function initializeBadges() { productData.forEach(p => updateProductBadge(p.id)); }
 
             function renderProductCards() {
@@ -658,32 +715,35 @@
                 initializeBadges();
             }
             
-            // **Efecto Carrusel/Miniaturas**
-            function updateGallery(product) {
+            // Función para actualizar el Carrusel de Imágenes
+            function updateProductCarousel(product) {
+                carouselInnerContent.innerHTML = ''; // Limpiar carrusel anterior
+
                 const images = [
-                    { src: product.img_front, alt: 'Frente' },
-                    { src: product.img_back, alt: 'Espalda' }
+                    { src: product.img_front, alt: `${product.name} - Frente` },
+                    { src: product.img_back, alt: `${product.name} - Espalda` },
+                    { src: product.img_size_guide, alt: `${product.name} - Guía de Tallas` }
                 ];
-                
-                thumbnailGallery.innerHTML = '';
-                productImagePreview.src = product.img_front; 
-                
+
                 images.forEach((img, index) => {
-                    const thumbnail = document.createElement('img');
-                    thumbnail.src = img.src;
-                    thumbnail.alt = img.alt;
-                    thumbnail.className = 'thumbnail-img';
-                    
-                    if (index === 0) { 
-                        thumbnail.classList.add('active');
+                    const carouselItem = document.createElement('div');
+                    carouselItem.classList.add('carousel-item');
+                    if (index === 0) { // La primera imagen activa por defecto (Frente)
+                        carouselItem.classList.add('active');
                     }
-                    thumbnail.addEventListener('click', () => {
-                        productImagePreview.src = img.src;
-                        document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
-                        thumbnail.classList.add('active');
-                    });
-                    thumbnailGallery.appendChild(thumbnail);
+                    carouselItem.innerHTML = `<img src="${img.src}" class="d-block w-100" alt="${img.alt}">`;
+                    carouselInnerContent.appendChild(carouselItem);
                 });
+
+                // Reiniciar el carrusel de Bootstrap para que detecte los nuevos items
+                const bsCarousel = bootstrap.Carousel.getInstance(document.getElementById('productCarousel'));
+                if (bsCarousel) {
+                    bsCarousel.to(0); // Ir al primer slide
+                } else {
+                    new bootstrap.Carousel(document.getElementById('productCarousel'), {
+                        interval: false // Desactivar auto-play
+                    });
+                }
             }
 
 
@@ -718,7 +778,6 @@
                     sizeOptionsContainer.appendChild(button);
                 });
                 
-                // Intenta seleccionar la primera talla disponible
                 const availableSizes = sizes.filter(size => getAvailableStock(productID, size) > 0);
                 if (availableSizes.length > 0) {
                     handleSizeSelection(availableSizes[0], productID);
@@ -728,8 +787,6 @@
             function handleSizeSelection(size, productID) {
                 const stock = getAvailableStock(productID, size);
                 
-                if (stock <= 0) return;
-
                 document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('selected'));
                 
                 const selectedButton = document.querySelector(`.size-btn[data-size="${size}"]`);
@@ -739,14 +796,18 @@
 
                 currentSelectedSize = size;
                 
-                sizeStatusEl.textContent = stock > 5 ? `¡${stock} unidades disponibles!` : `¡Quedan sólo ${stock} unidades! ¡Aparta la tuya!`;
+                if (stock === 1) {
+                     sizeStatusEl.textContent = `¡Queda la última unidad! ¡Aparta la tuya!`;
+                } else if (stock > 1) {
+                     sizeStatusEl.textContent = `¡${stock} unidades disponibles! (Solo puedes pedir 1).`;
+                } else {
+                     sizeStatusEl.textContent = `Agotado. Selecciona otra talla.`;
+                }
                 
-                // **RESTRICCIÓN CLAVE:** La cantidad siempre es 1 si hay stock.
                 quantityInput.max = 1;
                 quantityInput.value = 1;
                 currentSelectedQuantity = 1;
                 
-                // Deshabilitar la entrada de cantidad, ya que solo es 1
                 quantityInput.disabled = true; 
                 quantityStatusEl.textContent = "Solo puedes pedir 1 unidad por talla.";
 
@@ -755,7 +816,6 @@
             }
 
             function updatePaymentAmounts() {
-                // Cantidad siempre es 1 en este caso
                 const total = currentPrice * 1; 
                 
                 const paymentFactor = halfPaymentCheck.checked ? 0.5 : 1.0;
@@ -774,18 +834,30 @@
                 const paymentFactor = halfPaymentCheck.checked ? 0.5 : 1.0;
                 const paymentDue = total * paymentFactor;
                 
-                const paymentType = paymentFactor === 0.5 ? ' (Monto de Apartado)' : '';
+                const paymentType = paymentFactor === 0.5 ? ' (Monto de Apartado)' : ' (Pago Total)';
                 
                 const infoBox = document.getElementById('payment-step-info-box');
                 
                 infoBox.innerHTML = `Estás comprando **1** pieza talla **${currentSelectedSize}** por **$${paymentDue.toFixed(2)} MXN**${paymentType}. Llena tus datos para guardar el pedido y ver las instrucciones de pago por transferencia.`;
             }
             
-            function resetModalView() { /* ... (Reseteo de Modal) ... */ }
+            function resetModalView() {
+                modalStep = 1;
+                selectionStep.style.display = 'block';
+                paymentStep.style.display = 'none';
+                transferInfo.style.display = 'none';
+                
+                mainButton.style.display = 'inline-block';
+                whatsappButton.style.display = 'none';
+                
+                mainButton.textContent = 'Apartar y Ver Datos de Pago';
+                mainButton.disabled = true;
+                
+                document.getElementById('client-data-form').reset();
+            }
             
             // --- Event Listeners ---
 
-            // Cuando el modal se abre
             paymentModalElement.addEventListener('show.bs.modal', function (event) {
                 resetModalView();
                 const button = event.relatedTarget;
@@ -800,7 +872,7 @@
                     document.getElementById('modal-unit-price').textContent = `$${product.price} MXN`; 
                     document.getElementById('modal-product-description').textContent = product.description;
                     
-                    updateGallery(product); // Carga de imágenes (Carrusel)
+                    updateProductCarousel(product); // Carga del carrusel de imágenes
                     createSizeButtons(currentProductID);
                     updatePaymentAmounts(); 
                 } else {
@@ -809,12 +881,10 @@
                 }
             });
 
-            // Cuando el modal se cierra
             paymentModalElement.addEventListener('hide.bs.modal', function () {
                 initializeBadges();
             });
             
-            // Lógica para avanzar entre pasos del modal
             mainButton.addEventListener('click', function () {
                 document.getElementById('payment-error').style.display = 'none';
                 document.getElementById('selection-error').style.display = 'none';
@@ -824,7 +894,6 @@
                         document.getElementById('selection-error').style.display = 'block';
                         return;
                     }
-                    // La verificación de stock es siempre contra 1 unidad
                     if (getAvailableStock(currentProductID, currentSelectedSize) < 1) { 
                         alert("¡Lo sentimos! El stock disponible ha cambiado. Esta talla ya no está disponible.");
                         createSizeButtons(currentProductID); 
@@ -860,18 +929,15 @@
                 }
             });
             
-            // Listener para el cambio de cantidad (Ahora solo verifica si es 1)
             quantityInput.addEventListener('input', function() {
-                this.value = 1; // Forzamos siempre a 1
+                this.value = 1; 
                 currentSelectedQuantity = 1;
                 updatePaymentAmounts();
             });
 
-            // Listener para el cambio en el tipo de pago (Total/Mitad)
             halfPaymentCheck.addEventListener('change', updatePaymentAmounts);
             
             
-            // --- LÓGICA CLAVE: Apartar al enviar comprobante (Paso 3) ---
             whatsappButton.addEventListener('click', function (event) {
                 reserveStock(); 
                 
@@ -882,32 +948,78 @@
 
                 const orderDetails = `*Playera:* ${currentProductName}\n*Talla:* ${currentSelectedSize}\n*Cantidad:* 1\n*Total:* $${total.toFixed(2)} MXN\n*Monto a Pagar:* $${paymentDue.toFixed(2)} MXN (${paymentType})\n\n*Datos del Cliente:*\n*Nombre:* ${clientNameInput.value.trim()}\n*Teléfono:* ${clientPhoneInput.value.trim()}\n*Dirección:* ${clientAddressInput.value.trim()}\n\n¡Adjunto mi comprobante de pago!\nGracias.`;
 
-                const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('¡Hola! Quiero confirmar mi pedido:\n\n' + orderDetails)}`;
+                const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(orderDetails)}`;
                 
-                this.href = whatsappLink;
-
-                setTimeout(() => {
-                    paymentModal.hide();
-                }, 500); 
+                whatsappButton.href = whatsappLink;
             });
 
-
-            // --- Lógica de Administración Oculta ---
-            function showAdminPanel(password) { /* ... */ } 
-            window.admin = function(password) { showAdminPanel(password); };
-            window.resetAllStock = function() { /* ... */ };
-            
-            document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey && e.shiftKey && e.key === 'A') { 
-                    e.preventDefault();
+            // --- PANEL DE ADMINISTRACIÓN (CONTRASEÑA) ---
+            document.body.addEventListener('dblclick', function(event) {
+                if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
                     const password = prompt("Introduce la contraseña de administrador:");
-                    if (password) {
-                        showAdminPanel(password);
+                    if (password && simpleHash(password) === ADMIN_HASH) {
+                        managementPanel.style.display = 'block';
+                        renderManualManagementPanel();
+                    } else if (password !== null) {
+                        alert("Contraseña incorrecta.");
                     }
                 }
             });
+            
+            function renderManualManagementPanel() {
+                ordersList.innerHTML = '<h5>Reservas Activas:</h5>';
+                const hasOrders = Object.keys(localOrders).length > 0;
 
-            // --- INICIALIZACIÓN ---
+                if (!hasOrders) {
+                    ordersList.innerHTML += '<p class="text-muted">No hay reservas activas en este momento.</p>';
+                    return;
+                }
+
+                const ul = document.createElement('ul');
+                ul.className = 'list-group';
+
+                for (const orderKey in localOrders) {
+                    const [prodId, size] = orderKey.split('-');
+                    const quantityReserved = localOrders[orderKey];
+                    const product = productData.find(p => p.id === prodId);
+
+                    if (product && quantityReserved > 0) {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                        li.innerHTML = `
+                            ${product.name} (Talla: ${size}) - Reservadas: ${quantityReserved}
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeOrder('${orderKey}')">
+                                <i class="fas fa-undo"></i> Liberar 1
+                            </button>
+                        `;
+                        ul.appendChild(li);
+                    }
+                }
+                ordersList.appendChild(ul);
+            }
+
+            window.removeOrder = function(orderKey) {
+                if (localOrders[orderKey] && localOrders[orderKey] > 0) {
+                    localOrders[orderKey]--;
+                    if (localOrders[orderKey] === 0) {
+                        delete localOrders[orderKey];
+                    }
+                    saveLocalOrders();
+                    renderProductCards(); 
+                    renderManualManagementPanel(); 
+                }
+            };
+
+            window.resetAllStock = function() {
+                if (confirm("¿Estás seguro de que quieres borrar TODAS las reservas y restaurar el inventario original?")) {
+                    localOrders = {}; // Vaciar todas las reservas
+                    saveLocalOrders();
+                    renderProductCards(); 
+                    renderManualManagementPanel(); 
+                    alert("Inventario restaurado y reservas borradas.");
+                }
+            };
+
             renderProductCards();
         });
     </script>
