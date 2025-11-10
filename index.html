@@ -891,26 +891,47 @@
             paymentModalElement.addEventListener('show.bs.modal', function (event) {
                 resetModalView();
                 const button = event.relatedTarget;
-                currentProductID = button.getAttribute('data-product-id');
-                const product = productData.find(p => p.id === currentProductID);
-                
-                if (product) {
-                    currentProductName = product.name;
-                    currentPrice = parseFloat(product.price);
-                    
-                    document.getElementById('modal-product-name').textContent = product.name;
-                    document.getElementById('modal-unit-price').textContent = `$${product.price} MXN`; 
-                    document.getElementById('modal-product-description').textContent = product.description;
-                    
-                    updateProductCarousel(product); 
-                    createSizeButtons(currentProductID);
-                    updatePaymentAmounts(); 
-                } else {
-                    alert('Error: Producto no encontrado.');
-                    paymentModal.hide();
-                }
-            });
+                // ... [código para obtener IDs y precios]
 
+    // Obtener las 3 URLs
+    const frontImg = button.getAttribute('data-img-front');
+    const backImg = button.getAttribute('data-img-back');
+    const sizeGuide = button.getAttribute('data-size-guide'); // CLAVE: Usa esta URL.
+
+    // 1. FUNCIÓN PARA CREAR UNA SLIDE
+    const createCarouselItem = (src, alt, isActive = false) => {
+        return `
+            <div class="carousel-item ${isActive ? 'active' : ''}">
+                <img src="${src}" class="d-block w-100" alt="${alt}">
+            </div>
+        `;
+    };
+    
+    // 2. CONSTRUIR EL HTML DEL CARRUSEL (SOLO 3 ITEMS)
+    const carouselHTML = [
+        createCarouselItem(frontImg, 'Vista Frontal', true), 
+        createCarouselItem(backImg, 'Vista Trasera'),
+        createCarouselItem(sizeGuide, 'Guía de Tallas')
+    ].join('');
+    
+    document.getElementById('carousel-inner-content').innerHTML = carouselHTML;
+    
+    // 3. CONSTRUIR LOS INDICADORES (SOLO 3 BOTONES)
+    // Borrar indicadores anteriores si los hay
+    const oldIndicators = document.querySelector('#productCarousel .carousel-indicators');
+    if (oldIndicators) oldIndicators.remove();
+
+    const indicatorsHTML = `
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+    `;
+    document.getElementById('productCarousel').insertAdjacentHTML('afterbegin', indicatorsHTML);
+    
+    // ... [resto del código del modal]
+});
             paymentModalElement.addEventListener('hide.bs.modal', function () {
                 initializeBadges();
             });
@@ -1046,5 +1067,6 @@
     </script>
 </body>
 </html>
+
 
 
