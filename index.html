@@ -12,13 +12,31 @@
             --primary-color: #d63384; /* Rosa fuerte */
             --secondary-color: #343a40; 
             --accent-color: #ffc107; /* Amarillo para advertencias */
+            --preventa-color: #007bff; /* Azul para Preventa */
         }
-        body { background-color: #f4f7f6; font-family: 'Arial', sans-serif; }
-        .container { margin-top: 30px; }
-        h1 { color: var(--secondary-color); font-weight: 700; margin-bottom: 40px; }
+        body { 
+            background-color: #f4f7f6; 
+            font-family: 'Arial', sans-serif; 
+            font-size: 16px; 
+        }
+        .container { 
+            margin-top: 30px; 
+            padding-left: 15px; 
+            padding-right: 15px; 
+        }
+        h1 { 
+            color: var(--secondary-color); 
+            font-weight: 700; 
+            margin-bottom: 40px; 
+            font-size: 2.5rem; 
+        }
         
         /* --- TARJETA DE PRODUCTO --- */
-        .logo-img { max-width: 150px; margin-bottom: 20px;}
+        .logo-img { 
+            max-width: 150px; 
+            margin-bottom: 20px;
+            height: auto; 
+        }
         .product-card {
             border: none;
             border-radius: 15px;
@@ -26,13 +44,14 @@
             transition: transform 0.3s, box-shadow 0.3s;
             overflow: hidden;
             position: relative;
+            margin-bottom: 20px; 
         }
         .product-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 25px rgba(0,0,0,0.15);
         }
         .product-card img {
-            height: 320px;
+            height: 320px; 
             width: 100%;
             object-fit: cover;
             border-bottom: 1px solid #eee;
@@ -51,7 +70,7 @@
             color: white;
         }
 
-        /* --- BADGES Y STOCK --- */
+        /* --- BADGES Y STOCK (NUEVOS ESTILOS) --- */
         .stock-badge {
             position: absolute;
             top: 15px;
@@ -62,8 +81,18 @@
             font-weight: bold;
             z-index: 10;
         }
-        .stock-badge.agotado { background-color: #dc3545; color: white; animation: pulse 1.5s infinite; }
-        .stock-badge.ultima { background-color: var(--accent-color); color: var(--secondary-color); }
+        .stock-badge.agotado { 
+            background-color: #dc3545; 
+            color: white; 
+            animation: pulse 1.5s infinite; 
+        }
+        /* ESTILO NUEVO PARA PREVENTA */
+        .stock-badge.preventa { 
+            background-color: var(--preventa-color); 
+            color: white; 
+            /* Se puede añadir una animación sutil si se desea */
+            /* box-shadow: 0 0 10px var(--preventa-color); */
+        }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* --- MODAL Y SELECCIÓN DE TALLAS --- */
@@ -76,6 +105,7 @@
             border-radius: 5px;
             font-weight: 600;
             transition: all 0.2s;
+            font-size: 0.9rem; 
         }
         .size-options .size-btn:not(.disabled):hover { border-color: var(--primary-color); }
         .size-options .size-btn.selected {
@@ -89,41 +119,56 @@
             text-decoration: line-through;
         }
         
-        /* --- ESTILOS CORREGIDOS PARA EL CARRUSEL EN EL MODAL --- */
+        /* --- ESTILOS RESPONSIVOS PARA EL CARRUSEL EN EL MODAL --- */
         #productCarousel {
-            max-width: 100%; /* Asegura que no desborde */
-            margin: auto; /* Centra el carrusel */
-            background-color: #fff; /* Fondo blanco para las imágenes */
+            max-width: 100%; 
+            margin: auto; 
+            background-color: #fff; 
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
         #productCarousel .carousel-inner {
-            height: 450px; /* Altura fija para el área del carrusel */
-            display: flex; /* Flexbox para centrar contenido */
-            align-items: center; /* Centrado vertical */
-            justify-content: center; /* Centrado horizontal */
-            overflow: hidden; /* Oculta cualquier desborde */
+            height: 50vh; /* Altura responsiva: 50% de la altura de la ventana */
+            min-height: 300px; /* Altura mínima para asegurar visibilidad */
+            max-height: 550px; /* Altura máxima en desktops */
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
             border-radius: 10px;
         }
 
         #productCarousel .carousel-item {
-            height: 100%; /* El item debe ocupar toda la altura del inner */
-            display: flex; /* También flexbox para su contenido */
-            align-items: center; /* Centra verticalmente la imagen dentro del item */
-            justify-content: center; /* Centra horizontalmente la imagen dentro del item */
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
         }
 
         #productCarousel .carousel-item img {
-            max-width: 100%; /* Asegura que la imagen no desborde horizontalmente */
-            max-height: 100%; /* Asegura que la imagen no desborde verticalmente */
-            object-fit: contain; /* CLAVE: Escala la imagen para que quepa completamente */
-            width: auto; /* Permite que el ancho se ajuste proporcionalmente */
-            height: auto; /* Permite que la altura se ajuste proporcionalmente */
-            display: block; /* Elimina espacios extra debajo de la imagen */
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; /* Asegura que la imagen quepa completa */
+            width: auto; 
+            height: auto; 
+            display: block; 
         }
         #productCarousel .carousel-indicators button {
             background-color: var(--primary-color);
+        }
+
+        /* MEDIA QUERIES para responsividad en móviles */
+        @media (max-width: 575.98px) {
+            h1 { font-size: 1.8rem; margin-bottom: 20px; }
+            .product-card img { height: 250px; } 
+            .btn-buy { font-size: 0.9rem; padding: 10px 15px; }
+            .modal-dialog { margin: 0.5rem; } 
+            #productCarousel .carousel-inner {
+                height: 40vh; /* Menos altura en móviles */
+                min-height: 250px;
+            }
+            .size-options .size-btn { padding: 6px 12px; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -285,7 +330,7 @@
         const FIXED_PRICE = 250.00; 
         const DEFAULT_STOCK_PER_SIZE = 1; 
         const WHATSAPP_PHONE = "529991480151"; 
-        const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; 
+        const ADMIN_HASH = "819c99d25145b5c9b740751939331908"; // Contraseña de admin: 'admin123' (solo para propósitos de simulación)
         
         // FUNCIÓN: Inicializa el inventario base
         function initializeInventory(productID, sizes, initialStockOverrides = {}) {
@@ -392,72 +437,16 @@
                 return stock - pendingOrders;
             }
             
-            // FUNCIÓN DE ADMINISTRACIÓN (Acceso con showAdminPanel('admin123'))
-            window.setStock = function(productID, size, newStock) {
-                if (productInventory[productID] && productInventory[productID][size] !== undefined) {
-                    productInventory[productID][size] = Math.max(0, newStock); 
-                    initializeBadges();
-                    if (currentProductID === productID) {
-                        createSizeButtons(currentProductID);
-                        resetModalView();
-                    }
-                    console.log(`✅ Stock inicial modificado: ${productID}, Talla ${size}. Nuevo Stock: ${productInventory[productID][size]}`);
-                    alert(`Stock de ${productID} (Talla ${size}) cambiado a ${newStock}.`);
-                } else {
-                    console.error(`Error: Producto ID '${productID}' o Talla '${size}' no encontrados.`);
-                    alert(`Error: Producto ID '${productID}' o Talla '${size}' no encontrados.`);
-                }
-            };
-
-            // FUNCIÓN: Renderiza las tarjetas de producto
-            function renderProductCards() {
-                let html = '';
-                productData.forEach(product => {
-                    html += `
-                        <div class="col-lg-3 col-md-4 col-sm-6 d-flex">
-                            <div class="card product-card flex-fill" data-product-id="${product.id}">
-                                <span class="stock-badge" id="badge-${product.id}"></span> 
-                                <img src="${product.img_main}" class="card-img-top" alt="Playera ${product.name}">
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title">${product.name}</h5>
-                                    <p class="card-text text-muted">${product.description.substring(0, 50)}...</p>
-                                    <div class="mt-auto">
-                                        <p class="price mb-2">$${product.price} MXN</p>
-                                        <button 
-                                            class="btn btn-block btn-buy w-100" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#paymentModal" 
-                                            data-product-id="${product.id}"
-                                            data-price="${product.price}" 
-                                            data-name="${product.name}"
-                                            data-description="${product.description}"
-                                            data-img-front="${product.img_front}" 
-                                            data-img-back="${product.img_back}"
-                                            data-size-guide="${product.img_size_guide}"> 
-                                            Ver Detalle y Comprar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                productListContainer.innerHTML = html;
-            }
-
             // FUNCIÓN: Actualiza el badge de stock en la tarjeta principal
             function updateProductBadge(productID) {
                 const badgeEl = document.getElementById(`badge-${productID}`);
                 if (!badgeEl) return;
                 
                 let totalStock = 0;
-                let isLastUnit = false;
 
                 if (productInventory[productID]) {
                     Object.keys(productInventory[productID]).forEach(size => {
-                        const available = getAvailableStock(productID, size);
-                        totalStock += available;
-                        if (available === 1) isLastUnit = true;
+                        totalStock += getAvailableStock(productID, size);
                     });
                 }
 
@@ -467,17 +456,19 @@
                 if (totalStock === 0) {
                     badgeEl.textContent = 'AGOTADO';
                     badgeEl.classList.add('agotado');
-                } else if (isLastUnit || totalStock <= 5) { 
-                    badgeEl.textContent = '¡POCAS UNIDADES!';
-                    badgeEl.classList.add('ultima');
+                } else { 
+                    // Si hay stock disponible, siempre se muestra PREVENTA
+                    badgeEl.textContent = 'PREVENTA';
+                    badgeEl.classList.add('preventa');
                 }
             }
 
             function initializeBadges() {
                 productData.forEach(product => updateProductBadge(product.id));
             }
-            
-            // FUNCIÓN: Renderiza los botones de talla y maneja stock
+
+            // ... (Resto de las funciones JS, incluyendo createSizeButtons, handleSizeSelection, etc.)
+
             function createSizeButtons(productID) {
                 if (!sizeOptionsContainer) return;
                 const sizes = productInventory[productID] ? Object.keys(productInventory[productID]) : [];
@@ -538,7 +529,7 @@
                 
                 updatePaymentAmounts();
             }
-            
+
             function resetModalView() {
                 selectionStep.style.display = 'block';
                 paymentStep.style.display = 'none';
@@ -552,7 +543,6 @@
                 sizeStatusEl.style.display = 'block'; 
                 quantityInput.value = 1;
 
-                // Restablece el carrusel a la primera diapositiva
                 const carousel = bootstrap.Carousel.getInstance(document.getElementById('productCarousel'));
                 if (carousel) carousel.to(0);
             }
@@ -575,7 +565,6 @@
                 }
             }
             
-            // FUNCIÓN DE ADMINISTRACIÓN
             window.releaseOrder = function(orderKey) {
                 if (localOrders[orderKey] && localOrders[orderKey] > 0) {
                     localOrders[orderKey]--;
@@ -587,7 +576,6 @@
                 }
             };
             
-            // FUNCIÓN DE ADMINISTRACIÓN
             window.resetAllStock = function() {
                 if (confirm("ADVERTENCIA: ¿Estás seguro de que quieres borrar TODAS las reservas y restaurar el inventario inicial?")) {
                     localStorage.removeItem('simulatedOrders');
@@ -599,7 +587,6 @@
                 }
             };
             
-            // FUNCIÓN DE ADMINISTRACIÓN
             function renderManualManagementPanel() {
                 const productNames = productData.reduce((acc, p) => { acc[p.id] = p.name; return acc; }, {});
                 let listHTML = '<h6>Reservas Activas:</h6>';
@@ -625,7 +612,6 @@
                 ordersList.innerHTML = listHTML;
             }
 
-            // FUNCIÓN DE ADMINISTRACIÓN
             window.showAdminPanel = function(password) {
                 if (password === 'admin123') { 
                     managementPanel.style.display = 'block';
@@ -634,9 +620,42 @@
                     alert('Acceso denegado.');
                 }
             };
+            
+            function renderProductCards() {
+                let html = '';
+                productData.forEach(product => {
+                    html += `
+                        <div class="col-lg-3 col-md-4 col-sm-6 d-flex">
+                            <div class="card product-card flex-fill" data-product-id="${product.id}">
+                                <span class="stock-badge" id="badge-${product.id}"></span> 
+                                <img src="${product.img_main}" class="card-img-top" alt="Playera ${product.name}">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">${product.name}</h5>
+                                    <p class="card-text text-muted">${product.description.substring(0, 50)}...</p>
+                                    <div class="mt-auto">
+                                        <p class="price mb-2">$${product.price} MXN</p>
+                                        <button 
+                                            class="btn btn-block btn-buy w-100" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#paymentModal" 
+                                            data-product-id="${product.id}"
+                                            data-price="${product.price}" 
+                                            data-name="${product.name}"
+                                            data-description="${product.description}"
+                                            data-img-front="${product.img_front}" 
+                                            data-img-back="${product.img_back}"
+                                            data-size-guide="${product.img_size_guide}"> 
+                                            Ver Detalle y Comprar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                productListContainer.innerHTML = html;
+            }
 
-
-            // --- EVENTO PRINCIPAL: FLUJO DE COMPRA ---
             mainButton.addEventListener('click', () => {
                 const currentButtonText = mainButton.textContent;
                 const quantity = parseInt(quantityInput.value) || 1;
@@ -648,15 +667,12 @@
                     }
                     document.getElementById('selection-error').style.display = 'none';
 
-                    // Pasa al Paso 2
                     selectionStep.style.display = 'none';
                     paymentStep.style.display = 'block';
                     mainButton.textContent = 'Generar Pedido';
                     
-                    // Pre-carga datos del cliente si existen
                     loadClientData();
                     
-                    // Actualiza el detalle de pago en el paso 2
                     const amountToPay = document.getElementById('payment-due').textContent;
                     document.getElementById('payment-step-info-box').innerHTML = `
                         <p class="mb-1">Item: <strong>${currentProductName}</strong> (Talla: <strong>${currentSelectedSize}</strong>)</p>
@@ -669,7 +685,6 @@
                     const clientPhone = clientPhoneInput.value.trim();
                     const clientAddress = clientAddressInput.value.trim();
                     
-                    // Validación de campos
                     if (clientName.length < 3 || clientPhone.length < 8 || clientAddress.length < 10) {
                         document.getElementById('payment-error').style.display = 'block';
                         return;
@@ -677,7 +692,6 @@
                     
                     saveClientData();
                     
-                    // Última verificación de stock antes de generar el pedido
                     if (quantity > getAvailableStock(currentProductID, currentSelectedSize)) {
                         alert('¡Lo sentimos! El stock fue liberado mientras completabas el formulario. Por favor, revisa el stock disponible y reintenta.');
                         resetModalView();
@@ -686,7 +700,6 @@
                         return;
                     }
 
-                    // Pasa al Paso 3
                     const amountToPay = document.getElementById('payment-due').textContent; 
                     
                     const message = `Hola, acabo de generar un pedido:
@@ -701,7 +714,6 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                     const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodedMessage}`;
                     whatsappButton.href = whatsappLink;
 
-                    // Muestra la información de confirmación
                     document.getElementById('final-size-conf').textContent = currentSelectedSize;
                     document.getElementById('final-qty-conf').textContent = quantity; 
                     document.getElementById('final-item-display').textContent = currentProductName;
@@ -715,23 +727,19 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                 }
             });
 
-            // --- EVENTO CRUCIAL: DESCUENTO DE INVENTARIO AL ENVIAR WHATSAPP ---
             whatsappButton.addEventListener('click', function(e) {
                 if (transferInfo.style.display === 'block' && currentProductID && currentSelectedSize) {
                     const sizeKey = `${currentProductID}-${currentSelectedSize}`;
                     const quantityToApart = parseInt(quantityInput.value); 
                     
-                    // Aparta el stock de forma permanente (hasta que un administrador lo libere)
                     localOrders[sizeKey] = (localOrders[sizeKey] || 0) + quantityToApart; 
                     saveLocalOrders(); 
                     
-                    // Refresca la vista
                     createSizeButtons(currentProductID);
                     initializeBadges();
                 } 
             });
             
-            // Función de ayuda para crear una diapositiva del carrusel
             function createCarouselItem(src, alt, isActive = false) {
                 return `
                     <div class="carousel-item ${isActive ? 'active' : ''}">
@@ -740,31 +748,26 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                 `;
             }
 
-            // Función de ayuda para crear un indicador del carrusel
             function createCarouselIndicator(index, isActive = false) {
                 return `
                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" class="${isActive ? 'active' : ''}" aria-current="${isActive ? 'true' : 'false'}" aria-label="Slide ${index + 1}"></button>
                 `;
             }
 
-            // Lógica de Modal (Apertura y llenado de datos e imágenes)
             paymentModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget; 
                 currentProductID = button.getAttribute('data-product-id');
                 currentPrice = parseFloat(button.getAttribute('data-price'));
                 currentProductName = button.getAttribute('data-name');
                 
-                // OBTENER IMÁGENES
                 const imgFront = button.getAttribute('data-img-front');
                 const imgBack = button.getAttribute('data-img-back');
                 const sizeGuide = button.getAttribute('data-size-guide');
                 
-                // Llenar los datos del modal
                 modalProductName.textContent = currentProductName;
                 modalProductDesc.textContent = button.getAttribute('data-description');
                 unitPriceDisplay.textContent = `$${currentPrice.toFixed(2)} MXN`;
 
-                // **GENERAR CONTENIDO DEL CARRUSEL**
                 const images = [
                     { src: imgFront, alt: 'Vista Frontal' },
                     { src: imgBack, alt: 'Vista Trasera' },
@@ -789,7 +792,6 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                 updatePaymentAmounts();
             });
 
-            // Evento para actualizar montos cuando se cambia la cantidad o el check de mitad de pago
             quantityInput.addEventListener('input', updatePaymentAmounts);
             halfPaymentCheck.addEventListener('change', updatePaymentAmounts);
             
@@ -799,7 +801,6 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                 
                 const quantity = parseInt(quantityInput.value) || 1; 
 
-                // Validación de cantidad
                 const maxStock = parseInt(quantityInput.max);
                 if (quantity > maxStock) {
                     quantityInput.value = maxStock;
@@ -814,7 +815,6 @@ Adjunto el comprobante de pago para confirmar mi reserva.`;
                 totalPriceDisplay.textContent = `$${total.toFixed(2)} MXN`; 
 
                 let amountDue = total;
-                // Lógica de pago a la mitad
                 if (halfPaymentCheck.checked) {
                     amountDue = total / 2;
                 }
