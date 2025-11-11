@@ -3,400 +3,600 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPLAY - Tienda Online (Preventa)</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>RPLAY - Venta de Playeras</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .product-card {
-            border: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-            position: relative;
+        body {
+            background-color: #f8f9fa;
         }
-        .product-card:hover { transform: translateY(-5px); }
+        .product-card {
+            border: 1px solid #ddd;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-buy {
+            background-color: #ff3366;
+            color: white;
+            border: none;
+        }
+        .btn-buy:hover {
+            background-color: #e6004b;
+            color: white;
+        }
         .stock-badge {
             position: absolute;
             top: 10px;
             right: 10px;
             padding: 5px 10px;
             border-radius: 5px;
-            font-size: 0.8rem;
             font-weight: bold;
             color: white;
             z-index: 10;
         }
-        .stock-badge.in-stock { background-color: #28a745; /* Verde para Preventa */ }
-        .stock-badge.out-stock { background-color: #dc3545; /* Rojo para Agotado */ }
-        .btn-buy { background-color: #dc3545; color: white; } /* Rojo/Danger */
-        .btn-buy:hover { background-color: #c82333; color: white; }
-        .price { font-size: 1.25rem; font-weight: bold; color: #dc3545; }
-        .img-thumbnail { cursor: pointer; }
-        .img-thumbnail.active { border: 3px solid #dc3545; }
-        #quantityInput { width: 80px; text-align: center; }
-        /* Clases para los pasos del modal */
-        #payment-step, #transfer-info { display: none; }
+        .stock-badge.in-stock { background-color: green; }
+        .stock-badge.low-stock { background-color: orange; }
+        .stock-badge.out-stock { background-color: red; }
+
+        /* --- CORRECCIÓN REFORZADA: IMAGEN DEL MODAL --- */
+        .modal-image {
+            object-fit: contain; /* Asegura que la imagen se ajuste sin cortar */
+            height: 450px;       /* Altura fija para el contenedor del carrusel */
+            width: 100%;         /* Ocupa todo el ancho */
+            display: block;      /* Comportamiento de bloque */
+            background-color: #f0f0f0; /* Fondo para que se vea si falla la carga */
+        }
     </style>
 </head>
 <body>
 
     <div class="container my-5">
-        <h1 class="text-center mb-4 text-danger">RPLAY - Preventa Exclusiva</h1>
-        <p class="text-center text-muted">Selecciona tu modelo y aparta el tuyo con un pago inicial.</p>
         
-        <div class="row g-4" id="product-list-container">
-            </div>
-
-        <hr class="my-5">
-
-        <div class="card bg-light mt-5 d-none">
-            <div class="card-header">Panel de Administración/Debug</div>
-            <div class="card-body">
-                <p>Órdenes Pendientes (Persistentes):</p>
-                <div id="ordersList"></div>
-                <p id="noOrdersMessage" class="text-success fw-bold">No hay órdenes pendientes.</p>
-                <button class="btn btn-sm btn-danger mt-3" onclick="resetAllStock()">Reiniciar Todo el Inventario</button>
-            </div>
+        <div class="d-flex align-items-center justify-content-center mb-5">
+            <img src="https://imgur.com/mpCQaZg.jpg" alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
         </div>
-
+        <h1 class="text-center mb-5" style="color: #ff3366;">RPLAY</h1>
+        
+        <div class="container mb-5" id="manualManagementPanel" style="display:none;">
+            <h3 class="text-danger mb-3">Administración de Pedidos Apartados</h3>
+            <p class="text-muted small">Haz clic en "Liberar Stock" si el cliente no confirmó el pago (gestión manual de las 24 horas).</p>
+            <div id="ordersList" class="p-3 border rounded bg-white">
+                <p class="text-center text-secondary" id="noOrdersMessage">No hay pedidos pendientes actualmente.</p>
+            </div>
+            <hr>
+            <button class="btn btn-sm btn-outline-secondary" onclick="resetAllStock()">REINICIAR TODO EL INVENTARIO</button>
+            <p class="text-muted small mt-2">
+                Para *modificar el stock inicial*, usa la función setStock en la consola (F12).
+                <br>Ejemplo: **setStock('PROD_001', 'M', 5)**
+            </p>
+        </div>
+        
+        <div class="row" id="product-list">
+        </div>
     </div>
 
     <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="paymentModalLabel">Detalle de Producto</h5>
+                    <h5 class="modal-title" id="paymentModalLabel">Detalle y Pago</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6 border-end">
-                            <div id="productCarousel" class="carousel slide" data-bs-interval="false">
+                        <div class="col-md-6">
+                            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                                
+                                <div class="carousel-indicators">
+                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                                </div>
+
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <img id="modal-img-front" src="" class="d-block w-100" alt="Vista Frontal">
+                                        <img id="modal-img-front" src="" class="modal-image" alt="Delantera de la Playera">
                                     </div>
                                     <div class="carousel-item">
-                                        <img id="modal-img-back" src="" class="d-block w-100" alt="Vista Trasera">
+                                        <img id="modal-img-back" src="" class="modal-image" alt="Espalda de la Playera">
                                     </div>
                                     <div class="carousel-item">
-                                        <img id="modal-img-side" src="" class="d-block w-100" alt="Vista Lateral">
+                                        <img id="modal-img-side" src="" class="modal-image" alt="Vista Lateral de la Playera">
                                     </div>
                                 </div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
                                 </button>
                                 <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
                                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
                                 </button>
                             </div>
-
-                            <h3 id="product-name" class="mt-3 text-danger">Nombre Producto</h3>
-                            <p id="product-description" class="text-muted"></p>
-                            
-                            <h4 class="mt-3">Vistas</h4>
-                            <div class="d-flex mb-3">
-                                <img id="thumb-front" src="" class="img-thumbnail me-2 active" data-slide-to="0" alt="Frente">
-                                <img id="thumb-back" src="" class="img-thumbnail me-2" data-slide-to="1" alt="Espalda">
-                                <img id="thumb-side" src="" class="img-thumbnail" data-slide-to="2" alt="Lateral">
                             </div>
-                        </div>
 
                         <div class="col-md-6">
                             
                             <div id="selection-step">
-                                <h4>Selecciona Talla</h4>
-                                <div id="size-options" class="mb-3">
-                                    </div>
-
-                                <h4>Cantidad</h4>
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Qty</span>
-                                    <input type="number" id="quantityInput" class="form-control" value="1" min="1" max="10">
+                                <h4 class="mt-3" id="product-name"></h4>
+                                <p class="text-muted" id="product-description"></p>
+                                
+                                <div class="mb-4">
+                                    <h6>Talla:</h6>
+                                    <div id="size-options"></div>
+                                    <small id="size-status" class="text-secondary mt-2"></small>
                                 </div>
-                                <p id="quantity-status" class="small text-secondary">Selecciona una talla.</p>
-
-                                <h4>Opciones de Pago</h4>
+                                
+                                <div class="mb-4">
+                                    <h6>Cantidad de Piezas:</h6>
+                                    <input type="number" id="quantityInput" class="form-control" value="1" min="1" max="10" style="width: 100px;">
+                                    <small id="quantity-status" class="text-secondary mt-2"></small>
+                                </div>
+                                
+                                <hr>
+                                
+                                <p>Precio Total: <strong id="total-price" class="text-danger"></strong></p>
                                 <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck">
-                                    <label class="form-check-label" for="halfPaymentCheck">
-                                        Apartar con el 50%
-                                    </label>
+                                    <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck" checked>
+                                    <label class="form-check-label" for="halfPaymentCheck">Pagar la Mitad Ahora (Apartar)</label>
                                 </div>
-
-                                <div class="d-flex justify-content-between my-3 border-top pt-3">
-                                    <strong>Total de Artículos:</strong>
-                                    <strong id="total-price">$0.00 MXN</strong>
-                                </div>
-                                <div class="d-flex justify-content-between mb-4 pb-2 border-bottom">
-                                    <h5 class="text-danger">Monto a Pagar Ahora:</h5>
-                                    <h5 id="payment-due" class="text-danger">$0.00 MXN</h5>
-                                </div>
+                                <p>Monto a Pagar Ahora: <strong id="payment-due" style="font-size: 1.4rem; color: green;"></strong></p>
+                                <small class="text-muted">El resto se pagará al momento de la entrega el 28 de Noviembre.</small>
                             </div>
 
-                            <div id="payment-step">
-                                <h4>Confirma tus Datos</h4>
+                            <div id="payment-step" style="display:none;">
+                                <h4 class="mt-3 mb-4">Datos del Comprador y Envío</h4>
+                                <p class="alert alert-info small">
+                                    Estás comprando <strong id="final-quantity-display">1</strong> pieza(s) talla <strong id="final-size-display"></strong> por <strong id="final-price-display"></strong>.
+                                    Llena tus datos para guardar el pedido y ver las instrucciones de pago por transferencia.
+                                </p>
+
                                 <div class="mb-3">
-                                    <label for="clientName" class="form-label">Nombre Completo</label>
+                                    <label for="clientName" class="form-label">Nombre Completo (*):</label>
                                     <input type="text" class="form-control" id="clientName" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="clientPhone" class="form-label">Teléfono WhatsApp</label>
+                                    <label for="clientPhone" class="form-label">Teléfono/WhatsApp (*):</label>
                                     <input type="tel" class="form-control" id="clientPhone" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="clientAddress" class="form-label">Dirección de Envío Completa</label>
-                                    <textarea class="form-control" id="clientAddress" rows="3" required></textarea>
+                                    <label for="clientAddress" class="form-label">Dirección de Envío Completa (*):</label>
+                                    <textarea class="form-control" id="clientAddress" rows="2" required></textarea>
                                 </div>
-                                <div class="alert alert-danger p-2" role="alert" id="payment-error" style="display:none;">
-                                    Por favor, llena todos los campos de datos.
-                                </div>
-
-                                <h5 class="mt-4">Resumen del Pedido:</h5>
-                                <ul class="list-group">
-                                    <li class="list-group-item">Cantidad: <strong id="final-quantity-display"></strong>, Talla: <strong id="final-size-display"></strong></li>
-                                    <li class="list-group-item list-group-item-danger">Monto a Pagar Ahora: <strong id="final-price-display"></strong></li>
-                                </ul>
-                            </div>
-
-                            <div id="transfer-info" class="text-center">
-                                <h4 class="text-success">¡Listo para Apartar!</h4>
-                                <p>Revisa la información de pago y envía el comprobante.</p>
-                                <p class="alert alert-danger fw-bold">El monto a transferir/depositar es: <span id="final-amount-conf"></span></p>
-                                <p>Tienes **24 horas** para realizar el pago. **Al presionar WhatsApp, se aparta tu playera y se descuenta del stock.**</p>
                                 
-                                <h5 class="mt-4">Datos de Pago:</h5>
-                                <p class="mb-1">**Banco:** BBVA</p>
-                                <p class="mb-1">**Cuenta:** XXXXXXXXXX</p>
-                                <p class="mb-1">**CLABE:** 012XXXXXXXXXXXXXXX</p>
-                                <p class="mb-4">**Beneficiario:** Nombre Apellido</p>
+                                <div id="payment-error" class="text-danger mb-3" style="display:none;">Por favor, completa todos los campos requeridos (*).</div>
+                            </div>
+                            
+                            <div id="transfer-info" style="display:none;">
+                                <h4 class="mt-3 mb-4 text-success">¡Pedido Generado!</h4>
+                                <p>Hola <strong id="client-name-display"></strong>. Para confirmar tu compra de <span id="final-qty-conf">1</span> playera(s) (<span id="final-item-display"></span>, Talla <span id="final-size-conf"></span>), realiza la transferencia por el monto de <strong id="final-amount-conf" class="text-success"></strong> a la siguiente cuenta:</p>
+                                <hr>
+                                
+                                <h5 class="text-primary">Datos de Transferencia Bancaria</h5>
+                                <p class="mb-1"><strong>Banco:</strong> BANCOMER (BBVA)</p>
+                                <p class="mb-1"><strong>Número de Cuenta:</strong> 0123 4567 8901 2345</p>
+                                <p class="mb-1"><strong>CLABE Interbancaria:</strong> 012000000000000000</p>
+                                <p class="mb-1"><strong>Beneficiario:</strong> MI TIENDA DE PLAYERAS S.A. DE C.V.</p>
+                                
+                                <hr>
+                                <p class="text-center">¡Haz clic en el botón de WhatsApp abajo para enviar tus datos y el comprobante!</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modal-close-button">Cerrar</button>
-                    <a href="#" id="whatsapp-confirm-button" class="btn btn-success d-none" target="_blank">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width: 20px; margin-right: 5px;">
-                        Apartar y Enviar Comprobante por WhatsApp
+
+                <div class="modal-footer">
+                    <a href="#" target="_blank" class="btn btn-success" id="whatsapp-confirm-button" style="display:none;">
+                        Enviar Comprobante por WhatsApp
                     </a>
-                    <button type="button" class="btn btn-danger" id="modal-main-button">Pagar Ahora</button>
+                    
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modal-close-button">Cerrar</button>
+                    
+                    <button type="button" class="btn btn-buy" id="modal-main-button" disabled>Pagar Ahora</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        // --- CONSTANTES GLOBALES ---
-        const MAX_PRODUCTS = 41; // Número máximo de productos a inicializar
-        const FIXED_PRICE = 399.00; // Precio fijo del producto
-        const DEFAULT_STOCK_PER_SIZE = 1; // Stock por defecto si no hay override
-        const PRODUCT_LIST_CONTAINER = document.getElementById('product-list-container');
-        const WHATSAPP_NUMBER = '529991480151'; // NÚMERO DE TELÉFONO SOLICITADO
+        
+        // --- 1. GENERACIÓN DINÁMICA DE INVENTARIO INICIAL (70 Productos) ---
+        const productInventory = {};
+        const productData = [];
+        const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"]; 
+        const FIXED_PRICE = 250.00; 
+        const DEFAULT_STOCK_PER_SIZE = 1;
+        const PRODUCT_LIST_CONTAINER = document.getElementById('product-list');
 
-        // --- ESTADO GLOBAL ---
-        const productData = []; // Lista de objetos de producto
-        const productInventory = {}; // { id: { M: stock, L: stock, XL: stock } }
-        let currentOrderData = null; // Almacena la orden temporalmente antes del click de WhatsApp
-
-        // --- 1. GENERACIÓN DEL CATÁLOGO INICIAL (DATOS COMPLETOS RESTAURADOS) ---
         function generateInitialInventory() {
-            for (let i = 1; i <= MAX_PRODUCTS; i++) {
-                let mainImg, frontImg, backImg, sideImg;
-                let modelSizes = ['M', 'L', 'XL'];
-                const id = i.toString(); // Usamos la I como ID
-                const initialStockOverrides = {};
-
-                // --- INICIO DE DEFINICIÓN DE PRODUCTOS ---
+            for (let i = 1; i <= 70; i++) {
+                const id = `PROD_${String(i).padStart(3, '0')}`;
+                let mainImg, frontImg, backImg, sideImg; 
+                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+                let initialStockOverrides = {}; 
                 
-                // Modelos 1 y 2 (archivos subidos)
+                // Imágenes por defecto
+                mainImg = `https://via.placeholder.com/250x250/F4E3F5?text=Modelo+${i}`;
+                frontImg = `https://via.placeholder.com/500x500/F4E3F5?text=Frente+${i}`;
+                backImg = `https://via.placeholder.com/500x500/F4E3F5?text=Espalda+${i}`;
+                sideImg = `https://via.placeholder.com/500x500/E3F5F4?text=Lateral+${i}`; 
+
+                // ==========================================================
+                // INICIO DE ASIGNACIÓN DE RUTAS DE IMAGEN ÚNICAS
+                // ==========================================================
+                
                 if (i === 1) { 
-                    mainImg = 'MOCKUP BP D1NEGRA.jpg';
-                    frontImg = 'MOCKUP BP D1NEGRA.jpg';
-                    backImg = 'MOCKUP BP D2NEGRA.jpg';
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 2) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
-                } else if (i === 2) {
-                    mainImg = 'MOCKUP BP D2NEGRA.jpg';
-                    frontImg = 'MOCKUP BP D2NEGRA.jpg';
-                    backImg = 'MOCKUP BP D1NEGRA.jpg';
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 3) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
+                    modelSizes = ['M','XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.XL=1;
+                } else if (i === 4) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Lucy4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
-                } 
-                // Modelos 3 al 19 (Rellenos genéricos para conservar la estructura de 41)
-                else if (i >= 3 && i <= 19) { 
-                    mainImg = `https://ventaplayera.github.io/RPLAY/placeholder${i}.png`; // Genérico
-                    frontImg = `https://ventaplayera.github.io/RPLAY/placeholder${i}_f.png`;
-                    backImg = `https://ventaplayera.github.io/RPLAY/placeholder${i}_b.png`;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=2;
+                } else if (i === 5) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Raul2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
-                }
-                // Modelos 20 al 41 (URLs detalladas)
-                else if (i === 20) { 
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 6) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Raul4.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 7) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Abi2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 8) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=2;
+                } else if (i === 9) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Dani2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 10) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Dani4.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 11) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Dali2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 12) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Dali4.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 13) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Yose2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 14) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Yose4.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 15) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Keila2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 16) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Keila4.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 17) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Kenji2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 18) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Kenji4.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 19) { 
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Alli2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 20) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Alli4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 21) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Ale2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 22) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Ale4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 23) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Miri2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 24) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Miri4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 25) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Didi2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 26) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Didi4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 27) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Vale2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 28) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Vale4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 29) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Caro2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 30) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Caro4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
-                } else if (i === 31) { 
-                    mainImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png'; 
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Gon2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                    modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } else if (i === 31) { 
+                    // TEST: USAMOS LAS IMÁGENES DEL MODELO 32
+                    mainImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png'; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png';
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Gon2.png';
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 32) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 33) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 34) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 35) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dan1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dan1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dan2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 36) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dan3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dan3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dan4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 37) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Gera1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Gera1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Gera2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 38) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Gera3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Gera3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Gera4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 39) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Bra1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Bra1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Bra2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 40) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Bra3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Bra3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Bra4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
                 } else if (i === 41) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Adri1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Adri1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Adri2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
-                } else {
-                     continue; 
-                }
-                // --- FIN DE DEFINICIÓN DE PRODUCTOS ---
-
+                    initialStockOverrides.M = 1; 
+                    initialStockOverrides.L=1;
+                    initialStockOverrides.XL=1;
+                } 
                 // 1. Crear el objeto de stock para este producto
                 const stock = {};
                 modelSizes.forEach(size => {
@@ -426,6 +626,17 @@
         let currentPrice = 0;
         let currentProductName = '';
         
+        // La función setStock se mantiene para uso en consola si es necesario, aunque el panel esté oculto
+        function setStock(id, size, count) {
+            if (productInventory[id] && productInventory[id][size] !== undefined) {
+                productInventory[id][size] = count;
+                updateProductBadge(id);
+                if (currentProductID === id && currentProductSize === size) {
+                    updateQuantityStatus();
+                }
+            }
+        }
+
         function getStock(id, size) {
             return productInventory[id] && productInventory[id][size] !== undefined ? productInventory[id][size] : 0;
         }
@@ -437,16 +648,18 @@
             const sizes = Object.keys(productInventory[id] || {});
             let totalStock = sizes.reduce((sum, size) => sum + getStock(id, size), 0);
 
-            stockElement.textContent = totalStock > 0 ? `preventa` : 'Agotado'; 
+            // CAMBIO AQUÍ: "preventa" en lugar de "en stock"
+            stockElement.textContent = totalStock > 0 ? `preventa` : 'Agotado'; // Solo dice "preventa" si hay stock
             stockElement.className = 'stock-badge';
-            if (totalStock > 0) { 
-                stockElement.classList.add('in-stock'); 
+            if (totalStock > 0) { // Cualquier stock > 0 se considera "preventa"
+                stockElement.classList.add('in-stock'); // Se mantiene el color verde para "preventa"
             } else {
                 stockElement.classList.add('out-stock');
             }
         }
         
         // --- 3. RENDERIZADO DE LA INTERFAZ ---
+
         function renderProductCards() {
             let html = '';
             productData.forEach(product => {
@@ -483,13 +696,13 @@
             productData.forEach(product => updateProductBadge(product.id)); 
         }
 
+
         // --- 4. GESTIÓN DEL MODAL ---
+
         const paymentModal = document.getElementById('paymentModal');
         const quantityInput = document.getElementById('quantityInput');
         const halfPaymentCheck = document.getElementById('halfPaymentCheck');
         const modalMainButton = document.getElementById('modal-main-button');
-        const productCarousel = document.getElementById('productCarousel');
-
 
         // Función para crear botones de talla
         function createSizeButtons(id) {
@@ -547,15 +760,14 @@
                 if (currentQuantity > stock) quantityInput.value = stock; 
                 currentQuantity = parseInt(quantityInput.value);
             } else if (stock > 0) {
-                statusElement.textContent = `Disponible para preventa: ${stock}.`; 
+                statusElement.textContent = `Disponible para preventa: ${stock}.`; // CAMBIO AQUÍ
                 statusElement.classList.remove('text-danger');
                 statusElement.classList.add('text-secondary');
-                quantityInput.max = stock; 
+                quantityInput.max = 10; 
             } else {
                 statusElement.textContent = `Agotado en talla ${currentProductSize}.`;
                 statusElement.classList.remove('text-secondary');
                 statusElement.classList.add('text-danger');
-                quantityInput.max = 0;
             }
             checkModalButtonState();
         }
@@ -577,24 +789,6 @@
             modalMainButton.disabled = !canProceed;
         }
 
-        // Manejo de clicks en miniaturas
-        function setupThumbnailEvents(carousel) {
-            document.querySelectorAll('#thumb-front, #thumb-back, #thumb-side').forEach(thumb => {
-                thumb.addEventListener('click', (e) => {
-                    const slideTo = e.target.getAttribute('data-slide-to');
-                    carousel.to(parseInt(slideTo));
-                    document.querySelectorAll('.img-thumbnail').forEach(t => t.classList.remove('active'));
-                    e.target.classList.add('active');
-                });
-            });
-            productCarousel.addEventListener('slid.bs.carousel', (e) => {
-                const activeIndex = e.to;
-                document.querySelectorAll('.img-thumbnail').forEach(t => t.classList.remove('active'));
-                document.querySelector(`.img-thumbnail[data-slide-to="${activeIndex}"]`).classList.add('active');
-            });
-        }
-
-
         // Eventos en el Modal
         paymentModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
@@ -607,27 +801,22 @@
             document.getElementById('product-name').textContent = currentProductName;
             document.getElementById('product-description').textContent = button.getAttribute('data-description');
             
-            // Carga de las tres imágenes principales y miniaturas
-            const imgFrontUrl = button.getAttribute('data-img-front');
-            const imgBackUrl = button.getAttribute('data-img-back');
-            const imgSideUrl = button.getAttribute('data-img-side');
-
-            document.getElementById('modal-img-front').src = imgFrontUrl;
-            document.getElementById('modal-img-back').src = imgBackUrl;
-            document.getElementById('modal-img-side').src = imgSideUrl; 
-
-            document.getElementById('thumb-front').src = imgFrontUrl;
-            document.getElementById('thumb-back').src = imgBackUrl;
-            document.getElementById('thumb-side').src = imgSideUrl;
+            // Carga de las tres imágenes
+            document.getElementById('modal-img-front').src = button.getAttribute('data-img-front');
+            document.getElementById('modal-img-back').src = button.getAttribute('data-img-back');
+            document.getElementById('modal-img-side').src = button.getAttribute('data-img-side'); 
 
             // 2. Resetear la vista y generar botones
             resetModalView();
             createSizeButtons(currentProductID);
             updatePriceDisplays();
 
-            // 3. Configurar carrusel y miniaturas
-            const carousel = bootstrap.Carousel.getOrCreateInstance(productCarousel);
-            setupThumbnailEvents(carousel);
+            // Mensaje de depuración de imágenes (mantengo por si hay problemas de carga de URLs)
+            console.log("--- DEBUG DE IMAGEN ---");
+            console.log("URL Frente:", button.getAttribute('data-img-front'));
+            console.log("URL Espalda:", button.getAttribute('data-img-back'));
+            console.log("URL Lateral:", button.getAttribute('data-img-side'));
+            console.log("-----------------------");
         });
 
         quantityInput.addEventListener('input', () => {
@@ -656,11 +845,11 @@
                 document.getElementById('final-size-display').textContent = currentProductSize;
                 document.getElementById('final-price-display').textContent = `$${paymentDue.toFixed(2)} MXN`;
                 
-                modalMainButton.textContent = 'Continuar Pedido'; 
+                modalMainButton.textContent = 'Confirmar Pedido';
                 modalMainButton.disabled = false; 
 
-            } else if (modalMainButton.textContent === 'Continuar Pedido') {
-                // Paso 2: Validar datos y generar orden TEMPORAL
+            } else if (modalMainButton.textContent === 'Confirmar Pedido') {
+                // Paso 2: Validar datos y generar orden
 
                 const name = document.getElementById('clientName').value.trim();
                 const phone = document.getElementById('clientPhone').value.trim();
@@ -672,31 +861,13 @@
                 }
                 document.getElementById('payment-error').style.display = 'none';
 
-                // Generar orden TEMPORAL (NO se descuenta stock aquí)
-                currentOrderData = createTemporaryOrder(name, phone, address);
-
-                // Pasar al paso final de confirmación de pago
-                showTransferInfo(currentOrderData);
-            }
-        });
-
-        // Evento del botón de WhatsApp (PUNTO DE APARTADO y DESCUENTO DE STOCK)
-        document.getElementById('whatsapp-confirm-button').addEventListener('click', (e) => {
-            if (currentOrderData) {
-                // 1. Ejecutar la acción de apartado (descuento de stock y guardado)
-                finalizeOrder(currentOrderData); 
-                
-                // 2. Permitir que el enlace de WhatsApp se ejecute (redirección)
-            } else {
-                e.preventDefault();
-                alert('Error: La orden no fue generada correctamente. Vuelve al inicio del proceso.');
+                // Generar Pedido (Lógica de inventario)
+                generateOrder(name, phone, address);
             }
         });
 
 
         // --- 6. GESTIÓN DE ORDEN E INVENTARIO PERSISTENTE ---
-
-        // NOTA: Estas variables persisten a través de localStorage para simular un backend simple
         const PENDING_ORDERS = JSON.parse(localStorage.getItem('RPLAY_PENDING_ORDERS')) || [];
         const INVENTORY_STORAGE = JSON.parse(localStorage.getItem('RPLAY_INVENTORY')) || {};
 
@@ -704,21 +875,19 @@
              Object.keys(INVENTORY_STORAGE).forEach(productId => {
                 if (productInventory[productId]) {
                     Object.keys(INVENTORY_STORAGE[productId]).forEach(size => {
-                        if(productInventory[productId][size] !== undefined) {
-                            productInventory[productId][size] = INVENTORY_STORAGE[productId][size];
-                        }
+                        productInventory[productId][size] = INVENTORY_STORAGE[productId][size];
                     });
                 }
             });
         }
 
-        // Crea el objeto de orden, pero NO descuenta stock.
-        function createTemporaryOrder(name, phone, address) {
+
+        function generateOrder(name, phone, address) {
             const orderID = Date.now();
             const total = currentPrice * currentQuantity;
             const paymentDue = halfPaymentCheck.checked ? total / 2 : total;
 
-            return {
+            const order = {
                 id: orderID,
                 productID: currentProductID,
                 productName: currentProductName,
@@ -733,10 +902,7 @@
                 timestamp: Date.now(),
                 expiration: Date.now() + (24 * 60 * 60 * 1000) 
             };
-        }
 
-        // Descuenta stock y guarda la orden de forma permanente.
-        function finalizeOrder(order) {
             // 1. Descontar stock del inventario global
             productInventory[order.productID][order.size] -= order.quantity;
             localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
@@ -746,42 +912,41 @@
             PENDING_ORDERS.push(order);
             localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
 
-            renderOrdersList();
+            // 3. Mostrar info de transferencia y WhatsApp
+            showTransferInfo(order);
         }
-
 
         function showTransferInfo(order) {
             document.getElementById('payment-step').style.display = 'none';
             document.getElementById('transfer-info').style.display = 'block';
 
+            document.getElementById('client-name-display').textContent = order.clientName;
+            document.getElementById('final-item-display').textContent = order.productName;
+            document.getElementById('final-qty-conf').textContent = order.quantity;
+            document.getElementById('final-size-conf').textContent = order.size;
             document.getElementById('final-amount-conf').textContent = `$${order.paymentDue.toFixed(2)} MXN`;
 
-            // Botón de WhatsApp - genera el mensaje con la data de la orden temporal
-            const paymentType = order.isHalfPayment ? "un apartado del 50%" : "el pago total";
+            // Botón de WhatsApp
+            const message = `¡Hola! Acabo de generar un pedido de playeras RPLAY (#${order.id}).\n\n- Producto: ${order.productName}\n- Talla: ${order.size}\n- Cantidad: ${order.quantity}\n- Monto pagado/apartado: $${order.paymentDue.toFixed(2)} MXN.\n- Mi nombre es: ${order.clientName}\n- Mi dirección es: ${order.clientAddress}`;
             
-            // Mensaje completo para enviar el comprobante
-            const message = `¡Hola! Acabo de generar mi pedido y voy a proceder con el pago (#${order.id}).\n\n- Producto: ${order.productName}\n- Talla: ${order.size}\n- Cantidad: ${order.quantity}\n- Monto por ${paymentType}: $${order.paymentDue.toFixed(2)} MXN.\n- Mi nombre es: ${order.clientName}\n- Mi dirección es: ${order.clientAddress}\n\n*Adjunto mi comprobante*`;
-            
-            // Enlace de WhatsApp: usa el número fijo y el mensaje generado
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-            
+            // IMPORTANTE: REEMPLAZA EL NÚMERO GENÉRICO CON EL TUYO (ej: 5218123456789)
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=529991480151=${encodeURIComponent(message)}`;
             document.getElementById('whatsapp-confirm-button').href = whatsappUrl;
             document.getElementById('whatsapp-confirm-button').style.display = 'block';
-            
-            // Modificación solicitada: El botón principal de flujo se cambia a "Cerrar" en el paso final
-            modalMainButton.textContent = 'Cerrar';
-            modalMainButton.classList.remove('btn-danger');
-            modalMainButton.classList.add('btn-secondary');
-            modalMainButton.setAttribute('data-bs-dismiss', 'modal'); 
-            modalMainButton.disabled = false;
+            modalMainButton.style.display = 'none';
+            document.getElementById('modal-close-button').textContent = 'Listo';
+
+            // Actualizar panel de administración (Aunque el panel esté oculto, esta función puede usarse si se decide mostrarlo en el futuro)
+            renderOrdersList();
         }
 
         // --- 7. FUNCIONES DE UTILIDAD Y ADMINISTRACIÓN ---
 
+        // Esta función se mantiene, pero solo se llama si el panel de administración fuera visible.
         function renderOrdersList() {
             const list = document.getElementById('ordersList');
             const noOrdersMessage = document.getElementById('noOrdersMessage');
-            if (!list || !noOrdersMessage) return; 
+            if (!list || !noOrdersMessage) return; // Asegura que los elementos existan si el panel se oculta completamente
 
             list.innerHTML = '';
             
@@ -800,7 +965,7 @@
                     <div class="card mb-2 ${cardClass}">
                         <div class="card-body p-2">
                             <p class="mb-1">
-                                <strong>Pedido #${order.id}</strong> (${order.productName} T: ${order.size} x${order.quantity}) - Pagó: $${order.paymentDue.toFixed(2)} MXN
+                                **Pedido #${order.id}** (${order.productName} T: ${order.size} x${order.quantity}) - Pagó: $${order.paymentDue.toFixed(2)} MXN
                             </p>
                             <p class="mb-1 small text-muted">Cliente: ${order.clientName} | Tel: ${order.clientPhone}</p>
                             <p class="mb-1 small text-danger ${expired ? 'fw-bold' : ''}">
@@ -815,19 +980,23 @@
             });
         }
 
-        // Funciones accesibles desde la consola (F12) para administración
+        // Estas funciones se mantienen como "window.fucntionName" para que puedan ser ejecutadas desde la consola del navegador (F12)
+        // si un administrador necesita interactuar con ellas manualmente, a pesar de que el panel visual esté oculto.
         window.releaseStock = (orderId, productId, size, quantity) => {
+             // 1. Devolver el stock
             if (productInventory[productId] && productInventory[productId][size] !== undefined) {
                 productInventory[productId][size] += quantity;
                 localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
                 updateProductBadge(productId);
             }
-            
+           
+            // 2. Remover la orden
             const index = PENDING_ORDERS.findIndex(order => order.id === orderId);
             if (index > -1) {
                 PENDING_ORDERS.splice(index, 1);
                 localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
             }
+            // 3. Re-renderizar (esto afectaría al panel si estuviera visible)
             renderOrdersList(); 
             renderProductCards(); 
         }
@@ -841,49 +1010,36 @@
         }
 
         window.setStock = (id, size, count) => {
-             if (productInventory[id] && productInventory[id][size] !== undefined) {
-                productInventory[id][size] = count;
-                updateProductBadge(id);
-                if (currentProductID === id && currentProductSize === size) {
-                    updateQuantityStatus();
-                }
-                localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
-            }
+            setStock(id, size, count);
         }
 
-
         function resetModalView() {
-            // Reiniciar vistas del modal y estado
+            // Reiniciar vistas del modal
             document.getElementById('selection-step').style.display = 'block';
             document.getElementById('payment-step').style.display = 'none';
             document.getElementById('transfer-info').style.display = 'none';
             document.getElementById('payment-error').style.display = 'none';
+
+            // Reiniciar inputs
             document.getElementById('clientName').value = '';
             document.getElementById('clientPhone').value = '';
             document.getElementById('clientAddress').value = '';
             quantityInput.value = 1;
-            halfPaymentCheck.checked = false;
+
+            // Reiniciar estado interno
             currentProductSize = null;
             currentQuantity = 1;
-            currentOrderData = null; // Limpiar la orden temporal
-            
-            // Botón principal (restablecer a "Pagar Ahora")
             modalMainButton.textContent = 'Pagar Ahora';
             modalMainButton.disabled = true;
-            modalMainButton.style.display = 'block';
-            modalMainButton.classList.remove('btn-secondary');
-            modalMainButton.classList.add('btn-danger');
-            modalMainButton.removeAttribute('data-bs-dismiss');
-
             document.getElementById('whatsapp-confirm-button').style.display = 'none';
-            document.getElementById('modal-close-button').textContent = 'Cerrar'; // El botón izquierdo siempre es Cerrar
+            modalMainButton.style.display = 'block';
+            document.getElementById('modal-close-button').textContent = 'Cerrar';
 
+            // Reiniciar carrusel a la primera imagen
             const carouselElement = document.getElementById('productCarousel');
             if (carouselElement) {
                 const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement);
                 carousel.to(0);
-                document.querySelectorAll('.img-thumbnail').forEach(t => t.classList.remove('active'));
-                document.getElementById('thumb-front').classList.add('active');
             }
         }
         
@@ -891,6 +1047,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             generateInitialInventory();
             loadInventoryStorage();
+            // No llamamos a renderOrdersList() aquí si el panel está oculto por defecto,
+            // solo se llamaría si el panel se hace visible dinámicamente o si es estrictamente necesario para la lógica interna.
             renderProductCards();
         });
 
