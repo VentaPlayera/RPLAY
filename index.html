@@ -176,11 +176,13 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modal-close-button">Cerrar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button> 
+                    
                     <a href="#" id="whatsapp-confirm-button" class="btn btn-success d-none" target="_blank">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width: 20px; margin-right: 5px;">
                         Apartar y Enviar Comprobante por WhatsApp
                     </a>
+                    
                     <button type="button" class="btn btn-danger" id="modal-main-button">Pagar Ahora</button>
                 </div>
             </div>
@@ -488,6 +490,7 @@
         const quantityInput = document.getElementById('quantityInput');
         const halfPaymentCheck = document.getElementById('halfPaymentCheck');
         const modalMainButton = document.getElementById('modal-main-button');
+        const whatsappConfirmButton = document.getElementById('whatsapp-confirm-button');
         const productCarousel = document.getElementById('productCarousel');
 
 
@@ -677,16 +680,27 @@
 
                 // Pasar al paso final de confirmación de pago
                 showTransferInfo(currentOrderData);
+            } else if (modalMainButton.textContent === 'Cerrar') {
+                 // Paso 3: El botón principal ahora actúa como un simple botón de cierre.
+                 const modalInstance = bootstrap.Modal.getInstance(paymentModal);
+                 if (modalInstance) {
+                     modalInstance.hide();
+                 }
+                 resetModalView();
             }
         });
 
-        // Evento del botón de WhatsApp (PUNTO DE APARTADO y DESCUENTO DE STOCK)
-        document.getElementById('whatsapp-confirm-button').addEventListener('click', (e) => {
+        // Evento del botón de WhatsApp (PUNTO DE APARTADO y DESCUENTO DE STOCK + REDIRECCIÓN)
+        whatsappConfirmButton.addEventListener('click', (e) => {
             if (currentOrderData) {
                 // 1. Ejecutar la acción de apartado (descuento de stock y guardado)
+                // Se usa setTimeout para dar tiempo al navegador de guardar el localStorage
+                // ANTES de que cambie de página con la redirección de WhatsApp.
                 finalizeOrder(currentOrderData); 
                 
-                // 2. Permitir que el enlace de WhatsApp se ejecute (redirección)
+                // 2. La redirección de WhatsApp ocurre automáticamente porque es un <a>
+                // y NO estamos usando e.preventDefault()
+                
             } else {
                 e.preventDefault();
                 alert('Error: La orden no fue generada correctamente. Vuelve al inicio del proceso.');
@@ -747,6 +761,7 @@
             localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
 
             renderOrdersList();
+            renderProductCards(); // Actualiza el badge en la card principal
         }
 
 
@@ -765,14 +780,14 @@
             // Enlace de WhatsApp: usa el número fijo y el mensaje generado
             const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
             
-            document.getElementById('whatsapp-confirm-button').href = whatsappUrl;
-            document.getElementById('whatsapp-confirm-button').style.display = 'block';
+            whatsappConfirmButton.href = whatsappUrl;
+            whatsappConfirmButton.style.display = 'block';
             
-            // Modificación solicitada: El botón principal de flujo se cambia a "Cerrar" en el paso final
+            // MODIFICACIÓN SOLICITADA: El botón principal de flujo se cambia a "Cerrar" en el paso final
             modalMainButton.textContent = 'Cerrar';
             modalMainButton.classList.remove('btn-danger');
             modalMainButton.classList.add('btn-secondary');
-            modalMainButton.setAttribute('data-bs-dismiss', 'modal'); 
+            // Ya no necesita el data-bs-dismiss, el evento de click lo maneja
             modalMainButton.disabled = false;
         }
 
@@ -873,10 +888,8 @@
             modalMainButton.style.display = 'block';
             modalMainButton.classList.remove('btn-secondary');
             modalMainButton.classList.add('btn-danger');
-            modalMainButton.removeAttribute('data-bs-dismiss');
 
-            document.getElementById('whatsapp-confirm-button').style.display = 'none';
-            document.getElementById('modal-close-button').textContent = 'Cerrar'; // El botón izquierdo siempre es Cerrar
+            whatsappConfirmButton.style.display = 'none';
 
             const carouselElement = document.getElementById('productCarousel');
             if (carouselElement) {
@@ -892,6 +905,7 @@
             generateInitialInventory();
             loadInventoryStorage();
             renderProductCards();
+            renderOrdersList();
         });
 
     </script>
