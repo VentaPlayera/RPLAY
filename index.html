@@ -195,7 +195,7 @@
         const FIXED_PRICE = 399.00; // Precio fijo del producto
         const DEFAULT_STOCK_PER_SIZE = 1; // Stock por defecto si no hay override
         const PRODUCT_LIST_CONTAINER = document.getElementById('product-list-container');
-        const WHATSAPP_NUMBER = '529991480151'; // NUMERO DE TELÉFONO ACTUALIZADO
+        const WHATSAPP_NUMBER = '529991480151'; // NÚMERO DE TELÉFONO SOLICITADO
 
         // --- ESTADO GLOBAL ---
         const productData = []; // Lista de objetos de producto
@@ -211,7 +211,8 @@
                 const initialStockOverrides = {};
 
                 // --- INICIO DE DEFINICIÓN DE PRODUCTOS ---
-                // Modelos 1 y 2 usan archivos subidos
+                
+                // Modelos 1 y 2 (archivos subidos)
                 if (i === 1) { 
                     mainImg = 'MOCKUP BP D1NEGRA.jpg';
                     frontImg = 'MOCKUP BP D1NEGRA.jpg';
@@ -227,7 +228,16 @@
                     modelSizes = ['M', 'L', 'XL'];
                     initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } 
-                // Modelos 20 al 41 con URLs específicas restauradas
+                // Modelos 3 al 19 (Rellenos genéricos para conservar la estructura de 41)
+                else if (i >= 3 && i <= 19) { 
+                    mainImg = `https://ventaplayera.github.io/RPLAY/placeholder${i}.png`; // Genérico
+                    frontImg = `https://ventaplayera.github.io/RPLAY/placeholder${i}_f.png`;
+                    backImg = `https://ventaplayera.github.io/RPLAY/placeholder${i}_b.png`;
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
+                    modelSizes = ['M', 'L', 'XL'];
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
+                }
+                // Modelos 20 al 41 (URLs detalladas)
                 else if (i === 20) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png';
@@ -646,7 +656,7 @@
                 document.getElementById('final-size-display').textContent = currentProductSize;
                 document.getElementById('final-price-display').textContent = `$${paymentDue.toFixed(2)} MXN`;
                 
-                modalMainButton.textContent = 'Continuar Pedido'; // Modificado a Continuar Pedido
+                modalMainButton.textContent = 'Continuar Pedido'; 
                 modalMainButton.disabled = false; 
 
             } else if (modalMainButton.textContent === 'Continuar Pedido') {
@@ -670,7 +680,7 @@
             }
         });
 
-        // Evento del botón de WhatsApp (PUNTO DE APARTADO)
+        // Evento del botón de WhatsApp (PUNTO DE APARTADO y DESCUENTO DE STOCK)
         document.getElementById('whatsapp-confirm-button').addEventListener('click', (e) => {
             if (currentOrderData) {
                 // 1. Ejecutar la acción de apartado (descuento de stock y guardado)
@@ -756,8 +766,12 @@
             document.getElementById('whatsapp-confirm-button').href = whatsappUrl;
             document.getElementById('whatsapp-confirm-button').style.display = 'block';
             
-            // Ocultar el botón principal de flujo
-            modalMainButton.style.display = 'none';
+            // Modificación solicitada: El botón principal de flujo se cambia a "Cerrar" en el paso final
+            modalMainButton.textContent = 'Cerrar';
+            modalMainButton.classList.remove('btn-danger');
+            modalMainButton.classList.add('btn-secondary');
+            modalMainButton.setAttribute('data-bs-dismiss', 'modal'); 
+            modalMainButton.disabled = false;
         }
 
         // --- 7. FUNCIONES DE UTILIDAD Y ADMINISTRACIÓN ---
@@ -850,11 +864,17 @@
             currentProductSize = null;
             currentQuantity = 1;
             currentOrderData = null; // Limpiar la orden temporal
+            
+            // Botón principal (restablecer a "Pagar Ahora")
             modalMainButton.textContent = 'Pagar Ahora';
             modalMainButton.disabled = true;
-            document.getElementById('whatsapp-confirm-button').style.display = 'none';
             modalMainButton.style.display = 'block';
-            document.getElementById('modal-close-button').textContent = 'Cerrar';
+            modalMainButton.classList.remove('btn-secondary');
+            modalMainButton.classList.add('btn-danger');
+            modalMainButton.removeAttribute('data-bs-dismiss');
+
+            document.getElementById('whatsapp-confirm-button').style.display = 'none';
+            document.getElementById('modal-close-button').textContent = 'Cerrar'; // El botón izquierdo siempre es Cerrar
 
             const carouselElement = document.getElementById('productCarousel');
             if (carouselElement) {
