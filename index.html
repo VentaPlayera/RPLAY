@@ -930,7 +930,7 @@
             const message = `¡Hola! Acabo de generar un pedido de playeras RPLAY (#${order.id}).\n\n- Producto: ${order.productName}\n- Talla: ${order.size}\n- Cantidad: ${order.quantity}\n- Monto pagado/apartado: $${order.paymentDue.toFixed(2)} MXN.\n- Mi nombre es: ${order.clientName}\n- Mi dirección es: ${order.clientAddress}`;
             
             // IMPORTANTE: REEMPLAZA EL NÚMERO GENÉRICO CON EL TUYO (ej: 5218123456789)
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=521XXXXXXXXXX&text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=529991480151=${encodeURIComponent(message)}`;
             document.getElementById('whatsapp-confirm-button').href = whatsappUrl;
             document.getElementById('whatsapp-confirm-button').style.display = 'block';
             modalMainButton.style.display = 'none';
@@ -1055,6 +1055,7 @@
     </script>
 </body>
 </html>
+
 
 
 
