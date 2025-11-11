@@ -161,10 +161,10 @@
                             </div>
 
                             <div id="transfer-info" class="text-center">
-                                <h4 class="text-success">¡Orden Apartada Exitosamente!</h4>
-                                <p>Gracias, <strong id="client-name-display"></strong>. Hemos apartado tu pedido de <strong id="final-item-display"></strong> (Talla <strong id="final-size-conf"></strong> x<strong id="final-qty-conf"></strong>).</p>
+                                <h4 class="text-success">¡Listo para Apartar!</h4>
+                                <p>Revisa la información de pago y envía el comprobante.</p>
                                 <p class="alert alert-danger fw-bold">El monto a transferir/depositar es: <span id="final-amount-conf"></span></p>
-                                <p>Tienes **24 horas** para realizar el pago y notificarlo por WhatsApp.</p>
+                                <p>Tienes **24 horas** para realizar el pago. **Al presionar WhatsApp, se aparta tu playera y se descuenta del stock.**</p>
                                 
                                 <h5 class="mt-4">Datos de Pago:</h5>
                                 <p class="mb-1">**Banco:** BBVA</p>
@@ -179,7 +179,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modal-close-button">Cerrar</button>
                     <a href="#" id="whatsapp-confirm-button" class="btn btn-success d-none" target="_blank">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width: 20px; margin-right: 5px;">
-                        Notificar Pago por WhatsApp
+                        Apartar y Enviar Comprobante por WhatsApp
                     </a>
                     <button type="button" class="btn btn-danger" id="modal-main-button">Pagar Ahora</button>
                 </div>
@@ -200,8 +200,9 @@
         // --- ESTADO GLOBAL ---
         const productData = []; // Lista de objetos de producto
         const productInventory = {}; // { id: { M: stock, L: stock, XL: stock } }
+        let currentOrderData = null; // Almacena la orden temporalmente antes del click de WhatsApp
 
-        // --- 1. GENERACIÓN DEL CATÁLOGO INICIAL ---
+        // --- 1. GENERACIÓN DEL CATÁLOGO INICIAL (DATOS COMPLETOS RESTAURADOS) ---
         function generateInitialInventory() {
             for (let i = 1; i <= MAX_PRODUCTS; i++) {
                 let mainImg, frontImg, backImg, sideImg;
@@ -210,228 +211,178 @@
                 const initialStockOverrides = {};
 
                 // --- INICIO DE DEFINICIÓN DE PRODUCTOS ---
-                // Reemplazado IDs 1 y 2 con las imágenes cargadas para prueba
-
+                // Modelos 1 y 2 usan archivos subidos
                 if (i === 1) { 
                     mainImg = 'MOCKUP BP D1NEGRA.jpg';
                     frontImg = 'MOCKUP BP D1NEGRA.jpg';
                     backImg = 'MOCKUP BP D2NEGRA.jpg';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 2) {
                     mainImg = 'MOCKUP BP D2NEGRA.jpg';
                     frontImg = 'MOCKUP BP D2NEGRA.jpg';
                     backImg = 'MOCKUP BP D1NEGRA.jpg';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } 
-                // Los modelos del 3 al 19 se omiten para brevedad en este ejemplo.
+                // Modelos 20 al 41 con URLs específicas restauradas
                 else if (i === 20) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Alli4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 21) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Ale2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 22) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Ale4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 23) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Miri2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 24) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Miri4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 25) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Didi2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 26) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Didi4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 27) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Vale2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 28) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Vale4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 29) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Caro2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 30) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Caro4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 31) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Gon2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 32) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 33) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 34) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 35) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dan1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dan1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dan2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 36) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Dan3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Dan3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Dan4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 37) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Gera1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Gera1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Gera2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 38) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Gera3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Gera3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Gera4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 39) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Bra1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Bra1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Bra2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 40) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Bra3.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Bra3.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Bra4.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else if (i === 41) { 
                     mainImg = 'https://ventaplayera.github.io/RPLAY/Adri1.png'; 
                     frontImg = 'https://ventaplayera.github.io/RPLAY/Adri1.png';
                     backImg = 'https://ventaplayera.github.io/RPLAY/Adri2.png';
                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                     modelSizes = ['M', 'L', 'XL'];
-                    initialStockOverrides.M = 1; 
-                    initialStockOverrides.L = 1;
-                    initialStockOverrides.XL = 1;
+                    initialStockOverrides.M = 1; initialStockOverrides.L = 1; initialStockOverrides.XL = 1;
                 } else {
-                     // Si el ID no está en el rango original (20-41) ni en el de prueba (1, 2)
                      continue; 
                 }
                 // --- FIN DE DEFINICIÓN DE PRODUCTOS ---
@@ -486,7 +437,6 @@
         }
         
         // --- 3. RENDERIZADO DE LA INTERFAZ ---
-
         function renderProductCards() {
             let html = '';
             productData.forEach(product => {
@@ -623,12 +573,10 @@
                 thumb.addEventListener('click', (e) => {
                     const slideTo = e.target.getAttribute('data-slide-to');
                     carousel.to(parseInt(slideTo));
-                    // Actualizar estado activo de la miniatura
                     document.querySelectorAll('.img-thumbnail').forEach(t => t.classList.remove('active'));
                     e.target.classList.add('active');
                 });
             });
-            // Escuchar el evento del carrusel para actualizar la miniatura activa
             productCarousel.addEventListener('slid.bs.carousel', (e) => {
                 const activeIndex = e.to;
                 document.querySelectorAll('.img-thumbnail').forEach(t => t.classList.remove('active'));
@@ -698,11 +646,11 @@
                 document.getElementById('final-size-display').textContent = currentProductSize;
                 document.getElementById('final-price-display').textContent = `$${paymentDue.toFixed(2)} MXN`;
                 
-                modalMainButton.textContent = 'Confirmar Pedido';
+                modalMainButton.textContent = 'Continuar Pedido'; // Modificado a Continuar Pedido
                 modalMainButton.disabled = false; 
 
-            } else if (modalMainButton.textContent === 'Confirmar Pedido') {
-                // Paso 2: Validar datos y generar orden
+            } else if (modalMainButton.textContent === 'Continuar Pedido') {
+                // Paso 2: Validar datos y generar orden TEMPORAL
 
                 const name = document.getElementById('clientName').value.trim();
                 const phone = document.getElementById('clientPhone').value.trim();
@@ -714,8 +662,24 @@
                 }
                 document.getElementById('payment-error').style.display = 'none';
 
-                // Generar Pedido (Lógica de inventario)
-                generateOrder(name, phone, address);
+                // Generar orden TEMPORAL (NO se descuenta stock aquí)
+                currentOrderData = createTemporaryOrder(name, phone, address);
+
+                // Pasar al paso final de confirmación de pago
+                showTransferInfo(currentOrderData);
+            }
+        });
+
+        // Evento del botón de WhatsApp (PUNTO DE APARTADO)
+        document.getElementById('whatsapp-confirm-button').addEventListener('click', (e) => {
+            if (currentOrderData) {
+                // 1. Ejecutar la acción de apartado (descuento de stock y guardado)
+                finalizeOrder(currentOrderData); 
+                
+                // 2. Permitir que el enlace de WhatsApp se ejecute (redirección)
+            } else {
+                e.preventDefault();
+                alert('Error: La orden no fue generada correctamente. Vuelve al inicio del proceso.');
             }
         });
 
@@ -728,7 +692,6 @@
              Object.keys(INVENTORY_STORAGE).forEach(productId => {
                 if (productInventory[productId]) {
                     Object.keys(INVENTORY_STORAGE[productId]).forEach(size => {
-                        // Solo cargar si existe en el inventario inicial (evita errores con IDs borrados)
                         if(productInventory[productId][size] !== undefined) {
                             productInventory[productId][size] = INVENTORY_STORAGE[productId][size];
                         }
@@ -737,13 +700,13 @@
             });
         }
 
-
-        function generateOrder(name, phone, address) {
+        // Crea el objeto de orden, pero NO descuenta stock.
+        function createTemporaryOrder(name, phone, address) {
             const orderID = Date.now();
             const total = currentPrice * currentQuantity;
             const paymentDue = halfPaymentCheck.checked ? total / 2 : total;
 
-            const order = {
+            return {
                 id: orderID,
                 productID: currentProductID,
                 productName: currentProductName,
@@ -758,7 +721,10 @@
                 timestamp: Date.now(),
                 expiration: Date.now() + (24 * 60 * 60 * 1000) 
             };
+        }
 
+        // Descuenta stock y guarda la orden de forma permanente.
+        function finalizeOrder(order) {
             // 1. Descontar stock del inventario global
             productInventory[order.productID][order.size] -= order.quantity;
             localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
@@ -768,32 +734,30 @@
             PENDING_ORDERS.push(order);
             localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
 
-            // 3. Mostrar info de transferencia y WhatsApp
-            showTransferInfo(order);
+            renderOrdersList();
         }
+
 
         function showTransferInfo(order) {
             document.getElementById('payment-step').style.display = 'none';
             document.getElementById('transfer-info').style.display = 'block';
 
-            document.getElementById('client-name-display').textContent = order.clientName;
-            document.getElementById('final-item-display').textContent = order.productName;
-            document.getElementById('final-qty-conf').textContent = order.quantity;
-            document.getElementById('final-size-conf').textContent = order.size;
             document.getElementById('final-amount-conf').textContent = `$${order.paymentDue.toFixed(2)} MXN`;
 
-            // Botón de WhatsApp
+            // Botón de WhatsApp - genera el mensaje con la data de la orden temporal
             const paymentType = order.isHalfPayment ? "un apartado del 50%" : "el pago total";
-            const message = `¡Hola! Acabo de generar un pedido de playeras RPLAY (#${order.id}).\n\n- Producto: ${order.productName}\n- Talla: ${order.size}\n- Cantidad: ${order.quantity}\n- Monto por ${paymentType}: $${order.paymentDue.toFixed(2)} MXN.\n- Mi nombre es: ${order.clientName}\n- Mi dirección es: ${order.clientAddress}`;
             
-            // Reemplaza el número genérico con la constante
+            // Mensaje completo para enviar el comprobante
+            const message = `¡Hola! Acabo de generar mi pedido y voy a proceder con el pago (#${order.id}).\n\n- Producto: ${order.productName}\n- Talla: ${order.size}\n- Cantidad: ${order.quantity}\n- Monto por ${paymentType}: $${order.paymentDue.toFixed(2)} MXN.\n- Mi nombre es: ${order.clientName}\n- Mi dirección es: ${order.clientAddress}\n\n*Adjunto mi comprobante*`;
+            
+            // Enlace de WhatsApp: usa el número fijo y el mensaje generado
             const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
+            
             document.getElementById('whatsapp-confirm-button').href = whatsappUrl;
             document.getElementById('whatsapp-confirm-button').style.display = 'block';
+            
+            // Ocultar el botón principal de flujo
             modalMainButton.style.display = 'none';
-            document.getElementById('modal-close-button').textContent = 'Listo';
-
-            renderOrdersList();
         }
 
         // --- 7. FUNCIONES DE UTILIDAD Y ADMINISTRACIÓN ---
@@ -835,22 +799,19 @@
             });
         }
 
-        // Estas funciones se mantienen como "window.fucntionName" para que puedan ser ejecutadas desde la consola del navegador (F12)
+        // Funciones accesibles desde la consola (F12) para administración
         window.releaseStock = (orderId, productId, size, quantity) => {
-            // 1. Devolver el stock
             if (productInventory[productId] && productInventory[productId][size] !== undefined) {
                 productInventory[productId][size] += quantity;
                 localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
                 updateProductBadge(productId);
             }
             
-            // 2. Remover la orden
             const index = PENDING_ORDERS.findIndex(order => order.id === orderId);
             if (index > -1) {
                 PENDING_ORDERS.splice(index, 1);
                 localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
             }
-            // 3. Re-renderizar 
             renderOrdersList(); 
             renderProductCards(); 
         }
@@ -867,40 +828,34 @@
              if (productInventory[id] && productInventory[id][size] !== undefined) {
                 productInventory[id][size] = count;
                 updateProductBadge(id);
-                // Si está en el modal, actualiza la vista del modal también
                 if (currentProductID === id && currentProductSize === size) {
                     updateQuantityStatus();
                 }
-                // También guardamos en localStorage para que sea persistente
                 localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
             }
         }
 
 
         function resetModalView() {
-            // Reiniciar vistas del modal
+            // Reiniciar vistas del modal y estado
             document.getElementById('selection-step').style.display = 'block';
             document.getElementById('payment-step').style.display = 'none';
             document.getElementById('transfer-info').style.display = 'none';
             document.getElementById('payment-error').style.display = 'none';
-
-            // Reiniciar inputs
             document.getElementById('clientName').value = '';
             document.getElementById('clientPhone').value = '';
             document.getElementById('clientAddress').value = '';
             quantityInput.value = 1;
             halfPaymentCheck.checked = false;
-
-            // Reiniciar estado interno
             currentProductSize = null;
             currentQuantity = 1;
+            currentOrderData = null; // Limpiar la orden temporal
             modalMainButton.textContent = 'Pagar Ahora';
             modalMainButton.disabled = true;
             document.getElementById('whatsapp-confirm-button').style.display = 'none';
             modalMainButton.style.display = 'block';
             document.getElementById('modal-close-button').textContent = 'Cerrar';
 
-            // Reiniciar carrusel a la primera imagen y miniatura
             const carouselElement = document.getElementById('productCarousel');
             if (carouselElement) {
                 const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement);
