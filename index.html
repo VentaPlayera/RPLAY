@@ -221,7 +221,7 @@
         const PRODUCT_LIST_CONTAINER = document.getElementById('product-list');
 
         function generateInitialInventory() {
-            for (let i = 1; i <= 70; i++) {
+            for (let i = 1; i <= 44; i++) {
                 const id = `PROD_${String(i).padStart(3, '0')}`;
                 let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
                 let initialStockOverrides = {}; 
@@ -231,7 +231,7 @@
 
                 let mainImg, frontImg, backImg, sideImg;
 
-                if (i < 42 || i > 43) {
+                if (i < 42 || i === 44) {
                     // Productos de 1 a 41 y 44 a 70: Se tratan como variantes de color 'Default'
                     
                     // Asignación de imágenes y stock para i=1 a i=41
@@ -516,7 +516,7 @@
                         img_back: 'https://ventaplayera.github.io/RPLAY/Aro2.png';
                         img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'REEMPLAZAR_CON_URL_FRENTE_BP_D2NEGRA.jpg'
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro1.png';
                     };
                     
                     // Variante Blanco (¡REEMPLAZAR URLs!)
@@ -525,7 +525,7 @@
                         img_back: 'https://ventaplayera.github.io/RPLAY/Aro4.png'; 
                         img_side: 'https://ventaplayera.github.io/RPLAY/Aro1.png';
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'REEMPLAZAR_CON_URL_FRENTE_BP_D2BLANCO.jpg'
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro3.png';
                     };
                     
                 } else if (i === 44) {
@@ -539,7 +539,7 @@
                         img_back: 'https://ventaplayera.github.io/RPLAY/Aro6.png';
                         img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'REEMPLAZAR_CON_URL_FRENTE_BP_D1NEGRA.jpg'
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro5.png';
                     };
 
                     // Variante Blanco (¡REEMPLAZAR URLs!)
@@ -548,7 +548,7 @@
                         img_back: 'https://ventaplayera.github.io/RPLAY/Aro8.png';
                         img_side: 'https://ventaplayera.github.io/RPLAY/blanco.png',
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'REEMPLAZAR_CON_URL_FRENTE_BP_D1BLANCO.jpg'
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro7.png'; 
                     };
                 }
 
@@ -1068,4 +1068,5 @@
     </script>
 </body>
 </html>
+
 
