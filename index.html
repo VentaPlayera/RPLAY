@@ -883,29 +883,29 @@
 
 
         function generateOrder(name, phone, address) {
-            const orderID = Date.now();
-            const total = currentPrice * currentQuantity;
-            const paymentDue = halfPaymentCheck.checked ? total / 2 : total;
+    const orderID = Date.now();
+    const total = currentPrice * currentQuantity;
+    const paymentDue = halfPaymentCheck.checked ? total / 2 : total;
 
-            const order = {
-                id: orderID,
-                productID: currentProductID,
-                productName: currentProductName,
-                size: currentProductSize,
-                quantity: currentQuantity,
-                totalPrice: total,
-                paymentDue: paymentDue,
-                isHalfPayment: halfPaymentCheck.checked,
-                clientName: name,
-                clientPhone: phone,
-                clientAddress: address,
-                timestamp: Date.now(),
-                expiration: Date.now() + (24 * 60 * 60 * 1000) 
-            };
+    const order = {
+        id: orderID,
+        productID: currentProductID,
+        productName: currentProductName,
+        size: currentProductSize,
+        quantity: currentQuantity,
+        totalPrice: total,
+        paymentDue: paymentDue,
+        isHalfPayment: halfPaymentCheck.checked,
+        clientName: name,
+        clientPhone: phone,
+        clientAddress: address,
+        timestamp: Date.now(),
+        expiration: Date.now() + (24 * 60 * 60 * 1000)
+    };
 
             // 1. Descontar stock del inventario global
             productInventory[order.productID][order.size] -= order.quantity;
-            localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
+            localStorage.setItem('RPLAY_PENDING_OIDERS', JSON.stringify(PENDING_ORDERS));
             updateProductBadge(order.productID);
             
             // 2. Guardar la orden pendiente
@@ -934,14 +934,22 @@
             const phoneNumber = '5219991480151'; // Ejemplo: 52 + 1 + 9991480151
 
             // 2. CORRECCIÓN: Usamos wa.me con &text=
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-            document.getElementById('whatsapp-confirm-button').style.display = 'block';
+            whatsappButton.setAttribute('data-order-id', order.id);
+            whatsappButton.style.display = 'block';
             modalMainButton.style.display = 'none';
-            document.getElementById('modal-close-button').textContent = 'Listo';
+            document.getElementById('modal-close-button').textContent = 'Cerrar';
 
             // Actualizar panel de administración (Aunque el panel esté oculto, esta función puede usarse si se decide mostrarlo en el futuro)
             renderOrdersList();
         }
+        // --- NUEVA FUNCIÓN DE UTILIDAD ---
+function applyStockReduction(order) {
+    // 1. Descontar stock del inventario global
+    productInventory[order.productID][order.size] -= order.quantity;
+    localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
+    updateProductBadge(order.productID);
+    console.log(`Stock descontado: ${order.quantity} unidades del producto ${order.productID} en talla ${order.size}.`);
+}
 
         // --- 7. FUNCIONES DE UTILIDAD Y ADMINISTRACIÓN ---
 
@@ -1045,6 +1053,34 @@
                 carousel.to(0);
             }
         }
+        // --- 8. LISTENER PARA DESCONTAR STOCK AL ENVIAR WHATSAPP (AÑADIR ESTE BLOQUE) ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    const whatsappButton = document.getElementById('whatsapp-confirm-button');
+
+    if (whatsappButton) {
+        // Añadir listener para la acción final del cliente
+        whatsappButton.addEventListener('click', (event) => {
+            
+            // 1. Verificar si el stock ya fue aplicado (para evitar doble clic)
+            if (whatsappButton.getAttribute('data-stock-applied') !== 'true') {
+                
+                // 2. Obtener el ID de la orden y encontrar el objeto de la orden
+                const orderIdToApply = parseInt(whatsappButton.getAttribute('data-order-id'));
+                const order = PENDING_ORDERS.find(o => o.id === orderIdToApply);
+                
+                if (order) {
+                    // 3. Aplicamos el descuento de stock real
+                    applyStockReduction(order);
+                    
+                    // 4. Marcamos el botón como "stock aplicado"
+                    whatsappButton.setAttribute('data-stock-applied', 'true');
+                }
+            }
+            // Después de este código, el evento sigue su curso, abriendo la URL del href.
+        });
+    }
+});
         
         // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -1058,6 +1094,7 @@
     </script>
 </body>
 </html>
+
 
 
 
