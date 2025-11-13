@@ -221,7 +221,8 @@
         const PRODUCT_LIST_CONTAINER = document.getElementById('product-list');
 
         function generateInitialInventory() {
-            for (let i = 1; i <= 44; i++) {
+            // Se limita el loop a 44 modelos
+            for (let i = 1; i <= 44; i++) { 
                 const id = `PROD_${String(i).padStart(3, '0')}`;
                 let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
                 let initialStockOverrides = {}; 
@@ -231,10 +232,11 @@
 
                 let mainImg, frontImg, backImg, sideImg;
 
-                if (i < 42 || i === 44) {
-                    // Productos de 1 a 41 y 44 a 70: Se tratan como variantes de color 'Default'
+                // Bloque para productos de color único: i=1 a 42
+                if (i < 43) {
+                    // Productos de 1 a 42: Se tratan como variantes de color 'Default'
                     
-                    // Asignación de imágenes y stock para i=1 a i=41
+                    // Asignación de imágenes y stock para i=1 a i=42
                     if (i === 1) { 
                         mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
                         frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
@@ -418,14 +420,14 @@
                         sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
                     } else if (i === 31) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Gon1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Gon2.png'; 
+                        mainImg = 'https://ventaplayera.github.io/RPLAY/katy1.png'; 
+                        frontImg = 'https://ventaplayera.github.io/RPLAY/katy1.png'; 
+                        backImg = 'https://ventaplayera.github.io/RPLAY/katy2.png'; 
                         sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
                     }else if (i === 32) { 
                         mainImg = 'https://ventaplayera.github.io/RPLAY/Gon3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Gony3.png'; 
+                        frontImg = 'https://ventaplayera.github.io/RPLAY/Gon3.png'; 
                         backImg = 'https://ventaplayera.github.io/RPLAY/Gon4.png'; 
                         sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
@@ -484,6 +486,7 @@
                         sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
                     } else if (i === 42) { 
+                        // Playera 42, ahora es color único (Adriana 3/4)
                         mainImg = 'https://ventaplayera.github.io/RPLAY/Adri3.png'; 
                         frontImg = 'https://ventaplayera.github.io/RPLAY/Adri3.png'; 
                         backImg = 'https://ventaplayera.github.io/RPLAY/Adri4.png'; 
@@ -505,50 +508,50 @@
                         mainImg: mainImg
                     };
 
-                } else if (i === 43) {
-                    // Producto 42: Blackpink BORN PINK D2 (Multi-Color)
+                // Bloque para Producto 43: Blackpink BORN PINK D2 (Multi-Color)
+                } else if (i === 43) { 
                     productName = 'Playera Blackpink BORN PINK D2';
                     productDescription = 'Diseño Blackpink "BORN PINK" en negro/blanco. Edición especial.';
 
-                    // Variante Negro
+                    // Variante Negro: Imágenes actualizadas
                     variants['Negro'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro1.png';
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro2.png';
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro1.png',
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro2.png', 
                         img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro1.png';
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro1.png', 
                     };
                     
-                    // Variante Blanco (¡REEMPLAZAR URLs!)
+                    // Variante Blanco: URLs conservadas
                     variants['Blanco'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro3.png';
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro4.png'; 
-                        img_side: 'https://ventaplayera.github.io/RPLAY/Aro1.png';
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro3.png',
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro4.png', 
+                        img_side: 'https://ventaplayera.github.io/RPLAY/blanco.png', // Corregida a blanco.png si es un color blanco
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro3.png';
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro3.png'
                     };
                     
+                // Bloque para Producto 44: Blackpink Lips D1 (Multi-Color)
                 } else if (i === 44) {
-                    // Producto 43: Blackpink Lips D1 (Multi-Color)
                     productName = 'Playera Blackpink Lips D1';
                     productDescription = 'Diseño Blackpink de labios en magenta sobre negro/blanco. Edición especial.';
                     
-                    // Variante Negro
+                    // Variante Negro: Imágenes actualizadas
                     variants['Negro'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro5.png';
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro6.png';
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro5.png',
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro6.png',, 
                         img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro5.png';
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro5.png',
                     };
 
-                    // Variante Blanco (¡REEMPLAZAR URLs!)
+                    // Variante Blanco: URLs conservadas
                     variants['Blanco'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro7.png'; 
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro8.png';
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro7.png', 
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro8.png',
                         img_side: 'https://ventaplayera.github.io/RPLAY/blanco.png',
                         stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro7.png'; 
+                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro7.png' 
                     };
                 }
 
@@ -572,7 +575,7 @@
         // --- 2. GESTIÓN DE STOCK Y ESTADO ---
         let currentProductID = null;
         let currentProductSize = null;
-        let currentProductColor = null; // NUEVO: para gestionar la selección de color
+        let currentProductColor = null; 
         let currentQuantity = 1;
         let currentPrice = 0;
         let currentProductName = '';
@@ -581,15 +584,13 @@
             return productData.find(p => p.id === id);
         }
 
-        // Modificado para recibir el color
         function getStock(id, color, size) {
-            if (!color || !size) return 0; // Se requiere color y talla para buscar stock
+            if (!color || !size) return 0; 
             return productInventory[id] && 
                 productInventory[id][color] && 
                 productInventory[id][color][size] !== undefined ? productInventory[id][color][size] : 0;
         }
 
-        // Modificado para sumar stock de todas las variantes de color
         function updateProductBadge(id) {
             const stockElement = document.getElementById(`badge-${id}`);
             if (!stockElement) return;
@@ -658,7 +659,6 @@
         const modalMainButton = document.getElementById('modal-main-button');
         const whatsappButton = document.getElementById('whatsapp-confirm-button');
 
-        // NUEVA FUNCIÓN: Actualiza las imágenes del carrusel
         function updateModalImages(product, color) {
             const variant = product.variants[color];
             if (variant) {
@@ -674,13 +674,12 @@
             }
         }
         
-        // NUEVA FUNCIÓN: Crea los botones de color
         function createColorButtons(product) {
             const colorOptionsDiv = document.getElementById('color-options');
             colorOptionsDiv.innerHTML = '';
             
             Object.keys(product.variants).forEach(color => {
-                if (color === 'Default') return; // No mostrar el color 'Default' como botón
+                if (color === 'Default') return; 
                 
                 const button = document.createElement('button');
                 button.type = 'button';
@@ -690,7 +689,7 @@
                 
                 button.addEventListener('click', () => {
                     currentProductColor = color;
-                    currentProductSize = null; // Reiniciar talla al cambiar color
+                    currentProductSize = null; 
                     document.querySelectorAll('#color-options button').forEach(btn => {
                         btn.classList.remove('active', 'btn-danger');
                         btn.classList.add('btn-outline-secondary');
@@ -713,7 +712,6 @@
         }
 
 
-        // MODIFICADA: Crea botones de talla (ahora depende del color)
         function createSizeButtons(id, color) {
             const sizeOptions = document.getElementById('size-options');
             sizeOptions.innerHTML = '';
@@ -755,7 +753,6 @@
             });
         }
 
-        // MODIFICADA: Actualiza el estado de la cantidad (ahora depende del color)
         function updateQuantityStatus() {
             const statusElement = document.getElementById('quantity-status');
             const selectedColor = currentProductColor || 'Default';
@@ -788,9 +785,9 @@
                 statusElement.textContent = `Disponible para preventa: ${stock}.`; 
                 statusElement.classList.remove('text-danger');
                 statusElement.classList.add('text-secondary');
-                quantityInput.max = 10; // Límite por pedido
+                quantityInput.max = 10; 
             }
-            updatePriceDisplays(); // Asegura la actualización del precio después de ajustar la cantidad
+            updatePriceDisplays(); 
             checkModalButtonState();
         }
 
@@ -803,7 +800,6 @@
             document.getElementById('payment-due').textContent = `$${paymentDue.toFixed(2)} MXN`;
         }
 
-        // MODIFICADA: Verifica el estado del botón principal
         function checkModalButtonState() {
             const selectedColor = currentProductColor || 'Default';
             const stock = getStock(currentProductID, selectedColor, currentProductSize);
@@ -827,12 +823,11 @@
             // 2. Resetear la vista y el estado
             resetModalView();
 
-            // 3. Manejo de Color (Modelos 42 y 43)
+            // 3. Manejo de Color (Modelos 43 y 44)
             const colorContainer = document.getElementById('color-selection-container');
             if (Object.keys(product.variants).length > 1) {
                 colorContainer.style.display = 'block';
                 createColorButtons(product);
-                // La selección de color llama a createSizeButtons
             } else {
                 // Producto de un solo color ('Default')
                 colorContainer.style.display = 'none';
@@ -918,7 +913,6 @@
             }
         }
 
-        // MODIFICADA: Ahora guarda el color
         function generateOrder(name, phone, address) {
             const orderID = Date.now();
             const total = currentPrice * currentQuantity;
@@ -929,7 +923,7 @@
                 id: orderID,
                 productID: currentProductID,
                 productName: currentProductName,
-                color: selectedColor, // AÑADIDO
+                color: selectedColor, 
                 size: currentProductSize,
                 quantity: currentQuantity,
                 totalPrice: total,
@@ -946,13 +940,10 @@
             PENDING_ORDERS.push(order);
             localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
             
-            // NOTA: EL DESCUENTO REAL DE STOCK SE HARÁ DESPUÉS DE QUE EL CLIENTE HAGA CLIC EN EL BOTÓN DE WHATSAPP
-
             // 2. Mostrar info de transferencia y WhatsApp
             showTransferInfo(order);
         }
 
-        // MODIFICADA: Ahora muestra el color en el resumen y usa el WHATSAPP_NUMBER
         function showTransferInfo(order) {
             document.getElementById('payment-step').style.display = 'none';
             document.getElementById('transfer-info').style.display = 'block';
@@ -1026,7 +1017,7 @@
             quantityInput.value = 1;
 
             currentProductSize = null;
-            currentProductColor = null; // Reiniciar estado de color
+            currentProductColor = null; 
             currentQuantity = 1;
             modalMainButton.textContent = 'Pagar Ahora';
             modalMainButton.disabled = true;
@@ -1068,5 +1059,3 @@
     </script>
 </body>
 </html>
-
-
