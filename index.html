@@ -473,21 +473,19 @@
 
         // --- 5. DATOS DE INVENTARIO (44 Playeras con URLs correctas) ---
 
-       // Función para generar el inventario inicial con 44 playeras.
         function generateInitialInventory() {
-            productData.length = 0; // Limpiar datos anteriores
-            
-            // Generación de 44 productos base con variaciones
-            for (let i = 1; i <= 44; i++) {
-                const productId = `PROD_${String(i).padStart(3, '0')}`;
-                let productName = `Playera Modelo ${i}`;
-                let productDescription = 'Playera de diseño exclusivo.';
-                let frontImg = '';
-                let backImg = '';
-                let sideImg = '';
-                let modelSizes = DEFAULT_GLOBAL_SIZES;
-                let initialStockOverrides = {}; // Define stock/sizes personalizados
-                let variants = {};
+            // Limpiar datos anteriores para regenerar
+            productData.length = 0; 
+            for (const key in productInventory) { delete productInventory[key]; }
+
+            for (let i = 1; i <= 44; i++) { 
+                const id = `PROD_${String(i).padStart(3, '0')}`;
+                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+                let initialStockOverrides = {}; 
+                let productName = `Playera Modelo No. ${i}`; 
+                let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
+                let variants = {}; 
+                let mainImg, frontImg, backImg, sideImg; // Se inicializan a undefined
 
                 if (i < 43) {
                     // --- ZONA DE DATOS DE PRODUCTOS INDIVIDUALES (1 a 42) ---
@@ -499,8 +497,6 @@
                         sideImg = `${BASE_URL}blanco.png`; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
                         modelSizes = ['M', 'L', 'XL'];
-                        // **<--- LÍNEA DE MODIFICACIÓN 1 (AGREGAR XXL a la lista de tallas) --->**
-                      modelSizes = ['M', 'L', 'XL'];
                     } else if (i === 2) { 
                         productName = 'BTS'; 
                         productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
@@ -1259,12 +1255,6 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
 
 
 
