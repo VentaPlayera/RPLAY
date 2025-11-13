@@ -497,6 +497,17 @@
                         sideImg = `${BASE_URL}blanco.png`; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
                         modelSizes = ['M', 'L', 'XL'];
+                        // **<--- LÍNEA DE MODIFICACIÓN 1 (AGREGAR XXL a la lista de tallas) --->**
+                      modelSizes = ['M', 'L', 'XL'];
+    
+    variants['Default'] = { 
+        name: productName, 
+        img_front: frontImg, 
+        img_back: backImg, 
+        img_side: sideImg, 
+        // **<--- LÍNEA DE MODIFICACIÓN 2 (AGREGAR XXL: 3 al stock) --->**
+        stock: {M: 1, L: 1, XL: 1};
+    };
                     } else if (i === 2) { 
                         productName = 'BTS'; 
                         productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
@@ -1255,6 +1266,7 @@
     </script>
 </body>
 </html>
+
 
 
 
