@@ -781,6 +781,15 @@
                         sideImg = `${BASE_URL}negro2.png`; 
                         initialStockOverrides = {S:1, M: 1, G: 1};
                     }
+                    // Si 'frontImg' no se definió en los bloques de arriba (ej. si falta el bloque 'if' para un número),
+                    // usamos un placeholder para evitar errores de URL vacía.
+                    if (!frontImg) {
+                        productName = `Playera Modelo No. ${i} (FALTA INFO)`;
+                        frontImg = `https://via.placeholder.com/300x450?text=Frente+de+${productName.replace(/ /g, '+')}`;
+                        backImg = `https://via.placeholder.com/300x450?text=Espalda+de+${productName.replace(/ /g, '+')}`;
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1}; // Stock por defecto
+                    }
 
                     // Lógica para productos de un solo color (Default)
                     let stock = {};
@@ -1155,6 +1164,7 @@
     </script>
 </body>
 </html>
+
 
 
 
