@@ -36,9 +36,8 @@
             color: white;
             z-index: 10;
         }
-        .stock-badge.in-stock { background-color: green; }
-        .stock-badge.low-stock { background-color: orange; }
-        .stock-badge.out-stock { background-color: red; }
+        .stock-badge.in-stock { background-color: green; } /* Usado para "Preventa" */
+        .stock-badge.out-stock { background-color: red; } /* Usado para "Agotado" */
 
         /* --- IMAGEN DEL MODAL --- */
         .modal-image {
@@ -47,6 +46,14 @@
             width: 100%;         
             display: block;      
             background-color: #f0f0f0; 
+        }
+        /* Estilos para el panel de administración */
+        .order-item {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
         }
     </style>
 </head>
@@ -61,15 +68,16 @@
         
         <div class="container mb-5" id="manualManagementPanel" style="display:none;">
             <h3 class="text-danger mb-3">Administración de Pedidos Apartados</h3>
-            <p class="text-muted small">Haz clic en "Liberar Stock" si el cliente no confirmó el pago (gestión manual de las 24 horas).</p>
+            <p class="text-muted small">Estos pedidos han sido **reservados temporalmente** (se restó del stock al cliente ver la ficha de pago). Haz clic en "Liberar Stock" si el cliente NO completó el pago.</p>
             <div id="ordersList" class="p-3 border rounded bg-white">
                 <p class="text-center text-secondary" id="noOrdersMessage">No hay pedidos pendientes actualmente.</p>
             </div>
             <hr>
-            <button class="btn btn-sm btn-outline-secondary" onclick="resetAllStock()">REINICIAR TODO EL INVENTARIO</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="resetAllStock()">REINICIAR TODO EL INVENTARIO Y ÓRDENES</button>
             <p class="text-muted small mt-2">
-                Para *modificar el stock inicial*, usa la función setStock en la consola (F12).
+                Para *modificar el stock inicial*, usa la función **setStock** en la consola (F12).
                 <br>Ejemplo: **setStock('PROD_001', 'Default', 'M', 5)**
+                <br>Para **mostrar** este panel, usa la función **showAdminPanel()** en la consola.
             </p>
         </div>
         
@@ -89,13 +97,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                                
                                 <div class="carousel-indicators">
                                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
                                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
                                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
                                 </div>
-
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
                                         <img id="modal-img-front" src="" class="modal-image" alt="Delantera de la Playera">
@@ -114,7 +120,7 @@
                                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                 </button>
                             </div>
-                            </div>
+                        </div>
 
                         <div class="col-md-6">
                             
@@ -185,7 +191,7 @@
                                 <p class="mb-1"><strong>Beneficiario:</strong> MI TIENDA DE PLAYERAS S.A. DE C.V.</p>
                                 
                                 <hr>
-                                <p class="text-center">¡Haz clic en el botón de WhatsApp abajo para enviar tus datos y el comprobante!</p>
+                                <p class="text-center">¡Haz clic en el botón de WhatsApp abajo para enviar tus datos y el comprobante! **(El stock se descontará de forma permanente al presionar)**</p>
                             </div>
                         </div>
                     </div>
@@ -209,851 +215,941 @@
     <script>
         
         // --- 1. CONFIGURACIÓN GLOBAL ---
-        // Número de teléfono para WhatsApp (el número que tú pusiste)
         const WHATSAPP_NUMBER = '5219991480151'; 
-        
-        // Nueva estructura de inventario: productInventory[id][color][size] = stock
-        const productInventory = {};
-        const productData = [];
-        const DEFAULT_GLOBAL_SIZES = ["M", "L", "XL"]; 
         const FIXED_PRICE = 250.00; 
         const DEFAULT_STOCK_PER_SIZE = 1;
+        const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; 
+
+        // Estructuras de datos
+        const productInventory = {}; 
+        const productData = []; 
+        let PENDING_ORDERS = []; 
+        let orderIdCounter = 0; 
+
         const PRODUCT_LIST_CONTAINER = document.getElementById('product-list');
+        // Valores por defecto para la selección actual. Se inicializan al abrir el modal.
+        let currentSelection = { 
+            productId: null, 
+            color: 'Default', 
+            size: 'M', 
+            quantity: 1, 
+            orderId: null 
+        };
+        
+        // --- FUNCIONES DE ADMINISTRACIÓN (Acceso por Consola) ---
+        
+        // COMANDO PARA MOSTRAR EL PANEL DE ADMINISTRACIÓN (Requerimiento del usuario)
+        function showAdminPanel() {
+            const adminPanel = document.getElementById('manualManagementPanel');
+            if (adminPanel) {
+                adminPanel.style.display = 'block';
+                renderOrdersList(); 
+                console.log("✅ Panel de Administración de Pedidos activado. Para ocultar: hideAdminPanel()");
+            }
+        }
+        
+        function hideAdminPanel() {
+            const adminPanel = document.getElementById('manualManagementPanel');
+            if (adminPanel) {
+                adminPanel.style.display = 'none';
+                console.log("Panel de Administración de Pedidos oculto.");
+            }
+        }
 
-        function generateInitialInventory() {
-            // Se limita el loop a 44 modelos
-            for (let i = 1; i <= 44; i++) { 
-                const id = `PROD_${String(i).padStart(3, '0')}`;
-                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
-                let initialStockOverrides = {}; 
-                let productName = `Playera Modelo No. ${i}`;
-                let productDescription = `Diseño exclusivo #${i} con estampado digital de alta calidad. Tela de algodón 100%.`;
-                let variants = {}; // { 'colorName': { img_front: 'url', img_back: 'url', img_side: 'url', stock: { 'M': 1, ... } } }
+        // Esta función es global y usable en consola.
+        function setStock(productId, colorName, size, newStock) {
+            if (productInventory[productId] && productInventory[productId][colorName]) {
+                productInventory[productId][colorName][size] = newStock;
+                saveInventoryStorage();
+                renderProductCards();
+                renderOrdersList();
+                console.log(`Stock actualizado: ${productId}, ${colorName}, Talla ${size} -> ${newStock}`);
+            } else {
+                console.error('Error: Producto, color o talla no encontrado para actualizar stock.');
+            }
+        }
+        
+        // --- 2. GESTIÓN DEL INVENTARIO Y STORAGE ---
 
-                let mainImg, frontImg, backImg, sideImg;
+        function saveInventoryStorage() {
+            localStorage.setItem('productInventory', JSON.stringify(productInventory));
+            localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
+            localStorage.setItem('orderIdCounter', orderIdCounter);
+        }
 
-                // Bloque para productos de color único: i=1 a 42
-                if (i < 43) {
-                    // Productos de 1 a 42: Se tratan como variantes de color 'Default'
-                    
-                    // Asignación de imágenes y stock para i=1 a i=42
-                    if (i === 1) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Xime1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 2) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 3) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, XL: 1}; 
-                        modelSizes = ['M','XL'];
-                    } else if (i === 4) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Lucy4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 2};
-                    } else if (i === 5) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Raul2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 6) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Raul4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 7) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Abi2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 8) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 2}; 
-                        modelSizes = ['M', 'L'];
-                    } else if (i === 9) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Dani2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 10) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Dani4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 11) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Dali2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 12) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Dali4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 13) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Yose2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 14) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Yose4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 15) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Keila2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 16) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Keila4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 17) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Kenji2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 18) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Kenji4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 19) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Alli2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 20) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Alli4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 21) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Ale2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 22) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Ale4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 23) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Miri2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 24) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Miri3.png';
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Miri4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 25) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Didi2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 26) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Didi4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 27) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Vale2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 28) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Vale4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 29) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Caro2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 30) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png';
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Caro4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 31) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Gon1.PNG'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Gon1.PNG';
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Gon2.PNG';  
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    }else if (i === 32) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/katy3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/katy3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/katy4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    }else if (i === 33) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Bere1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Bere3.png';
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Bere4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 34) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Bere3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Bere3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Bere4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 35) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Dan1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Dan1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Dan2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 36) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Dan3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Dan3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Dan4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 37) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Gera1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Gera1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Gera2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 38) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Gera3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Gera3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Gera4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 39) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Bra1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Bra1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Bra2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 40) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Bra3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Bra3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Bra4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 41) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Adri1.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Adri1.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Adri2.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 42) { 
-                        // Playera 42, ahora es color único (Adriana 3/4)
-                        mainImg = 'https://ventaplayera.github.io/RPLAY/Adri3.png'; 
-                        frontImg = 'https://ventaplayera.github.io/RPLAY/Adri3.png'; 
-                        backImg = 'https://ventaplayera.github.io/RPLAY/Adri4.png'; 
-                        sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } 
+        function loadInventoryStorage() {
+            const storedInventory = localStorage.getItem('productInventory');
+            const storedOrders = localStorage.getItem('pendingOrders');
+            const storedCounter = localStorage.getItem('orderIdCounter');
+            
+            // Si hay inventario guardado, lo fusionamos con la estructura inicial.
+            if (storedInventory) {
+                const tempInventory = JSON.parse(storedInventory);
+                for (const productId in tempInventory) {
+                    if (productInventory[productId]) {
+                        for (const color in tempInventory[productId]) {
+                            if (productInventory[productId][color]) {
+                                productInventory[productId][color] = tempInventory[productId][color];
+                            }
+                        }
+                    }
+                }
+            }
+            if (storedOrders) {
+                PENDING_ORDERS = JSON.parse(storedOrders);
+            }
+            if (storedCounter) {
+                orderIdCounter = parseInt(storedCounter);
+            }
+        }
 
-                    // Definir stock para la variante 'Default'
-                    const stockMap = {};
-                    modelSizes.forEach(size => {
-                        stockMap[size] = initialStockOverrides[size] !== undefined ? initialStockOverrides[size] : DEFAULT_STOCK_PER_SIZE;
-                    });
+        function getStock(productId, colorName, size) {
+            return productInventory[productId]?.[colorName]?.[size] || 0;
+        }
+        
+        function resetAllStock() {
+            if (confirm("¿Estás seguro de que quieres REINICIAR TODO el inventario y borrar todas las órdenes pendientes? Esta acción es irreversible.")) {
+                localStorage.removeItem('productInventory');
+                localStorage.removeItem('pendingOrders');
+                localStorage.removeItem('orderIdCounter');
+                // Vuelve a cargar el inventario inicial
+                generateInitialInventory(); 
+                PENDING_ORDERS = [];
+                orderIdCounter = 0;
+                renderProductCards();
+                renderOrdersList();
+                alert("Inventario y órdenes reiniciados con éxito.");
+            }
+        }
+        
+        // --- 3. FUNCIONES DE RESERVA Y LIBERACIÓN ---
+        
+        // Reserva el stock (lo descuenta temporalmente) y crea la orden pendiente
+        function reserveStock(productId, colorName, size, quantity, clientName, clientPhone, clientAddress) {
+            const currentStock = getStock(productId, colorName, size);
+            
+            if (currentStock < quantity) {
+                return false; 
+            }
 
-                    variants['Default'] = {
-                        img_front: frontImg,
-                        img_back: backImg,
-                        img_side: sideImg,
-                        stock: stockMap,
-                        mainImg: mainImg
-                    };
+            // 1. Descontar stock (reserva temporal)
+            setStock(productId, colorName, size, currentStock - quantity);
 
-                // Bloque para Producto 43: Blackpink BORN PINK D2 (Multi-Color)
-                } else if (i === 43) { 
-                    productName = 'Playera Blackpink BORN PINK D2';
-                    productDescription = 'Diseño Blackpink "BORN PINK" en negro/blanco. Edición especial.';
+            // 2. Crear y guardar la orden pendiente
+            orderIdCounter++;
+            const order = {
+                id: orderIdCounter,
+                timestamp: new Date().getTime(),
+                productId: productId,
+                colorName: colorName,
+                size: size,
+                quantity: quantity,
+                clientName: clientName,
+                clientPhone: clientPhone,
+                clientAddress: clientAddress,
+                productName: productData.find(p => p.id === productId).name,
+                isConfirmed: false 
+            };
+            
+            PENDING_ORDERS.push(order);
+            saveInventoryStorage();
+            renderOrdersList();
+            
+            return order;
+        }
+        
+        // Descuenta el stock permanentemente (remueve de la lista de gestión, ya se descontó antes)
+        function applyStockReduction(order) {
+            // Nota: El stock ya fue descontado en `reserveStock`. 
+            // Esto solo remueve la orden de la lista de "pendientes por liberar".
+            PENDING_ORDERS = PENDING_ORDERS.filter(o => o.id !== order.id);
+            saveInventoryStorage();
+            renderOrdersList();
+        }
 
-                    // Variante Negro: Imágenes actualizadas
-                    variants['Negro'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro1.png',
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro2.png', 
-                        img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
-                        stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro1.png', 
-                    };
-                    
-                    // Variante Blanco: URLs conservadas
-                    variants['Blanco'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro3.png',
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro4.png', 
-                        img_side: 'https://ventaplayera.github.io/RPLAY/blanco.png', // Corregida a blanco.png si es un color blanco
-                        stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro3.png'
-                    };
-                    
-                // Bloque para Producto 44: Blackpink Lips D1 (Multi-Color)
-                } else if (i === 44) {
-                    productName = 'Playera Blackpink Lips D1';
-                    productDescription = 'Diseño Blackpink de labios en magenta sobre negro/blanco. Edición especial.';
-                    
-                    // Variante Negro: Imágenes actualizadas
-                    variants['Negro'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro5.png', 
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro6.png', 
-                        img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
-                        stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro5.png',
-                    };
+        // Libera el stock (lo devuelve al inventario si el pago no se hizo)
+        function releaseStock(order) {
+            // 1. Devolver el stock al inventario
+            const currentStock = getStock(order.productId, order.colorName, order.size);
+            setStock(order.productId, order.colorName, order.size, currentStock + order.quantity);
 
-                    // Variante Blanco: URLs conservadas
-                    variants['Blanco'] = {
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro7.png', 
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro8.png',
-                        img_side: 'https://ventaplayera.github.io/RPLAY/blanco.png',
-                        stock: { M: 1, L: 1, XL: 1 },
-                        mainImg: 'https://ventaplayera.github.io/RPLAY/Aro7.png' 
-                    };
+            // 2. Eliminar la orden de la lista de pendientes
+            PENDING_ORDERS = PENDING_ORDERS.filter(o => o.id !== order.id);
+            saveInventoryStorage();
+            renderOrdersList();
+            renderProductCards(); // Asegurar que las tarjetas se actualicen
+        }
+
+        function releaseOrderManually(orderId) {
+            const order = PENDING_ORDERS.find(o => o.id === orderId);
+            if (order && confirm(`¿Seguro que quieres liberar la reserva para ${order.clientName} (Talla ${order.size}, Cantidad ${order.quantity})? El stock volverá al inventario.`)) {
+                releaseStock(order);
+            }
+        }
+        
+        // --- 4. RENDERIZADO ---
+        
+        function renderOrdersList() {
+            const listContainer = document.getElementById('ordersList');
+            if (!listContainer) return; 
+            
+            listContainer.innerHTML = '';
+
+            if (PENDING_ORDERS.length === 0) {
+                listContainer.innerHTML = '<p class="text-center text-secondary" id="noOrdersMessage">No hay pedidos pendientes actualmente.</p>';
+                return;
+            }
+
+            PENDING_ORDERS.forEach(order => {
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'order-item d-flex justify-content-between align-items-center';
+                orderDiv.innerHTML = `
+                    <div>
+                        <small class="text-muted">Pedido #${order.id} | ${new Date(order.timestamp).toLocaleTimeString()}</small><br>
+                        <strong>${order.clientName}</strong> (${order.clientPhone})<br>
+                        ${order.quantity}x ${order.productName} (Talla: ${order.size})<br>
+                        <small>Dir: ${order.clientAddress}</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-warning" onclick="releaseOrderManually(${order.id})">Liberar Stock</button>
+                `;
+                listContainer.appendChild(orderDiv);
+            });
+        }
+        
+        function renderProductCards() {
+            PRODUCT_LIST_CONTAINER.innerHTML = '';
+            productData.forEach(product => {
+                const colors = Object.keys(product.variants);
+                const firstColor = colors[0] || 'Default';
+                const mainVariant = product.variants[firstColor];
+                
+                let totalStock = 0;
+                // Sumar stock de todas las variantes/tallas
+                for (const color in productInventory[product.id]) {
+                    for (const size in productInventory[product.id][color]) {
+                        totalStock += productInventory[product.id][color][size];
+                    }
                 }
 
-                // Finalizar estructura del producto y stock
-                productData.push({
-                    id: id,
-                    name: productName,
-                    price: FIXED_PRICE.toFixed(2), 
-                    description: productDescription,
-                    variants: variants 
-                });
+                let badgeClass = 'out-stock';
+                let badgeText = 'Agotado';
+                
+                // --- LÓGICA DE BADGE: Preventa o Agotado (Requerimiento del usuario) ---
+                if (totalStock > 0) {
+                    badgeClass = 'in-stock'; 
+                    badgeText = 'Preventa';
+                }
 
-                productInventory[id] = {};
-                Object.keys(variants).forEach(color => {
-                    productInventory[id][color] = variants[color].stock;
-                });
-            }
-        }
-
-
-        // --- 2. GESTIÓN DE STOCK Y ESTADO ---
-        let currentProductID = null;
-        let currentProductSize = null;
-        let currentProductColor = null; 
-        let currentQuantity = 1;
-        let currentPrice = 0;
-        let currentProductName = '';
-        
-        function getProductData(id) {
-            return productData.find(p => p.id === id);
-        }
-
-        function getStock(id, color, size) {
-            if (!color || !size) return 0; 
-            return productInventory[id] && 
-                productInventory[id][color] && 
-                productInventory[id][color][size] !== undefined ? productInventory[id][color][size] : 0;
-        }
-
-        function updateProductBadge(id) {
-            const stockElement = document.getElementById(`badge-${id}`);
-            if (!stockElement) return;
-
-            let totalStock = 0;
-            const colors = Object.keys(productInventory[id] || {});
-            colors.forEach(color => {
-                const sizes = Object.keys(productInventory[id][color] || {});
-                totalStock += sizes.reduce((sum, size) => sum + getStock(id, color, size), 0);
-            });
-
-            stockElement.textContent = totalStock > 0 ? `preventa` : 'Agotado'; 
-            stockElement.className = 'stock-badge';
-            if (totalStock > 0) { 
-                stockElement.classList.add('in-stock'); 
-            } else {
-                stockElement.classList.add('out-stock');
-            }
-        }
-        
-        // --- 3. RENDERIZADO DE LA INTERFAZ ---
-
-        function renderProductCards() {
-            let html = '';
-            productData.forEach(product => {
-                // Obtener imagen del primer color ('Default' o 'Negro')
-                const firstVariantKey = Object.keys(product.variants)[0];
-                const mainImg = product.variants[firstVariantKey].mainImg;
-
-                html += `
-                    <div class="col-lg-3 col-md-4 col-sm-6 d-flex">
-                        <div class="card product-card flex-fill" data-product-id="${product.id}">
-                            <span class="stock-badge" id="badge-${product.id}"></span> 
-                            <img src="${mainImg}" class="card-img-top" alt="Playera ${product.name}">
-                            <div class="card-body d-flex flex-column">
+                const cardHtml = `
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="card product-card" style="position: relative;">
+                            <span class="stock-badge ${badgeClass}">${badgeText}</span>
+                            <img src="${mainVariant.img_front}" class="card-img-top" alt="${product.name}">
+                            <div class="card-body">
                                 <h5 class="card-title">${product.name}</h5>
-                                <p class="card-text text-muted">${product.description.substring(0, 50)}...</p>
-                                <div class="mt-auto">
-                                    <p class="price mb-2">$${product.price} MXN</p>
-                                    <button 
-                                        class="btn btn-block btn-buy w-100" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#paymentModal" 
-                                        data-product-id="${product.id}"
-                                        data-price="${product.price}" 
-                                        data-name="${product.name}"
-                                        data-description="${product.description}"> 
-                                        Ver Detalle y Comprar
-                                    </button>
-                                </div>
+                                <p class="card-text text-muted small">${product.description}</p>
+                                <p class="card-text"><strong>$${FIXED_PRICE.toFixed(2)} MXN</strong></p>
+                                <button class="btn btn-buy w-100" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#paymentModal" 
+                                    data-product-id="${product.id}">
+                                    Comprar
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
+                PRODUCT_LIST_CONTAINER.innerHTML += cardHtml;
             });
-            PRODUCT_LIST_CONTAINER.innerHTML = html;
-            productData.forEach(product => updateProductBadge(product.id)); 
         }
 
+        // --- 5. DATOS DE INVENTARIO (44 Playeras con URLs correctas) ---
 
-        // --- 4. GESTIÓN DEL MODAL (Color, Talla, Cantidad) ---
+        function generateInitialInventory() {
+            // Limpiar datos anteriores para regenerar
+            productData.length = 0; 
+            for (const key in productInventory) { delete productInventory[key]; }
 
-        const paymentModal = document.getElementById('paymentModal');
-        const quantityInput = document.getElementById('quantityInput');
-        const halfPaymentCheck = document.getElementById('halfPaymentCheck');
-        const modalMainButton = document.getElementById('modal-main-button');
-        const whatsappButton = document.getElementById('whatsapp-confirm-button');
+            for (let i = 1; i <= 44; i++) { 
+                const id = `PROD_${String(i).padStart(3, '0')}`;
+                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+                let initialStockOverrides = {}; 
+                let productName = `Playera Modelo No. ${i}`; 
+                let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
+                let variants = {}; 
 
-        function updateModalImages(product, color) {
-            const variant = product.variants[color];
-            if (variant) {
-                document.getElementById('modal-img-front').src = variant.img_front;
-                document.getElementById('modal-img-back').src = variant.img_back;
-                document.getElementById('modal-img-side').src = variant.img_side;
-            }
-            // Resetear carrusel a la primera imagen
-            const carouselElement = document.getElementById('productCarousel');
-            if (carouselElement) {
-                const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement);
-                carousel.to(0);
-            }
-        }
-        
-        function createColorButtons(product) {
-            const colorOptionsDiv = document.getElementById('color-options');
-            colorOptionsDiv.innerHTML = '';
-            
-            Object.keys(product.variants).forEach(color => {
-                if (color === 'Default') return; 
-                
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'btn btn-outline-secondary me-2 mb-2';
-                button.textContent = color;
-                button.setAttribute('data-color', color);
-                
-                button.addEventListener('click', () => {
-                    currentProductColor = color;
-                    currentProductSize = null; 
-                    document.querySelectorAll('#color-options button').forEach(btn => {
-                        btn.classList.remove('active', 'btn-danger');
-                        btn.classList.add('btn-outline-secondary');
+                let mainImg, frontImg, backImg, sideImg;
+
+                if (i < 43) {
+                    // --- ZONA DE DATOS DE PRODUCTOS INDIVIDUALES (1 a 42) ---
+                    const BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
+
+                    if (i === 1) { 
+                        productName = 'Playera Dama Xime Blanco'; 
+                        productDescription = 'Diseño original de Xime en blanco. ¡Edición especial!';
+                        frontImg = `${BASE_URL}Xime1.png`; 
+                        backImg = `${BASE_URL}Xime2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 2) { 
+                        productName = 'Playera Dama Xime Negro'; 
+                        productDescription = 'Diseño original de Xime en negro. ¡Edición especial!';
+                        frontImg = `${BASE_URL}Xime3.png`; 
+                        backImg = `${BASE_URL}Xime4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 3) { 
+                        productName = 'Playera Dama Lucy Diseño 1'; 
+                        productDescription = 'Diseño de Lucy #1, disponible en talla M y XL.'; 
+                        frontImg = `${BASE_URL}Lucy1.png`; 
+                        backImg = `${BASE_URL}Lucy2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {M: 1, XL: 1}; 
+                        modelSizes = ['M','XL'];
+                    } else if (i === 4) { 
+                        productName = 'Playera Dama Lucy Diseño 2'; 
+                        productDescription = 'Diseño de Lucy #2, ¡perfecta para el verano!'; 
+                        frontImg = `${BASE_URL}Lucy3.png`; 
+                        backImg = `${BASE_URL}Lucy4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 2};
+                    } else if (i === 5) { 
+                        productName = 'Playera Dama Raúl Diseño 1'; 
+                        productDescription = 'Modelo exclusivo Raúl #1, color negro.'; 
+                        frontImg = `${BASE_URL}Raul1.png`; 
+                        backImg = `${BASE_URL}Raul2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 6) { 
+                        productName = 'Playera Dama Raúl Diseño 2'; 
+                        productDescription = 'Modelo exclusivo Raúl #2, color negro.'; 
+                        frontImg = `${BASE_URL}Raul3.png`; 
+                        backImg = `${BASE_URL}Raul4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 7) { 
+                        productName = 'Playera Dama Abi Blanco'; 
+                        productDescription = 'Diseño Abi en blanco, estilo minimalista.'; 
+                        frontImg = `${BASE_URL}Abi1.png`; 
+                        backImg = `${BASE_URL}Abi2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 8) { 
+                        productName = 'Playera Dama Abi Negro'; 
+                        productDescription = 'Diseño Abi en negro, solo en tallas M y L.'; 
+                        frontImg = `${BASE_URL}Abi3.png`; 
+                        backImg = `${BASE_URL}Abi4.png`;
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {M: 1, L: 2}; 
+                        modelSizes = ['M', 'L'];
+                    } else if (i === 9) { 
+                        productName = 'Playera Dama Dani Blanco'; 
+                        productDescription = 'Playera Dani en color blanco, cómoda y casual.'; 
+                        frontImg = `${BASE_URL}Dani1.png`; 
+                        backImg = `${BASE_URL}Dani2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 10) { 
+                        productName = 'Playera Dama Dani Negro'; 
+                        productDescription = 'Playera Dani en color negro, ideal para cualquier ocasión.'; 
+                        frontImg = `${BASE_URL}Dani3.png`; 
+                        backImg = `${BASE_URL}Dani4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 11) { 
+                        productName = 'Playera Dama Dali Diseño 1'; 
+                        productDescription = 'Diseño original Dali #1. ¡Atrévete a usarla!'; 
+                        frontImg = `${BASE_URL}Dali1.png`; 
+                        backImg = `${BASE_URL}Dali2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 12) { 
+                        productName = 'Playera Dama Dali Diseño 2'; 
+                        productDescription = 'Diseño original Dali #2. La mejor calidad.'; 
+                        frontImg = `${BASE_URL}Dali3.png`; 
+                        backImg = `${BASE_URL}Dali4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 13) { 
+                        productName = 'Playera Yose Diseño 1'; 
+                        productDescription = 'Playera unisex Yose, diseño sencillo en negro.'; 
+                        frontImg = `${BASE_URL}Yose1.png`; 
+                        backImg = `${BASE_URL}Yose2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 14) { 
+                        productName = 'Playera Yose Diseño 2'; 
+                        productDescription = 'Playera unisex Yose, diseño impactante en negro.'; 
+                        frontImg = `${BASE_URL}Yose3.png`; 
+                        backImg = `${BASE_URL}Yose4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 15) { 
+                        productName = 'Playera Keila Blanco'; 
+                        productDescription = 'Playera Keila en blanco. Estilo juvenil.'; 
+                        frontImg = `${BASE_URL}Keila1.png`; 
+                        backImg = `${BASE_URL}Keila2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 16) { 
+                        productName = 'Playera Keila Negro'; 
+                        productDescription = 'Playera Keila en negro. Estilo juvenil.'; 
+                        frontImg = `${BASE_URL}Keila3.png`; 
+                        backImg = `${BASE_URL}Keila4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 17) { 
+                        productName = 'Playera Kenji Diseño 1'; 
+                        productDescription = 'Playera Kenji con diseño clásico.'; 
+                        frontImg = `${BASE_URL}Kenji1.png`; 
+                        backImg = `${BASE_URL}Kenji2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 18) { 
+                        productName = 'Playera Kenji Diseño 2'; 
+                        productDescription = 'Playera Kenji con diseño moderno.'; 
+                        frontImg = `${BASE_URL}Kenji3.png`; 
+                        backImg = `${BASE_URL}Kenji4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 19) { 
+                        productName = 'Playera Alli Diseño 1'; 
+                        productDescription = 'Playera Alli en negro. Estilo casual.'; 
+                        frontImg = `${BASE_URL}Alli1.png`; 
+                        backImg = `${BASE_URL}Alli2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 20) { 
+                        productName = 'Playera Alli Diseño 2'; 
+                        productDescription = 'Playera Alli en negro. Diseño geométrico.'; 
+                        frontImg = `${BASE_URL}Alli3.png`; 
+                        backImg = `${BASE_URL}Alli4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 21) { 
+                        productName = 'Playera Ale Diseño 1'; 
+                        productDescription = 'Playera Ale en color arena. Diseño elegante.'; 
+                        frontImg = `${BASE_URL}Ale1.png`; 
+                        backImg = `${BASE_URL}Ale2.png`; 
+                        sideImg = `${BASE_URL}arena.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 22) { 
+                        productName = 'Playera Ale Diseño 2'; 
+                        productDescription = 'Playera Ale en color arena. Diseño exclusivo.'; 
+                        frontImg = `${BASE_URL}Ale3.png`; 
+                        backImg = `${BASE_URL}Ale4.png`; 
+                        sideImg = `${BASE_URL}arena.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 23) { 
+                        productName = 'Playera Miri Diseño 1'; 
+                        productDescription = 'Playera Miri en negro. Diseño artístico.'; 
+                        frontImg = `${BASE_URL}Miri1.png`; 
+                        backImg = `${BASE_URL}Miri2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 24) { 
+                        productName = 'Playera Miri Diseño 2'; 
+                        productDescription = 'Playera Miri en negro. Diseño de texto.'; 
+                        frontImg = `${BASE_URL}Miri3.png`;
+                        backImg = `${BASE_URL}Miri4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 25) { 
+                        productName = 'Playera Didi Diseño 1'; 
+                        productDescription = 'Playera Didi en negro. Diseño simple.'; 
+                        frontImg = `${BASE_URL}Didi1.png`; 
+                        backImg = `${BASE_URL}Didi2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 26) { 
+                        productName = 'Playera Didi Diseño 2'; 
+                        productDescription = 'Playera Didi en arena. Diseño de texto.'; 
+                        frontImg = `${BASE_URL}Didi3.png`; 
+                        backImg = `${BASE_URL}Didi4.png`; 
+                        sideImg = `${BASE_URL}arena.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 27) { 
+                        productName = 'Playera Vale Diseño 1'; 
+                        productDescription = 'Playera Vale en arena. Estilo fresco.'; 
+                        frontImg = `${BASE_URL}Vale1.png`; 
+                        backImg = `${BASE_URL}Vale2.png`; 
+                        sideImg = `${BASE_URL}arena.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 28) { 
+                        productName = 'Playera Vale Diseño 2'; 
+                        productDescription = 'Playera Vale en negro. Diseño de líneas.'; 
+                        frontImg = `${BASE_URL}Vale3.png`;
+                        backImg = `${BASE_URL}Vale4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 29) { 
+                        productName = 'Playera Caro Diseño 1'; 
+                        productDescription = 'Playera Caro en negro. Diseño de mariposas.'; 
+                        frontImg = `${BASE_URL}Caro1.png`; 
+                        backImg = `${BASE_URL}Caro2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 30) { 
+                        productName = 'Playera Caro Diseño 2'; 
+                        productDescription = 'Playera Caro en blanco. Diseño floral.'; 
+                        frontImg = `${BASE_URL}Caro3.png`; 
+                        backImg = `${BASE_URL}Caro4.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 31) { 
+                        productName = 'Playera Mary Diseño 1'; 
+                        productDescription = 'Playera Mary en negro. Diseño moderno.'; 
+                        frontImg = `${BASE_URL}Gon1.PNG`; 
+                        backImg = `${BASE_URL}Gon2.PNG`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 32) { 
+                        productName = 'Playera Mary Diseño 2'; 
+                        productDescription = 'Playera Mary en negro. Diseño de estrellas.'; 
+                        frontImg = `${BASE_URL}Katy3.PNG`; 
+                        backImg = `${BASE_URL}Katy4PNG`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 33) { 
+                        productName = 'Playera Lalo Diseño 1'; 
+                        productDescription = 'Playera Lalo en blanco. Diseño simple.'; 
+                        frontImg = `${BASE_URL}Bere1.png`; 
+                        backImg = `${BASE_URL}Bere2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 34) { 
+                        productName = 'Playera Lalo Diseño 2'; 
+                        productDescription = 'Playera Lalo en negro. Diseño de líneas.'; 
+                        frontImg = `${BASE_URL}Bere3.png`; 
+                        backImg = `${BASE_URL}Bere4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 35) { 
+                        productName = 'Playera Dama Vane Diseño 1'; 
+                        productDescription = 'Playera Vane en blanco. Diseño primaveral.'; 
+                        frontImg = `${BASE_URL}Dan1.png`; 
+                        backImg = `${BASE_URL}Dan2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 36) { 
+                        productName = 'Playera Dama Vane Diseño 2'; 
+                        productDescription = 'Playera Vane en negro. Diseño de mar.'; 
+                        frontImg = `${BASE_URL}Dan3.png`; 
+                        backImg = `${BASE_URL}Dan4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 37) { 
+                        productName = 'Playera Dama Caro Diseño 3'; 
+                        productDescription = 'Playera Caro en arena. Diseño elegante.'; 
+                        frontImg = `${BASE_URL}Gera1.png`; 
+                        backImg = `${BASE_URL}Gera2.png`; 
+                        sideImg = `${BASE_URL}arena.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 38) { 
+                        productName = 'Playera Dama Caro Diseño 4'; 
+                        productDescription = 'Playera Caro en negro. Diseño de luna.'; 
+                        frontImg = `${BASE_URL}Gera3.png`; 
+                        backImg = `${BASE_URL}Gera4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 39) { 
+                        productName = 'Playera Dama Neli Diseño 1'; 
+                        productDescription = 'Playera Neli en blanco. Diseño de gato.'; 
+                        frontImg = `${BASE_URL}Bra1.png`; 
+                        backImg = `${BASE_URL}Bra2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 40) { 
+                        productName = 'Playera Dama Neli Diseño 2'; 
+                        productDescription = 'Playera Neli en negro. Diseño de texto.'; 
+                        frontImg = `${BASE_URL}Bra3.png`; 
+                        backImg = `${BASE_URL}Bra4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 41) { 
+                        productName = 'Playera Dama Sol Diseño 1'; 
+                        productDescription = 'Playera Sol en blanco. Diseño de frase.'; 
+                        frontImg = `${BASE_URL}Adri1.png`; 
+                        backImg = `${BASE_URL}Adri2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 42) { 
+                        productName = 'Playera Dama Sol Diseño 2'; 
+                        productDescription = 'Playera Sol en negro. Diseño de mariposas.'; 
+                        frontImg = `${BASE_URL}Adril3.png`; 
+                        backImg = `${BASE_URL}Adri4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    }
+
+                    // Lógica para productos de un solo color (Default)
+                    let stock = {};
+                    modelSizes.forEach(s => {
+                        stock[s] = initialStockOverrides[s] !== undefined ? initialStockOverrides[s] : DEFAULT_STOCK_PER_SIZE;
                     });
-                    button.classList.add('active', 'btn-danger');
-                    button.classList.remove('btn-outline-secondary');
                     
-                    updateModalImages(product, color);
-                    createSizeButtons(currentProductID, currentProductColor); 
-                    updateQuantityStatus(); 
-                });
-                colorOptionsDiv.appendChild(button);
-            });
+                    variants['Default'] = {
+                        name: productName, 
+                        img_front: frontImg,
+                        img_back: backImg,
+                        img_side: sideImg,
+                        stock: stock
+                    };
+                    
+                } else if (i === 43) { 
+                    // Producto 43 con variantes de color Blanco y Negro
+                    productName = 'Playera BLACKPINK BORN PINK (Multicolor)'; 
+                    productDescription = 'Diseño Blackpink "BORN PINK" en negro/blanco. Edición especial.'; 
+                    
+                    variants['Blanco'] = {
+                        name: 'Playera BLACKPINK (Blanca)', 
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro1.png',
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro2.png',
+                        img_side: 'https://ventaplayera.github.io/RPLAY/blanco.png',
+                        stock: { S: 1, M: 2, L: 1, XL: 1 } 
+                    };
+                    variants['Negro'] = {
+                        name: 'Playera BLACKPINK (Negra)', 
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro3.png',
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro4.png',
+                        img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
+                        stock: { S: 1, M: 1, L: 2, XL: 1 }
+                    };
+                    mainImg = variants['Blanco'].img_front; 
+                } else if (i === 44) { 
+                    // Producto 44 con variantes de color Blanco y Negro
+                    productName = 'Playera K-POP Diseño Coreano (Multicolor)'; 
+                    productDescription = 'Diseño K-Pop minimalista, alta durabilidad.'; 
+                    
+                    variants['Blanco'] = {
+                        name: 'Playera K-POP (Blanca)', 
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro5.png',
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro6.png',
+                        img_side: 'https://ventaplayera.github.io/RPLAY/blanco.png',
+                        stock: { S: 1, M: 1, L: 1, XL: 1 }
+                    };
+                    variants['Negro'] = {
+                        name: 'Playera K-POP (Negra)', 
+                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro7.png',
+                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro8.png',
+                        img_side: 'https://ventaplayera.github.io/RPLAY/negro.png',
+                        stock: { S: 1, M: 1, L: 1, XL: 1 }
+                    };
+                    mainImg = variants['Negro'].img_front; 
+                }
+                
+                // Inicializa la estructura del inventario de stock
+                productInventory[id] = {};
+                for (const colorName in variants) {
+                    productInventory[id][colorName] = variants[colorName].stock;
+                }
 
-            // Seleccionar automáticamente el primer color disponible
-            const firstColor = Object.keys(product.variants).find(c => c !== 'Default');
-            if (firstColor && !currentProductColor) {
-                document.querySelector(`#color-options button[data-color="${firstColor}"]`).click();
+                // Guarda los datos del producto
+                productData.push({
+                    id: id,
+                    name: productName,
+                    description: productDescription,
+                    price: FIXED_PRICE,
+                    mainImg: mainImg,
+                    sizes: modelSizes,
+                    variants: variants,
+                    hasColors: Object.keys(variants).length > 1
+                });
             }
         }
 
 
-        function createSizeButtons(id, color) {
-            const sizeOptions = document.getElementById('size-options');
-            sizeOptions.innerHTML = '';
-            document.getElementById('size-status').textContent = 'Selecciona una talla.';
-
-            if (!color || !productInventory[id] || !productInventory[id][color]) {
-                sizeOptions.innerHTML = '<p class="text-danger small">Selecciona primero un color.</p>';
-                return;
-            }
+        // --- 6. LÓGICA DEL MODAL (Ajustada para funcionar con la estructura de datos) ---
+        
+        function updateModalContent(product, selectedColor) {
+            const variant = product.variants[selectedColor];
             
-            const stockByColor = productInventory[id][color];
+            document.getElementById('modal-img-front').src = variant.img_front;
+            document.getElementById('modal-img-back').src = variant.img_back;
+            document.getElementById('modal-img-side').src = variant.img_side;
+            
+            document.getElementById('product-name').textContent = variant.name;
+            document.getElementById('product-description').textContent = product.description;
 
-            Object.keys(stockByColor).forEach(size => {
-                const stock = stockByColor[size];
+            // Renderizar opciones de talla (simplificado, asume que siempre hay tallas)
+            const sizeOptionsContainer = document.getElementById('size-options');
+            sizeOptionsContainer.innerHTML = '';
+            
+            const sizes = Object.keys(variant.stock).sort(); // Ordenar tallas
+
+            sizes.forEach(size => {
+                const stock = variant.stock[size];
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'btn btn-outline-secondary me-2 mb-2';
+                button.className = `btn btn-outline-secondary btn-sm me-2 mb-2 size-option ${stock > 0 ? '' : 'disabled'}`;
                 button.textContent = size;
                 button.setAttribute('data-size', size);
-                
-                if (stock <= 0) {
-                    button.disabled = true;
-                    button.classList.add('text-danger');
-                    button.title = 'Agotado';
-                }
-
+                button.disabled = stock <= 0;
                 button.addEventListener('click', () => {
-                    currentProductSize = size;
-                    document.querySelectorAll('#size-options button').forEach(btn => {
-                        btn.classList.remove('active', 'btn-danger');
-                        btn.classList.add('btn-outline-secondary');
-                    });
-                    button.classList.add('active', 'btn-danger');
-                    button.classList.remove('btn-outline-secondary');
-                    updateQuantityStatus();
-                    checkModalButtonState();
+                    document.querySelectorAll('.size-option').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentSelection.size = size;
+                    updateTotalAndCheckStock();
                 });
-                sizeOptions.appendChild(button);
+                sizeOptionsContainer.appendChild(button);
             });
+            
+            // Si el producto tiene colores, mostrarlos
+            const colorContainer = document.getElementById('color-selection-container');
+            if (product.hasColors) {
+                colorContainer.style.display = 'block';
+                const colorOptions = document.getElementById('color-options');
+                colorOptions.innerHTML = '';
+                Object.keys(product.variants).forEach(color => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = `btn btn-outline-dark btn-sm me-2 mb-2 color-option ${color === selectedColor ? 'active' : ''}`;
+                    button.textContent = color;
+                    button.setAttribute('data-color', color);
+                    button.addEventListener('click', () => {
+                        document.querySelectorAll('.color-option').forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        currentSelection.color = color;
+                        updateModalContent(product, color); // Recargar contenido para la nueva variante
+                        // Resetear la talla al cambiar de color
+                        currentSelection.size = sizes[0]; 
+                        updateTotalAndCheckStock();
+                    });
+                    colorOptions.appendChild(button);
+                });
+            } else {
+                colorContainer.style.display = 'none';
+            }
+
+            // Seleccionar la primera talla disponible o la predeterminada
+            const defaultSize = sizes.find(size => variant.stock[size] > 0) || sizes[0];
+            currentSelection.size = defaultSize;
+
+            if (document.querySelector(`.size-option[data-size="${defaultSize}"]`)) {
+                document.querySelector(`.size-option[data-size="${defaultSize}"]`).classList.add('active');
+            } else {
+                 currentSelection.size = null; // Ninguna talla seleccionada si no hay stock
+            }
+
+            updateTotalAndCheckStock();
         }
 
-        function updateQuantityStatus() {
-            const statusElement = document.getElementById('quantity-status');
-            const selectedColor = currentProductColor || 'Default';
+
+        function updateTotalAndCheckStock() {
+            const product = productData.find(p => p.id === currentSelection.productId);
+            const quantityInput = document.getElementById('quantityInput');
+            let quantity = parseInt(quantityInput.value);
+            const size = currentSelection.size;
+            const color = currentSelection.color;
             
-            if (!currentProductSize) {
-                statusElement.textContent = "Selecciona una talla.";
-                statusElement.classList.remove('text-danger');
-                statusElement.classList.add('text-secondary');
-                modalMainButton.disabled = true;
+            if (isNaN(quantity) || quantity < 1) {
+                quantity = 1;
+                quantityInput.value = 1;
+            }
+
+            currentSelection.quantity = quantity;
+            
+            let currentStock = 0;
+            if (size && product && product.variants[color] && product.variants[color].stock[size] !== undefined) {
+                currentStock = product.variants[color].stock[size];
+            }
+
+            const isAvailable = currentStock >= quantity;
+            const stockStatus = document.getElementById('size-status');
+            const mainButton = document.getElementById('modal-main-button');
+            
+            if (currentStock === 0) {
+                 stockStatus.textContent = `Agotada en Talla ${size}.`;
+                 mainButton.disabled = true;
+            } else if (!isAvailable) {
+                stockStatus.textContent = `Solo quedan ${currentStock} pieza(s) en Talla ${size}. Ajusta la cantidad.`;
+                mainButton.disabled = true;
+            } else {
+                stockStatus.textContent = `Disponible: ${currentStock} pieza(s) en Talla ${size}.`;
+                mainButton.disabled = false;
+            }
+
+            if (!currentSelection.size) { // Si no hay talla seleccionada (todo agotado)
+                stockStatus.textContent = `No hay stock disponible para este modelo.`;
+                mainButton.disabled = true;
+            }
+            
+            const totalPrice = (FIXED_PRICE * quantity).toFixed(2);
+            const halfPayment = (FIXED_PRICE * quantity / 2).toFixed(2);
+
+            document.getElementById('total-price').textContent = `$${totalPrice} MXN`;
+            document.getElementById('payment-due').textContent = `$${halfPayment} MXN`;
+        }
+
+        function openModalDetail(productId) {
+            const product = productData.find(p => p.id === productId);
+            if (!product) return;
+            
+            currentSelection.productId = productId;
+            // Seleccionar color por defecto (el primero)
+            const firstColor = Object.keys(product.variants)[0];
+            currentSelection.color = firstColor;
+
+            updateModalContent(product, firstColor); 
+            // Forzar el paso de selección al abrir
+            updateModalUI(false); 
+        }
+
+        function updateModalUI(step, order = null) {
+            const selectionStep = document.getElementById('selection-step');
+            const paymentStep = document.getElementById('payment-step');
+            const transferInfo = document.getElementById('transfer-info');
+            const modalMainButton = document.getElementById('modal-main-button');
+            const whatsappButton = document.getElementById('whatsapp-confirm-button');
+            
+            // Limpiar errores
+            document.getElementById('payment-error').style.display = 'none';
+
+            if (step === false) { // Paso 1: Selección de producto/talla/cantidad
+                selectionStep.style.display = 'block';
+                paymentStep.style.display = 'none';
+                transferInfo.style.display = 'none';
+                modalMainButton.style.display = 'block';
+                modalMainButton.textContent = 'Pagar Ahora';
+                modalMainButton.onclick = moveToPaymentStep;
+                whatsappButton.style.display = 'none';
+                updateTotalAndCheckStock(); // Revisa si el botón debe estar activo
+            } else if (step === 'payment') { // Paso 2: Datos del cliente
+                selectionStep.style.display = 'none';
+                paymentStep.style.display = 'block';
+                transferInfo.style.display = 'none';
+                modalMainButton.style.display = 'block';
+                modalMainButton.textContent = 'Reservar y Ver Pago';
+                modalMainButton.disabled = false;
+                modalMainButton.onclick = processOrderReservation;
+                whatsappButton.style.display = 'none';
+            } else if (step === 'confirmed' && order) { // Paso 3: Info de transferencia
+                selectionStep.style.display = 'none';
+                paymentStep.style.display = 'none';
+                transferInfo.style.display = 'block';
+                modalMainButton.style.display = 'none';
+                
+                // Preparar la info final
+                const halfPrice = (FIXED_PRICE * order.quantity / 2).toFixed(2);
+                const whatsappMsg = `¡Hola! Acabo de hacer un apartado. Mi orden es *#${order.id}*.\n\n*Producto:* ${order.productName}\n*Color:* ${order.colorName}\n*Talla:* ${order.size}\n*Cantidad:* ${order.quantity}\n*Monto de Apartado:* $${halfPrice} MXN\n\n*Mis Datos:*\n*Nombre:* ${order.clientName}\n*Teléfono:* ${order.clientPhone}\n*Dirección:* ${order.clientAddress}\n\nAquí adjunto el comprobante de pago por $${halfPrice} MXN.`;
+
+                whatsappButton.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMsg)}`;
+                whatsappButton.setAttribute('data-order-id', order.id);
+                whatsappButton.style.display = 'block';
+                
+                // Actualizar la UI de confirmación
+                document.getElementById('client-name-display').textContent = order.clientName;
+                document.getElementById('final-qty-conf').textContent = order.quantity;
+                document.getElementById('final-item-display').textContent = order.productName;
+                document.getElementById('final-size-conf').textContent = order.size;
+                document.getElementById('final-amount-conf').textContent = `$${halfPrice} MXN`;
+                document.getElementById('modal-close-button').textContent = 'Cerrar';
+                whatsappButton.removeAttribute('data-stock-applied'); 
+            }
+        }
+        
+        function moveToPaymentStep() {
+            // Se asume que updateTotalAndCheckStock ya se ejecutó y validó la disponibilidad
+            if (document.getElementById('modal-main-button').disabled) {
+                return; 
+            }
+            
+            const selectedProduct = productData.find(p => p.id === currentSelection.productId);
+            const quantity = currentSelection.quantity;
+            const totalPrice = (FIXED_PRICE * quantity).toFixed(2);
+            
+            document.getElementById('final-quantity-display').textContent = quantity;
+            document.getElementById('final-size-display').textContent = currentSelection.size;
+            document.getElementById('final-price-display').textContent = `$${totalPrice} MXN`;
+            
+            updateModalUI('payment');
+        }
+
+        function processOrderReservation() {
+            const clientName = document.getElementById('clientName').value.trim();
+            const clientPhone = document.getElementById('clientPhone').value.trim();
+            const clientAddress = document.getElementById('clientAddress').value.trim();
+            const errorDiv = document.getElementById('payment-error');
+            const selectedQuantity = currentSelection.quantity;
+
+            if (!clientName || !clientPhone || !clientAddress) {
+                errorDiv.style.display = 'block';
                 return;
             }
 
-            const stock = getStock(currentProductID, selectedColor, currentProductSize);
-            currentQuantity = parseInt(quantityInput.value);
+            errorDiv.style.display = 'none';
+            
+            // Intentar reservar el stock (descuenta temporalmente)
+            const order = reserveStock(
+                currentSelection.productId,
+                currentSelection.color, 
+                currentSelection.size,  
+                selectedQuantity, 
+                clientName,
+                clientPhone,
+                clientAddress
+            );
 
-            if (stock <= 0) {
-                statusElement.textContent = `Agotado en talla ${currentProductSize}.`;
-                statusElement.classList.remove('text-secondary');
-                statusElement.classList.add('text-danger');
-                quantityInput.max = 0;
-                quantityInput.value = 0;
-            } else if (currentQuantity > stock) {
-                statusElement.textContent = `Solo quedan ${stock} piezas en talla ${currentProductSize}.`;
-                statusElement.classList.remove('text-secondary');
-                statusElement.classList.add('text-danger');
-                quantityInput.max = stock;
-                quantityInput.value = stock; 
-                currentQuantity = stock;
+            if (order) {
+                // Reserva exitosa, muestra la info de transferencia
+                updateModalUI('confirmed', order);
             } else {
-                statusElement.textContent = `Disponible para preventa: ${stock}.`; 
-                statusElement.classList.remove('text-danger');
-                statusElement.classList.add('text-secondary');
-                quantityInput.max = 10; 
+                // Esto no debería ocurrir si el botón se desactiva correctamente, pero es una buena medida de seguridad
+                alert("Error de stock: Lo sentimos, se ha agotado el stock de esa talla/cantidad mientras realizabas el pedido. Por favor, intenta con otra selección.");
+                updateModalUI(false); 
             }
-            updatePriceDisplays(); 
-            checkModalButtonState();
         }
 
-        function updatePriceDisplays() {
-            const isHalfPayment = halfPaymentCheck.checked;
-            const total = currentPrice * currentQuantity;
-            const paymentDue = isHalfPayment ? total / 2 : total;
 
-            document.getElementById('total-price').textContent = `$${total.toFixed(2)} MXN`;
-            document.getElementById('payment-due').textContent = `$${paymentDue.toFixed(2)} MXN`;
-        }
-
-        function checkModalButtonState() {
-            const selectedColor = currentProductColor || 'Default';
-            const stock = getStock(currentProductID, selectedColor, currentProductSize);
-            const canProceed = currentProductSize !== null && currentQuantity > 0 && stock >= currentQuantity;
-            modalMainButton.disabled = !canProceed;
-        }
-
-        // Eventos en el Modal
-        paymentModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            
-            // 1. Cargar datos del producto
-            currentProductID = button.getAttribute('data-product-id');
-            const product = getProductData(currentProductID);
-            currentProductName = product.name;
-            currentPrice = parseFloat(product.price); 
-            
-            document.getElementById('product-name').textContent = currentProductName;
-            document.getElementById('product-description').textContent = product.description;
-            
-            // 2. Resetear la vista y el estado
-            resetModalView();
-
-            // 3. Manejo de Color (Modelos 43 y 44)
-            const colorContainer = document.getElementById('color-selection-container');
-            if (Object.keys(product.variants).length > 1) {
-                colorContainer.style.display = 'block';
-                createColorButtons(product);
-            } else {
-                // Producto de un solo color ('Default')
-                colorContainer.style.display = 'none';
-                currentProductColor = 'Default';
-                updateModalImages(product, 'Default');
-                createSizeButtons(currentProductID, 'Default');
-            }
-            
-            updatePriceDisplays();
-        });
-
-        quantityInput.addEventListener('input', () => {
-            if (currentProductID) {
-                updateQuantityStatus();
-            }
-        });
-
-        halfPaymentCheck.addEventListener('change', updatePriceDisplays);
-
-
-        // --- 5. LÓGICA DE FLUJO DE COMPRA ---
-
-        modalMainButton.addEventListener('click', () => {
-            if (modalMainButton.textContent === 'Pagar Ahora') {
-                // Paso 1: Pasar a la captura de datos
-                document.getElementById('selection-step').style.display = 'none';
-                document.getElementById('payment-step').style.display = 'block';
-
-                const total = currentPrice * currentQuantity;
-                const paymentDue = halfPaymentCheck.checked ? total / 2 : total;
-
-                document.getElementById('final-quantity-display').textContent = currentQuantity;
-                document.getElementById('final-size-display').textContent = currentProductSize;
-                document.getElementById('final-price-display').textContent = `$${paymentDue.toFixed(2)} MXN`;
-                
-                modalMainButton.textContent = 'Confirmar Pedido';
-                modalMainButton.disabled = false; 
-
-            } else if (modalMainButton.textContent === 'Confirmar Pedido') {
-                // Paso 2: Validar datos y generar orden
-
-                const name = document.getElementById('clientName').value.trim();
-                const phone = document.getElementById('clientPhone').value.trim();
-                const address = document.getElementById('clientAddress').value.trim();
-
-                if (name === '' || phone === '' || address === '') {
-                    document.getElementById('payment-error').style.display = 'block';
-                    return;
-                }
-                document.getElementById('payment-error').style.display = 'none';
-
-                // Generar Pedido (Lógica de inventario)
-                generateOrder(name, phone, address);
-            }
-        });
-
-
-        // --- 6. GESTIÓN DE ORDEN E INVENTARIO PERSISTENTE ---
-        const PENDING_ORDERS = JSON.parse(localStorage.getItem('RPLAY_PENDING_ORDERS')) || [];
-        const INVENTORY_STORAGE = JSON.parse(localStorage.getItem('RPLAY_INVENTORY')) || {};
-
-        function loadInventoryStorage() {
-            // Cargar stock almacenado, respetando la estructura [id][color][size]
-             Object.keys(INVENTORY_STORAGE).forEach(productId => {
-                if (productInventory[productId]) {
-                    Object.keys(INVENTORY_STORAGE[productId]).forEach(color => {
-                        if (productInventory[productId][color]) {
-                            Object.keys(INVENTORY_STORAGE[productId][color]).forEach(size => {
-                                productInventory[productId][color][size] = INVENTORY_STORAGE[productId][color][size];
-                            });
-                        }
-                    });
-                }
-            });
-        }
+        // --- 7. LISTENERS PRINCIPALES ---
         
-        // Función para descontar stock (se usa después de que el cliente finaliza la compra por WhatsApp)
-        function applyStockReduction(order) {
-            if (productInventory[order.productID] && productInventory[order.productID][order.color] && productInventory[order.productID][order.color][order.size] !== undefined) {
-                productInventory[order.productID][order.color][order.size] -= order.quantity;
-                localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
-                updateProductBadge(order.productID);
-            }
-        }
-
-        function generateOrder(name, phone, address) {
-            const orderID = Date.now();
-            const total = currentPrice * currentQuantity;
-            const paymentDue = halfPaymentCheck.checked ? total / 2 : total;
-            const selectedColor = currentProductColor || 'Default';
-
-            const order = {
-                id: orderID,
-                productID: currentProductID,
-                productName: currentProductName,
-                color: selectedColor, 
-                size: currentProductSize,
-                quantity: currentQuantity,
-                totalPrice: total,
-                paymentDue: paymentDue,
-                isHalfPayment: halfPaymentCheck.checked,
-                clientName: name,
-                clientPhone: phone,
-                clientAddress: address,
-                timestamp: Date.now(),
-                expiration: Date.now() + (24 * 60 * 60 * 1000)
-            };
-
-            // 1. Guardar la orden pendiente
-            PENDING_ORDERS.push(order);
-            localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
-            
-            // 2. Mostrar info de transferencia y WhatsApp
-            showTransferInfo(order);
-        }
-
-        function showTransferInfo(order) {
-            document.getElementById('payment-step').style.display = 'none';
-            document.getElementById('transfer-info').style.display = 'block';
-
-            const colorDisplay = order.color !== 'Default' ? order.color : 'Color Único';
-
-            document.getElementById('client-name-display').textContent = order.clientName;
-            document.getElementById('final-item-display').textContent = `${order.productName} (${colorDisplay})`;
-            document.getElementById('final-qty-conf').textContent = order.quantity;
-            document.getElementById('final-size-conf').textContent = order.size;
-            document.getElementById('final-amount-conf').textContent = `$${order.paymentDue.toFixed(2)} MXN`;
-
-            // Botón de WhatsApp
-            const message = `¡Hola! Acabo de generar un pedido de playeras RPLAY (#${order.id}).\n\n- Producto: ${order.productName}\n- Color: ${colorDisplay}\n- Talla: ${order.size}\n- Cantidad: ${order.quantity}\n- Monto pagado/apartado: $${order.paymentDue.toFixed(2)} MXN.\n- Mi nombre es: ${order.clientName}\n- Mi dirección es: ${order.clientAddress}`;
-            
-            const phoneNumber = WHATSAPP_NUMBER; 
-
-            whatsappButton.href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-            whatsappButton.setAttribute('data-order-id', order.id);
-            // Mostrar WhatsApp, ocultar el botón principal
-            whatsappButton.style.display = 'block';
-            modalMainButton.style.display = 'none';
-            document.getElementById('modal-close-button').textContent = 'Cerrar';
-        }
-
-
-        // --- 7. FUNCIONES DE ADMINISTRACIÓN Y RESET ---
-
-        window.releaseStock = (orderId, productId, color, size, quantity) => {
-             // 1. Devolver el stock
-            if (productInventory[productId] && productInventory[productId][color] && productInventory[productId][color][size] !== undefined) {
-                productInventory[productId][color][size] += quantity;
-                localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
-                updateProductBadge(productId);
-            }
-           
-            // 2. Remover la orden
-            const index = PENDING_ORDERS.findIndex(order => order.id === orderId);
-            if (index > -1) {
-                PENDING_ORDERS.splice(index, 1);
-                localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
-            }
-        }
-        
-        window.setStock = (id, color, size, count) => {
-             if (productInventory[id] && productInventory[id][color] && productInventory[id][color][size] !== undefined) {
-                productInventory[id][color][size] = count;
-                localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
-                updateProductBadge(id);
-             } else {
-                 console.error(`Error: El producto ${id} con color ${color} y talla ${size} no existe.`);
-             }
-        }
-
-        window.resetAllStock = () => {
-            if (confirm("ADVERTENCIA: ¿Estás seguro de que quieres REINICIAR TODO EL INVENTARIO A SU ESTADO INICIAL? Esto borra el stock y todas las órdenes pendientes.")) {
-                localStorage.removeItem('RPLAY_INVENTORY');
-                localStorage.removeItem('RPLAY_PENDING_ORDERS');
-                window.location.reload();
-            }
-        }
-
-        function resetModalView() {
-            document.getElementById('selection-step').style.display = 'block';
-            document.getElementById('payment-step').style.display = 'none';
-            document.getElementById('transfer-info').style.display = 'none';
-            document.getElementById('payment-error').style.display = 'none';
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientPhone').value = '';
-            document.getElementById('clientAddress').value = '';
-            quantityInput.value = 1;
-
-            currentProductSize = null;
-            currentProductColor = null; 
-            currentQuantity = 1;
-            modalMainButton.textContent = 'Pagar Ahora';
-            modalMainButton.disabled = true;
-            whatsappButton.style.display = 'none';
-            modalMainButton.style.display = 'block';
-            document.getElementById('modal-close-button').textContent = 'Cerrar';
-            whatsappButton.removeAttribute('data-stock-applied');
-        }
-        
-        // --- 8. LISTENER PARA DESCONTAR STOCK AL ENVIAR WHATSAPP ---
         document.addEventListener('DOMContentLoaded', () => {
+            generateInitialInventory();
+            loadInventoryStorage();
+            renderProductCards();
+            
+            // Listener para el botón de WhatsApp (descuenta el stock permanentemente)
             const whatsappButton = document.getElementById('whatsapp-confirm-button');
 
             if (whatsappButton) {
                 whatsappButton.addEventListener('click', (event) => {
                     
-                    // Solo descontar stock si no se ha hecho antes
                     if (whatsappButton.getAttribute('data-stock-applied') !== 'true') {
                         
                         const orderIdToApply = parseInt(whatsappButton.getAttribute('data-order-id'));
                         const order = PENDING_ORDERS.find(o => o.id === orderIdToApply);
                         
                         if (order) {
-                            applyStockReduction(order);
+                            // Aplicar la reducción PERMANENTE (remueve de la lista de gestión)
+                            applyStockReduction(order); 
                             whatsappButton.setAttribute('data-stock-applied', 'true');
                         }
                     }
+                    // El evento sigue su curso y abre WhatsApp
                 });
             }
-        });
-        
-        // --- INICIALIZACIÓN ---
-        document.addEventListener('DOMContentLoaded', () => {
-            generateInitialInventory();
-            loadInventoryStorage();
-            renderProductCards();
+            
+            // Listener para abrir el modal desde las tarjetas
+            document.getElementById('product-list').addEventListener('click', (e) => {
+                if (e.target.matches('.btn-buy')) {
+                    const productId = e.target.getAttribute('data-product-id');
+                    openModalDetail(productId); 
+                }
+            });
+            
+            // Listener para actualizar precio/stock al cambiar cantidad
+            const quantityInput = document.getElementById('quantityInput');
+            if (quantityInput) {
+                quantityInput.addEventListener('change', updateTotalAndCheckStock);
+                quantityInput.addEventListener('input', updateTotalAndCheckStock);
+            }
+
+            // Resetear el modal al cerrarse
+            const paymentModal = document.getElementById('paymentModal');
+            paymentModal.addEventListener('hidden.bs.modal', () => {
+                updateModalUI(false); 
+            });
+
         });
 
     </script>
