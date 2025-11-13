@@ -59,7 +59,7 @@
         </div>
         <h1 class="text-center mb-5" style="color: #ff3366;">RPLAY</h1>
         
-        <div class="container mb-5" id="manualManagementPanel" style="display:none;">
+        <div class="container mb-5" id="manualManagementPanel">
             <h3 class="text-danger mb-3">Administración de Pedidos Apartados</h3>
             <p class="text-muted small">Haz clic en "Liberar Stock" si el cliente no confirmó el pago (gestión manual de las 24 horas).</p>
             <div id="ordersList" class="p-3 border rounded bg-white">
@@ -250,6 +250,7 @@
                         sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png'; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
                     } else if (i === 3) { 
+                        // **PLAYERA 3 - SOLO M y XL**
                         mainImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
                         frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
                         backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png'; 
@@ -426,7 +427,8 @@
                         sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
                         initialStockOverrides = {M: 1, L: 1, XL: 1};
                     }else if (i === 32) { 
-                        mainImg = 'https://ventaplayera.github.io/RPLAYKaty3.png' 
+                        // **PLAYERA 32 - URL DE IMAGEN CORREGIDA**
+                        mainImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png' // <-- CORREGIDO
                         frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png'
                         backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png'
                         sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
@@ -718,13 +720,17 @@
             document.getElementById('size-status').textContent = 'Selecciona una talla.';
 
             if (!color || !productInventory[id] || !productInventory[id][color]) {
+                // Esto pasa si es un producto multicolor y aún no se selecciona color
                 sizeOptions.innerHTML = '<p class="text-danger small">Selecciona primero un color.</p>';
                 return;
             }
             
             const stockByColor = productInventory[id][color];
+            
+            // Si el stock está vacío (solo modelos con talla limitada), se usa esa lista de tallas.
+            const availableSizes = Object.keys(stockByColor); 
 
-            Object.keys(stockByColor).forEach(size => {
+            availableSizes.forEach(size => {
                 const stock = stockByColor[size];
                 const button = document.createElement('button');
                 button.type = 'button';
@@ -803,7 +809,8 @@
         function checkModalButtonState() {
             const selectedColor = currentProductColor || 'Default';
             const stock = getStock(currentProductID, selectedColor, currentProductSize);
-            const canProceed = currentProductSize !== null && currentQuantity > 0 && stock >= currentQuantity;
+            const quantity = parseInt(quantityInput.value);
+            const canProceed = currentProductSize !== null && quantity > 0 && stock >= quantity;
             modalMainButton.disabled = !canProceed;
         }
 
@@ -828,6 +835,7 @@
             if (Object.keys(product.variants).length > 1) {
                 colorContainer.style.display = 'block';
                 createColorButtons(product);
+                // Si es multi-color, el color se selecciona en createColorButtons y llama a createSizeButtons
             } else {
                 // Producto de un solo color ('Default')
                 colorContainer.style.display = 'none';
@@ -896,7 +904,10 @@
                     Object.keys(INVENTORY_STORAGE[productId]).forEach(color => {
                         if (productInventory[productId][color]) {
                             Object.keys(INVENTORY_STORAGE[productId][color]).forEach(size => {
-                                productInventory[productId][color][size] = INVENTORY_STORAGE[productId][color][size];
+                                // Solo actualizar si el tamaño existe en el inventario inicial (para respetar límites como el de la playera 3)
+                                if (productInventory[productId][color][size] !== undefined) {
+                                    productInventory[productId][color][size] = INVENTORY_STORAGE[productId][color][size];
+                                }
                             });
                         }
                     });
@@ -971,21 +982,68 @@
 
 
         // --- 7. FUNCIONES DE ADMINISTRACIÓN Y RESET ---
+        
+        // Renderizar las órdenes pendientes en el panel de administración
+        function renderOrdersList() {
+            const listContainer = document.getElementById('ordersList');
+            const noOrdersMessage = document.getElementById('noOrdersMessage');
+            
+            if (PENDING_ORDERS.length === 0) {
+                noOrdersMessage.style.display = 'block';
+                listContainer.innerHTML = '';
+                listContainer.appendChild(noOrdersMessage);
+                return;
+            }
+            
+            noOrdersMessage.style.display = 'none';
+            let html = '<ul class="list-group">';
+
+            PENDING_ORDERS.forEach(order => {
+                const colorDisplay = order.color !== 'Default' ? order.color : 'Único';
+                const timeRemaining = Math.max(0, order.expiration - Date.now());
+                const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <strong>#${order.id}</strong> - ${order.clientName} (${order.clientPhone})<br>
+                            <small class="text-muted">
+                                ${order.quantity} x ${order.productName} (${colorDisplay}, Talla ${order.size})<br>
+                                Monto: $${order.paymentDue.toFixed(2)} MXN (Apartado)<br>
+                                Expira en: ${hours}h ${minutes}m
+                            </small>
+                        </div>
+                        <button class="btn btn-sm btn-danger mt-2 mt-md-0" 
+                                onclick="releaseStock(${order.id}, '${order.productID}', '${order.color}', '${order.size}', ${order.quantity})">
+                            Liberar Stock
+                        </button>
+                    </li>
+                `;
+            });
+
+            html += '</ul>';
+            listContainer.innerHTML = html;
+        }
 
         window.releaseStock = (orderId, productId, color, size, quantity) => {
-             // 1. Devolver el stock
-            if (productInventory[productId] && productInventory[productId][color] && productInventory[productId][color][size] !== undefined) {
-                productInventory[productId][color][size] += quantity;
-                localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
-                updateProductBadge(productId);
-            }
-           
-            // 2. Remover la orden
-            const index = PENDING_ORDERS.findIndex(order => order.id === orderId);
-            if (index > -1) {
-                PENDING_ORDERS.splice(index, 1);
-                localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
-            }
+             if (confirm(`¿Estás seguro de que deseas liberar ${quantity} pz de ${productId} (${size})?`)) {
+                 // 1. Devolver el stock
+                if (productInventory[productId] && productInventory[productId][color] && productInventory[productId][color][size] !== undefined) {
+                    productInventory[productId][color][size] += quantity;
+                    localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
+                    updateProductBadge(productId);
+                }
+               
+                // 2. Remover la orden
+                const index = PENDING_ORDERS.findIndex(order => order.id === orderId);
+                if (index > -1) {
+                    PENDING_ORDERS.splice(index, 1);
+                    localStorage.setItem('RPLAY_PENDING_ORDERS', JSON.stringify(PENDING_ORDERS));
+                }
+                
+                renderOrdersList(); // Re-renderizar la lista
+             }
         }
         
         window.setStock = (id, color, size, count) => {
@@ -993,16 +1051,18 @@
                 productInventory[id][color][size] = count;
                 localStorage.setItem('RPLAY_INVENTORY', JSON.stringify(productInventory));
                 updateProductBadge(id);
+                console.log(`Stock de ${id} (${color}, ${size}) actualizado a ${count}.`);
              } else {
                  console.error(`Error: El producto ${id} con color ${color} y talla ${size} no existe.`);
              }
         }
 
         window.resetAllStock = () => {
-            if (confirm("ADVERTENCIA: ¿Estás seguro de que quieres REINICIAR TODO EL INVENTARIO A SU ESTADO INICIAL? Esto borra el stock y todas las órdenes pendientes.")) {
+            if (confirm("ADVERTENCIA: ¿Estás seguro de que quieres REINICIAR TODO EL INVENTARIO A SU ESTADO INICIAL? Esto borrará cualquier stock personalizado y las órdenes pendientes.")) {
                 localStorage.removeItem('RPLAY_INVENTORY');
                 localStorage.removeItem('RPLAY_PENDING_ORDERS');
-                window.location.reload();
+                // Se fuerza un reinicio para que se ejecute generateInitialInventory() sin datos previos
+                window.location.reload(); 
             }
         }
 
@@ -1054,6 +1114,7 @@
             generateInitialInventory();
             loadInventoryStorage();
             renderProductCards();
+            renderOrdersList(); // Renderiza el panel de administración al cargar
         });
 
     </script>
