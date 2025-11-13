@@ -215,10 +215,11 @@
     <script>
         
         // --- 1. CONFIGURACIÓN GLOBAL ---
-        const WHATSAPP_NUMBER = '5219991480151'; 
+        const WHATSAPP_NUMBER = '5219991480151'; // Sustituye con tu número
         const FIXED_PRICE = 250.00; 
         const DEFAULT_STOCK_PER_SIZE = 1;
         const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; 
+        const BASE_URL = 'https://ventaplayera.github.io/RPLAY/'; // URL BASE centralizada
 
         // Estructuras de datos
         const productInventory = {}; 
@@ -289,6 +290,7 @@
                     if (productInventory[productId]) {
                         for (const color in tempInventory[productId]) {
                             if (productInventory[productId][color]) {
+                                // Sobrescribir el stock actual con el almacenado
                                 productInventory[productId][color] = tempInventory[productId][color];
                             }
                         }
@@ -304,6 +306,7 @@
         }
 
         function getStock(productId, colorName, size) {
+            // Usa el inventario real (productInventory) para la verificación
             return productInventory[productId]?.[colorName]?.[size] || 0;
         }
         
@@ -333,10 +336,14 @@
             }
 
             // 1. Descontar stock (reserva temporal)
-            setStock(productId, colorName, size, currentStock - quantity);
+            // Llama a setStock para actualizar el inventario y el storage
+            setStock(productId, colorName, size, currentStock - quantity); 
 
             // 2. Crear y guardar la orden pendiente
             orderIdCounter++;
+            const product = productData.find(p => p.id === productId);
+            const variantName = product.variants[colorName].name;
+            
             const order = {
                 id: orderIdCounter,
                 timestamp: new Date().getTime(),
@@ -347,12 +354,12 @@
                 clientName: clientName,
                 clientPhone: clientPhone,
                 clientAddress: clientAddress,
-                productName: productData.find(p => p.id === productId).name,
+                productName: variantName, // Usamos el nombre de la variante para el detalle
                 isConfirmed: false 
             };
             
             PENDING_ORDERS.push(order);
-            saveInventoryStorage();
+            saveInventoryStorage(); // Guardar el nuevo arreglo de órdenes
             renderOrdersList();
             
             return order;
@@ -371,6 +378,7 @@
         function releaseStock(order) {
             // 1. Devolver el stock al inventario
             const currentStock = getStock(order.productId, order.colorName, order.size);
+            // Llama a setStock para devolver el stock, actualizando el inventario y el storage
             setStock(order.productId, order.colorName, order.size, currentStock + order.quantity);
 
             // 2. Eliminar la orden de la lista de pendientes
@@ -386,7 +394,7 @@
                 releaseStock(order);
             }
         }
-        
+
         // --- 4. RENDERIZADO ---
         
         function renderOrdersList() {
@@ -477,372 +485,387 @@
                 let productName = `Playera Modelo No. ${i}`; 
                 let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
                 let variants = {}; 
-
-                let mainImg, frontImg, backImg, sideImg;
+                let mainImg, frontImg, backImg, sideImg; // Se inicializan a undefined
 
                 if (i < 43) {
                     // --- ZONA DE DATOS DE PRODUCTOS INDIVIDUALES (1 a 42) ---
-                    const BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
-
                     if (i === 1) { 
                         productName = 'Playera Dama Xime Blanco'; 
                         productDescription = 'Diseño original de Xime en blanco. ¡Edición especial!';
                         frontImg = `${BASE_URL}Xime1.png`; 
                         backImg = `${BASE_URL}Xime2.png`; 
                         sideImg = `${BASE_URL}blanco.png`; 
-                        initialStockOverrides = { M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 2) { 
                         productName = 'Playera Dama Xime Negro'; 
                         productDescription = 'Diseño original de Xime en negro. ¡Edición especial!';
                         frontImg = `${BASE_URL}Xime3.png`; 
                         backImg = `${BASE_URL}Xime4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 3) { 
                         productName = 'Playera Dama Lucy Diseño 1'; 
                         productDescription = 'Diseño de Lucy #1, disponible en talla M y XL.'; 
-                        frontImg = `${BASE_URL}Lucy1.png`; 
-                        backImg = `${BASE_URL}Lucy2.png`; 
-                        sideImg = `${BASE_URL}negro.png`; 
+                        frontImg = `${BASE_URL}Lucy1.png`;
+                        backImg = `${BASE_URL}Lucy2.png`;
+                        sideImg = `${BASE_URL}negro.png`;
                         initialStockOverrides = {M: 1, XL: 1}; 
-                        modelSizes = ['M','XL'];
+                        modelSizes = ["M", "XL"]; 
                     } else if (i === 4) { 
                         productName = 'Playera Dama Lucy Diseño 2'; 
-                        productDescription = 'Diseño de Lucy #2, ¡perfecta para el verano!'; 
-                        frontImg = `${BASE_URL}Lucy3.png`; 
-                        backImg = `${BASE_URL}Lucy4.png`; 
-                        sideImg = `${BASE_URL}blanco.png`; 
-                        initialStockOverrides = { M: 1, L:1, XL: 2};
+                        productDescription = 'Diseño de Lucy #2, disponible en talla S, L, XL.'; 
+                        frontImg = `${BASE_URL}Lucy3.png`;
+                        backImg = `${BASE_URL}Lucy4.png`;
+                        sideImg = `${BASE_URL}blanco.png`;
+                        initialStockOverrides = {S: 1, L: 1, XL: 1}; 
+                        modelSizes = ["S", "L", "XL"];
                     } else if (i === 5) { 
                         productName = 'Playera Dama Raúl Diseño 1'; 
                         productDescription = 'Modelo exclusivo Raúl #1, color negro.'; 
                         frontImg = `${BASE_URL}Raul1.png`; 
                         backImg = `${BASE_URL}Raul2.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 6) { 
                         productName = 'Playera Dama Raúl Diseño 2'; 
                         productDescription = 'Modelo exclusivo Raúl #2, color negro.'; 
                         frontImg = `${BASE_URL}Raul3.png`; 
                         backImg = `${BASE_URL}Raul4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 7) { 
                         productName = 'Playera Dama Abi Blanco'; 
                         productDescription = 'Diseño Abi en blanco, estilo minimalista.'; 
                         frontImg = `${BASE_URL}Abi1.png`; 
                         backImg = `${BASE_URL}Abi2.png`; 
                         sideImg = `${BASE_URL}blanco.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 8) { 
                         productName = 'Playera Dama Abi Negro'; 
                         productDescription = 'Diseño Abi en negro, solo en tallas M y L.'; 
                         frontImg = `${BASE_URL}Abi3.png`; 
-                        backImg = `${BASE_URL}Abi4.png`;
+                        backImg = `${BASE_URL}Abi4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, G: 1}; 
+                        initialStockOverrides = {M: 1, L: 2}; 
                         modelSizes = ['M', 'L'];
                     } else if (i === 9) { 
-                        productName = 'Playera Dama Dani Blanco'; 
-                        productDescription = 'Playera Dani en color blanco, cómoda y casual.'; 
-                        frontImg = `${BASE_URL}Dani1.png`; 
-                        backImg = `${BASE_URL}Dani2.png`; 
+                        productName = 'Playera Dama Fany Blanco'; 
+                        productDescription = 'Diseño Fany en blanco, con ilustración.'; 
+                        frontImg = `${BASE_URL}Fany1.png`; 
+                        backImg = `${BASE_URL}Fany2.png`; 
                         sideImg = `${BASE_URL}blanco.png`; 
-                        initialStockOverrides = { M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 10) { 
-                        productName = 'Playera Dama Dani Negro'; 
-                        productDescription = 'Playera Dani en color negro, ideal para cualquier ocasión.'; 
-                        frontImg = `${BASE_URL}Dani3.png`; 
-                        backImg = `${BASE_URL}Dani4.png`; 
+                        productName = 'Playera Dama Fany Negro'; 
+                        productDescription = 'Diseño Fany en negro, con ilustración.'; 
+                        frontImg = `${BASE_URL}Fany3.png`; 
+                        backImg = `${BASE_URL}Fany4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 11) { 
-                        productName = 'Playera Dama Dali Diseño 1'; 
-                        productDescription = 'Diseño original Dali #1. ¡Atrévete a usarla!'; 
-                        frontImg = `${BASE_URL}Dali1.png`; 
-                        backImg = `${BASE_URL}Dali2.png`; 
-                        sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = { M: 1, L: 1, XL: 1};
+                        productName = 'Playera Dama Kary Blanco'; 
+                        productDescription = 'Playera Kary en blanco. Diseño moderno.'; 
+                        frontImg = `${BASE_URL}Kary1.png`; 
+                        backImg = `${BASE_URL}Kary2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 12) { 
-                        productName = 'Playera Dama Dali Diseño 2'; 
-                        productDescription = 'Diseño original Dali #2. La mejor calidad.'; 
-                        frontImg = `${BASE_URL}Dali3.png`; 
-                        backImg = `${BASE_URL}Dali4.png`; 
+                        productName = 'Playera Dama Kary Negro'; 
+                        productDescription = 'Playera Kary en negro. Diseño moderno.'; 
+                        frontImg = `${BASE_URL}Kary3.png`; 
+                        backImg = `${BASE_URL}Kary4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = { M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 13) { 
                         productName = 'Playera Yose Diseño 1'; 
                         productDescription = 'Playera unisex Yose, diseño sencillo en negro.'; 
                         frontImg = `${BASE_URL}Yose1.png`; 
                         backImg = `${BASE_URL}Yose2.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {L: 3, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 14) { 
                         productName = 'Playera Yose Diseño 2'; 
                         productDescription = 'Playera unisex Yose, diseño impactante en negro.'; 
                         frontImg = `${BASE_URL}Yose3.png`; 
                         backImg = `${BASE_URL}Yose4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = { L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 15) { 
                         productName = 'Playera Keila Blanco'; 
                         productDescription = 'Playera Keila en blanco. Estilo juvenil.'; 
                         frontImg = `${BASE_URL}Keila1.png`; 
                         backImg = `${BASE_URL}Keila2.png`; 
                         sideImg = `${BASE_URL}blanco.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 16) { 
                         productName = 'Playera Keila Negro'; 
                         productDescription = 'Playera Keila en negro. Estilo juvenil.'; 
                         frontImg = `${BASE_URL}Keila3.png`; 
                         backImg = `${BASE_URL}Keila4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 17) { 
                         productName = 'Playera Kenji Diseño 1'; 
                         productDescription = 'Playera Kenji con diseño clásico.'; 
                         frontImg = `${BASE_URL}Kenji1.png`; 
                         backImg = `${BASE_URL}Kenji2.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 18) { 
-                        productName = 'Playera Kenji Diseño 2'; 
-                        productDescription = 'Playera Kenji con diseño moderno.'; 
-                        frontImg = `${BASE_URL}Kenji3.png`; 
-                        backImg = `${BASE_URL}Kenji4.png`; 
-                        sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        productName = 'Playera Jose Diseño 1'; 
+                        productDescription = 'Playera Jose en blanco. Diseño con texto.'; 
+                        frontImg = `${BASE_URL}Jose1.png`; 
+                        backImg = `${BASE_URL}Jose2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 19) { 
-                        productName = 'Playera Alli Diseño 1'; 
-                        productDescription = 'Playera Alli en negro. Estilo casual.'; 
-                        frontImg = `${BASE_URL}Alli1.png`; 
-                        backImg = `${BASE_URL}Alli2.png`; 
+                        productName = 'Playera Jose Diseño 2'; 
+                        productDescription = 'Playera Jose en negro. Diseño geométrico.'; 
+                        frontImg = `${BASE_URL}Jose3.png`; 
+                        backImg = `${BASE_URL}Jose4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 20) { 
-                        productName = 'Playera Alli Diseño 2'; 
-                        productDescription = 'Playera Alli en negro. Diseño geométrico.'; 
-                        frontImg = `${BASE_URL}Alli3.png`; 
-                        backImg = `${BASE_URL}Alli4.png`; 
-                        sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    } else if (i === 21) { 
                         productName = 'Playera Ale Diseño 1'; 
-                        productDescription = 'Playera Ale en color arena. Diseño elegante.'; 
+                        productDescription = 'Playera Ale en blanco. Diseño minimalista.'; 
                         frontImg = `${BASE_URL}Ale1.png`; 
                         backImg = `${BASE_URL}Ale2.png`; 
-                        sideImg = `${BASE_URL}arena.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
+                    } else if (i === 21) { 
+                        productName = 'Playera Fer Diseño 1'; 
+                        productDescription = 'Playera Fer en blanco. Diseño de calavera.'; 
+                        frontImg = `${BASE_URL}Fer1.png`; 
+                        backImg = `${BASE_URL}Fer2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 22) { 
                         productName = 'Playera Ale Diseño 2'; 
                         productDescription = 'Playera Ale en color arena. Diseño exclusivo.'; 
                         frontImg = `${BASE_URL}Ale3.png`; 
                         backImg = `${BASE_URL}Ale4.png`; 
                         sideImg = `${BASE_URL}arena.png`; 
-                        initialStockOverrides = { M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 23) { 
                         productName = 'Playera Miri Diseño 1'; 
                         productDescription = 'Playera Miri en negro. Diseño artístico.'; 
                         frontImg = `${BASE_URL}Miri1.png`; 
                         backImg = `${BASE_URL}Miri2.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 24) { 
                         productName = 'Playera Miri Diseño 2'; 
                         productDescription = 'Playera Miri en negro. Diseño de texto.'; 
-                        frontImg = `${BASE_URL}Miri3.png`;
+                        frontImg = `${BASE_URL}Miri3.png`; 
                         backImg = `${BASE_URL}Miri4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 25) { 
                         productName = 'Playera Didi Diseño 1'; 
                         productDescription = 'Playera Didi en negro. Diseño simple.'; 
                         frontImg = `${BASE_URL}Didi1.png`; 
                         backImg = `${BASE_URL}Didi2.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 26) { 
                         productName = 'Playera Didi Diseño 2'; 
                         productDescription = 'Playera Didi en arena. Diseño de texto.'; 
                         frontImg = `${BASE_URL}Didi3.png`; 
                         backImg = `${BASE_URL}Didi4.png`; 
                         sideImg = `${BASE_URL}arena.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 27) { 
-                        productName = 'Playera Vale Diseño 1'; 
-                        productDescription = 'Playera Vale en arena. Estilo fresco.'; 
-                        frontImg = `${BASE_URL}Vale1.png`; 
-                        backImg = `${BASE_URL}Vale2.png`; 
-                        sideImg = `${BASE_URL}arena.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        productName = 'Playera Kevi Diseño 1'; 
+                        productDescription = 'Playera Kevi en negro. Diseño de banda.'; 
+                        frontImg = `${BASE_URL}Kevi1.png`; 
+                        backImg = `${BASE_URL}Kevi2.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 28) { 
-                        productName = 'Playera Vale Diseño 2'; 
-                        productDescription = 'Playera Vale en negro. Diseño de líneas.'; 
-                        frontImg = `${BASE_URL}Vale3.png`;
-                        backImg = `${BASE_URL}Vale4.png`; 
-                        sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        productName = 'Playera Kevi Diseño 2'; 
+                        productDescription = 'Playera Kevi en blanco. Diseño de logo.'; 
+                        frontImg = `${BASE_URL}Kevi3.png`; 
+                        backImg = `${BASE_URL}Kevi4.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 29) { 
-                        productName = 'Playera Caro Diseño 1'; 
-                        productDescription = 'Playera Caro en negro. Diseño de mariposas.'; 
-                        frontImg = `${BASE_URL}Caro1.png`; 
-                        backImg = `${BASE_URL}Caro2.png`; 
+                        productName = 'Playera Fer Diseño 2'; 
+                        productDescription = 'Playera Fer en negro. Diseño de texto.'; 
+                        frontImg = `${BASE_URL}Fer3.png`; 
+                        backImg = `${BASE_URL}Fer4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 30) { 
                         productName = 'Playera Caro Diseño 2'; 
                         productDescription = 'Playera Caro en blanco. Diseño floral.'; 
                         frontImg = `${BASE_URL}Caro3.png`; 
                         backImg = `${BASE_URL}Caro4.png`; 
                         sideImg = `${BASE_URL}blanco.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 31) { 
                         productName = 'Playera Mary Diseño 1'; 
-                        productDescription = 'Playera Mary en negro. Diseño moderno.'; 
-                        frontImg = `${BASE_URL}Gon1.PNG`; 
-                        backImg = `${BASE_URL}Gon2.PNG`; 
-                        sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        productDescription = 'Playera Mary en blanco. Diseño de luna.'; 
+                        frontImg = `${BASE_URL}Mary1.png`; 
+                        backImg = `${BASE_URL}Mary2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 32) { 
                         productName = 'Playera Mary Diseño 2'; 
                         productDescription = 'Playera Mary en negro. Diseño de estrellas.'; 
-                        frontImg = `${BASE_URL}Katy3.png`; 
-                        backImg = `${BASE_URL}Katy4.png`; 
+                        frontImg = `${BASE_URL}Mary3.png`; 
+                        backImg = `${BASE_URL}Mary4.png`; 
                         sideImg = `${BASE_URL}negro.png`; 
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 33) { 
                         productName = 'Playera Lalo Diseño 1'; 
                         productDescription = 'Playera Lalo en blanco. Diseño simple.'; 
-                        frontImg = `${BASE_URL}Bere1.png`; 
-                        backImg = `${BASE_URL}Bere2.png`; 
-                        sideImg = `${BASE_URL}blanco2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G:1};
+                        frontImg = `${BASE_URL}Lalo1.png`; 
+                        backImg = `${BASE_URL}Lalo2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 34) { 
                         productName = 'Playera Lalo Diseño 2'; 
                         productDescription = 'Playera Lalo en negro. Diseño de líneas.'; 
-                        frontImg = `${BASE_URL}Bere3.png`; 
-                        backImg = `${BASE_URL}Bere4.png`; 
-                        sideImg = `${BASE_URL}negro2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1;
+                        frontImg = `${BASE_URL}Lalo3.png`; 
+                        backImg = `${BASE_URL}Lalo4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 35) { 
                         productName = 'Playera Dama Vane Diseño 1'; 
                         productDescription = 'Playera Vane en blanco. Diseño primaveral.'; 
-                        frontImg = `${BASE_URL}Dan1.png`; 
-                        backImg = `${BASE_URL}Dan2.png`; 
-                        sideImg = `${BASE_URL}blanco2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        frontImg = `${BASE_URL}Vane1.png`; 
+                        backImg = `${BASE_URL}Vane2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 36) { 
                         productName = 'Playera Dama Vane Diseño 2'; 
                         productDescription = 'Playera Vane en negro. Diseño de mar.'; 
-                        frontImg = `${BASE_URL}Dan3.png`; 
-                        backImg = `${BASE_URL}Dan4.png`; 
-                        sideImg = `${BASE_URL}negro2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        frontImg = `${BASE_URL}Vane3.png`; 
+                        backImg = `${BASE_URL}Vane4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 37) { 
-                        productName = 'Playera Dama Caro Diseño 3'; 
-                        productDescription = 'Playera Caro en arena. Diseño elegante.'; 
-                        frontImg = `${BASE_URL}Gera1.png`; 
-                        backImg = `${BASE_URL}Gera2.png`; 
-                        sideImg = `${BASE_URL}negro2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        productName = 'Playera Dama Vane Diseño 3'; 
+                        productDescription = 'Playera Vane en arena. Diseño de flor.'; 
+                        frontImg = `${BASE_URL}Vane5.png`; 
+                        backImg = `${BASE_URL}Vane6.png`; 
+                        sideImg = `${BASE_URL}arena.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 38) { 
-                        productName = 'Playera Dama Caro Diseño 4'; 
-                        productDescription = 'Playera Caro en negro. Diseño de luna.'; 
-                        frontImg = `${BASE_URL}Gera3.png`; 
-                        backImg = `${BASE_URL}Gera4.png`; 
-                        sideImg = `${BASE_URL}negro2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        productName = 'Playera Dama Vane Diseño 4'; 
+                        productDescription = 'Playera Vane en blanco. Diseño de texto.'; 
+                        frontImg = `${BASE_URL}Vane7.png`; 
+                        backImg = `${BASE_URL}Vane8.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 39) { 
-                        productName = 'Playera Dama Neli Diseño 1'; 
-                        productDescription = 'Playera Neli en blanco. Diseño de gato.'; 
-                        frontImg = `${BASE_URL}Bra1.png`; 
-                        backImg = `${BASE_URL}Bra2.png`; 
-                        sideImg = `${BASE_URL}blanco2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        productName = 'Playera Dama Vane Diseño 5'; 
+                        productDescription = 'Playera Vane en negro. Diseño de corazones.'; 
+                        frontImg = `${BASE_URL}Vane9.png`; 
+                        backImg = `${BASE_URL}Vane10.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 40) { 
-                        productName = 'Playera Dama Neli Diseño 2'; 
-                        productDescription = 'Playera Neli en negro. Diseño de texto.'; 
-                        frontImg = `${BASE_URL}Bra3.png`; 
-                        backImg = `${BASE_URL}Bra4.png`; 
-                        sideImg = `${BASE_URL}negro2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        productName = 'Playera Dama Vane Diseño 6'; 
+                        productDescription = 'Playera Vane en arena. Diseño de silueta.'; 
+                        frontImg = `${BASE_URL}Vane11.png`; 
+                        backImg = `${BASE_URL}Vane12.png`; 
+                        sideImg = `${BASE_URL}arena.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 41) { 
                         productName = 'Playera Dama Sol Diseño 1'; 
                         productDescription = 'Playera Sol en blanco. Diseño de frase.'; 
-                        frontImg = `${BASE_URL}Adri1.png`; 
-                        backImg = `${BASE_URL}Adri2.png`; 
-                        sideImg = `${BASE_URL}blanco2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        frontImg = `${BASE_URL}Sol1.png`; 
+                        backImg = `${BASE_URL}Sol2.png`; 
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     } else if (i === 42) { 
                         productName = 'Playera Dama Sol Diseño 2'; 
                         productDescription = 'Playera Sol en negro. Diseño de mariposas.'; 
-                        frontImg = `${BASE_URL}Adri3.png`; 
-                        backImg = `${BASE_URL}Adri4.png`; 
-                        sideImg = `${BASE_URL}negro2.png`; 
-                        initialStockOverrides = {S:1, M: 1, G: 1};
+                        frontImg = `${BASE_URL}Sol3.png`; 
+                        backImg = `${BASE_URL}Sol4.png`; 
+                        sideImg = `${BASE_URL}negro.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1};
                     }
-                   
-            
-                    // Lógica para productos de un solo color (Default)
+
+                    // --- INICIO DE CORRECCIÓN ---
+                    // Si 'frontImg' no se definió, usamos un placeholder robusto
+                    if (!frontImg) {
+                        productName = `Playera Modelo No. ${i} (FALTA INFO)`;
+                        frontImg = `https://via.placeholder.com/300x450?text=Frente+de+${productName.replace(/ /g, '+')}`;
+                        backImg = `https://via.placeholder.com/300x450?text=Espalda+de+${productName.replace(/ /g, '+')}`;
+                        sideImg = `${BASE_URL}blanco.png`; 
+                        initialStockOverrides = {S:1, M: 1, L: 1, XL: 1}; // Stock por defecto
+                    }
+                    // --- FIN DE CORRECCIÓN ---
+
+                    // 1. Aplicar stock por defecto si no fue sobrescrito
                     let stock = {};
                     modelSizes.forEach(s => {
                         stock[s] = initialStockOverrides[s] !== undefined ? initialStockOverrides[s] : DEFAULT_STOCK_PER_SIZE;
                     });
                     
+                    // 2. CREAR LA VARIANTE 'Default'
+                    // Esta es la corrección clave para que las tarjetas puedan encontrar la imagen principal.
                     variants['Default'] = {
-                        name: productName, 
-                        img_front: frontImg,
+                        name: productName,
+                        img_front: frontImg, 
                         img_back: backImg,
                         img_side: sideImg,
                         stock: stock
                     };
+                    
                     mainImg = frontImg;
-                } else if (i === 43) { 
-                    // Producto 43 con variantes de color Blanco y Negro
-                    productName = 'Playera BLACKPINK BORN PINK (Multicolor)'; 
-                    productDescription = 'Diseño Blackpink "BORN PINK" en negro/blanco. Edición especial.'; 
-                    
-                    variants['Blanco'] = {
-                        name: 'Playera BLACKPINK (Blanca)', 
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro1.png',
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro2.png',
-                        img_side: 'https://ventaplayera.github.io/RPLAY/blanco2.png',
-                        stock: { S: 1, M: 1 } 
-                    };
-                    variants['Negro'] = {
-                        name: 'Playera BLACKPINK (Negra)', 
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro3.png',
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro4.png',
-                        img_side: 'https://ventaplayera.github.io/RPLAY/negro2.png',
-                        stock: { G:1 }
-                    };
-                    mainImg = variants['Blanco'].img_front; 
-                } else if (i === 44) { 
-                    // Producto 44 con variantes de color Blanco y Negro
-                    productName = 'Playera K-POP Diseño Coreano (Multicolor)'; 
-                    productDescription = 'Diseño K-Pop minimalista, alta durabilidad.'; 
-                    
-                    variants['Blanco'] = {
-                        name: 'Playera K-POP (Blanca)', 
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro5.png',
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro6.png',
-                        img_side: 'https://ventaplayera.github.io/RPLAY/blanco2.png',
-                        stock: { S: 1, M: 1}
-                    };
-                    variants['Negro'] = {
-                        name: 'Playera K-POP (Negra)', 
-                        img_front: 'https://ventaplayera.github.io/RPLAY/Aro7.png',
-                        img_back: 'https://ventaplayera.github.io/RPLAY/Aro8.png',
-                        img_side: 'https://ventaplayera.github.io/RPLAY/negro2.png',
-                        stock: { G: 1 }
-                    };
-                    mainImg = variants['Negro'].img_front; 
+
+                } else { // i === 43 or i === 44
+                    // --- ZONA DE PRODUCTOS MULTIVARIANTES (43 y 44) ---
+                    if (i === 43) { 
+                        productName = 'Playera BLACKPINK BORN PINK (Multicolor)';
+                        productDescription = 'Diseño Blackpink "BORN PINK" en negro/blanco. Edición especial.';
+                        modelSizes = ["S", "M", "L", "XL"];
+                        variants['Blanco'] = { 
+                            name: 'Playera BLACKPINK (Blanca)', 
+                            img_front: `${BASE_URL}B1.png`, 
+                            img_back: `${BASE_URL}B2.png`, 
+                            img_side: `${BASE_URL}blanco.png`, 
+                            stock: { S: 1, M: 2, L: 1, XL: 1 } 
+                        };
+                        variants['Negro'] = { 
+                            name: 'Playera BLACKPINK (Negra)', 
+                            img_front: `${BASE_URL}B3.png`, 
+                            img_back: `${BASE_URL}B4.png`, 
+                            img_side: `${BASE_URL}negro.png`, 
+                            stock: { S: 1, M: 1, L: 1, XL: 1 } 
+                        };
+                        mainImg = variants['Blanco'].img_front;
+
+                    } else if (i === 44) { 
+                        productName = 'Playera K-POP (2 Colores)';
+                        productDescription = 'Diseño inspirado en K-POP, disponible en blanco y negro.';
+                        modelSizes = ["S", "M", "L", "XL"];
+                        variants['Blanco'] = { 
+                            name: 'Playera K-POP (Blanca)', 
+                            img_front: `${BASE_URL}K1.png`, 
+                            img_back: `${BASE_URL}K2.png`, 
+                            img_side: `${BASE_URL}blanco.png`, 
+                            stock: { S: 1, M: 1, L: 1, XL: 1 } 
+                        };
+                        variants['Negro'] = { 
+                            name: 'Playera K-POP (Negra)', 
+                            img_front: `${BASE_URL}K3.png`, 
+                            img_back: `${BASE_URL}K4.png`, 
+                            img_side: `${BASE_URL}negro.png`, 
+                            stock: { S: 1, M: 1, L: 1, XL: 1 } 
+                        };
+                        mainImg = variants['Negro'].img_front;
+                    }
                 }
                 
                 // Inicializa la estructura del inventario de stock
                 productInventory[id] = {};
                 for (const colorName in variants) {
-                    productInventory[id][colorName] = variants[colorName].stock;
+                    // Copiar stock de la variante al inventario global
+                    productInventory[id][colorName] = { ...variants[colorName].stock };
                 }
 
                 // Guarda los datos del producto
@@ -859,33 +882,36 @@
             }
         }
 
+        // --- 6. GESTIÓN DEL MODAL (COMPRA) ---
 
-        // --- 6. LÓGICA DEL MODAL (Ajustada para funcionar con la estructura de datos) ---
+        let paymentModal;
         
         function updateModalContent(product, selectedColor) {
             const variant = product.variants[selectedColor];
             
+            // Actualizar imágenes y descripción
             document.getElementById('modal-img-front').src = variant.img_front;
             document.getElementById('modal-img-back').src = variant.img_back;
             document.getElementById('modal-img-side').src = variant.img_side;
-            
             document.getElementById('product-name').textContent = variant.name;
             document.getElementById('product-description').textContent = product.description;
 
             // Renderizar opciones de talla (simplificado, asume que siempre hay tallas)
             const sizeOptionsContainer = document.getElementById('size-options');
             sizeOptionsContainer.innerHTML = '';
-            
-            const sizes = Object.keys(variant.stock).sort(); // Ordenar tallas
+            // Usar el stock ACTUAL (del productInventory) para mostrar disponibilidad.
+            const currentStockForColor = productInventory[product.id][selectedColor] || {}; 
+            const sizes = Object.keys(currentStockForColor).sort(); // Ordenar tallas
 
             sizes.forEach(size => {
-                const stock = variant.stock[size];
+                const stock = currentStockForColor[size];
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = `btn btn-outline-secondary btn-sm me-2 mb-2 size-option ${stock > 0 ? '' : 'disabled'}`;
                 button.textContent = size;
                 button.setAttribute('data-size', size);
                 button.disabled = stock <= 0;
+                
                 button.addEventListener('click', () => {
                     document.querySelectorAll('.size-option').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
@@ -894,7 +920,7 @@
                 });
                 sizeOptionsContainer.appendChild(button);
             });
-            
+
             // Si el producto tiene colores, mostrarlos
             const colorContainer = document.getElementById('color-selection-container');
             if (product.hasColors) {
@@ -911,10 +937,8 @@
                         document.querySelectorAll('.color-option').forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
                         currentSelection.color = color;
-                        updateModalContent(product, color); // Recargar contenido para la nueva variante
-                        // Resetear la talla al cambiar de color
-                        currentSelection.size = sizes[0]; 
-                        updateTotalAndCheckStock();
+                        // Recargar contenido para la nueva variante (llama a esta misma función)
+                        updateModalContent(product, color); 
                     });
                     colorOptions.appendChild(button);
                 });
@@ -923,7 +947,7 @@
             }
 
             // Seleccionar la primera talla disponible o la predeterminada
-            const defaultSize = sizes.find(size => variant.stock[size] > 0) || sizes[0];
+            const defaultSize = sizes.find(size => currentStockForColor[size] > 0) || sizes[0];
             currentSelection.size = defaultSize;
 
             if (document.querySelector(`.size-option[data-size="${defaultSize}"]`)) {
@@ -931,67 +955,66 @@
             } else {
                  currentSelection.size = null; // Ninguna talla seleccionada si no hay stock
             }
-
+            
+            // Forzar actualización de precio y stock al cargar
             updateTotalAndCheckStock();
         }
 
-
         function updateTotalAndCheckStock() {
-            const product = productData.find(p => p.id === currentSelection.productId);
-            const quantityInput = document.getElementById('quantityInput');
-            let quantity = parseInt(quantityInput.value);
-            const size = currentSelection.size;
-            const color = currentSelection.color;
-            
-            if (isNaN(quantity) || quantity < 1) {
-                quantity = 1;
-                quantityInput.value = 1;
-            }
-
-            currentSelection.quantity = quantity;
-            
-            let currentStock = 0;
-            if (size && product && product.variants[color] && product.variants[color].stock[size] !== undefined) {
-                currentStock = product.variants[color].stock[size];
-            }
-
-            const isAvailable = currentStock >= quantity;
-            const stockStatus = document.getElementById('size-status');
+            const sizeStatus = document.getElementById('size-status');
+            const quantityStatus = document.getElementById('quantity-status');
             const mainButton = document.getElementById('modal-main-button');
-            
-            if (currentStock === 0) {
-                 stockStatus.textContent = `Agotada en Talla ${size}.`;
-                 mainButton.disabled = true;
-            } else if (!isAvailable) {
-                stockStatus.textContent = `Solo quedan ${currentStock} pieza(s) en Talla ${size}. Ajusta la cantidad.`;
-                mainButton.disabled = true;
-            } else {
-                stockStatus.textContent = `Disponible: ${currentStock} pieza(s) en Talla ${size}.`;
-                mainButton.disabled = false;
-            }
+            const quantityInput = document.getElementById('quantityInput');
 
-            if (!currentSelection.size) { // Si no hay talla seleccionada (todo agotado)
-                stockStatus.textContent = `No hay stock disponible para este modelo.`;
+            // Asegurar que la cantidad es válida
+            let quantity = parseInt(quantityInput.value) || 1;
+            if (quantity < 1) { quantity = 1; quantityInput.value = 1; }
+            currentSelection.quantity = quantity;
+
+            // Obtener stock actual
+            const currentStock = getStock(currentSelection.productId, currentSelection.color, currentSelection.size);
+
+            if (currentSelection.size) {
+                sizeStatus.textContent = `Stock disponible en Talla ${currentSelection.size}: ${currentStock} pieza(s).`;
+                quantityInput.max = currentStock;
+
+                if (currentStock === 0) {
+                    mainButton.disabled = true;
+                    quantityStatus.textContent = `Agotado. Selecciona otra talla.`;
+                } else if (currentStock < currentSelection.quantity) {
+                    mainButton.disabled = true;
+                    quantityStatus.textContent = `Solo quedan ${currentStock} piezas en stock.`;
+                } else {
+                    mainButton.disabled = false;
+                    quantityStatus.textContent = `Máximo a comprar: ${currentStock} pieza(s).`;
+                }
+
+            } else {
+                // No hay talla seleccionada (todo agotado)
+                sizeStatus.textContent = `No hay stock disponible para este modelo o talla.`;
                 mainButton.disabled = true;
             }
             
             const totalPrice = (FIXED_PRICE * quantity).toFixed(2);
-            const halfPayment = (FIXED_PRICE * quantity / 2).toFixed(2);
-
+            // Si la casilla de pagar mitad está marcada, calcular la mitad
+            const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
+            const paymentDue = isHalfPayment ? (FIXED_PRICE * quantity / 2).toFixed(2) : totalPrice;
+            
             document.getElementById('total-price').textContent = `$${totalPrice} MXN`;
-            document.getElementById('payment-due').textContent = `$${halfPayment} MXN`;
+            document.getElementById('payment-due').textContent = `$${paymentDue} MXN`;
         }
 
         function openModalDetail(productId) {
             const product = productData.find(p => p.id === productId);
             if (!product) return;
-            
+
             currentSelection.productId = productId;
             // Seleccionar color por defecto (el primero)
             const firstColor = Object.keys(product.variants)[0];
             currentSelection.color = firstColor;
 
-            updateModalContent(product, firstColor); 
+            updateModalContent(product, firstColor);
+            
             // Forzar el paso de selección al abrir
             updateModalUI(false); 
         }
@@ -1002,11 +1025,15 @@
             const transferInfo = document.getElementById('transfer-info');
             const modalMainButton = document.getElementById('modal-main-button');
             const whatsappButton = document.getElementById('whatsapp-confirm-button');
-            
-            // Limpiar errores
+
+            // Limpiar campos de cliente y errores
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('clientAddress').value = '';
             document.getElementById('payment-error').style.display = 'none';
 
-            if (step === false) { // Paso 1: Selección de producto/talla/cantidad
+            if (step === false) { 
+                // Paso 1: Selección de producto/talla/cantidad
                 selectionStep.style.display = 'block';
                 paymentStep.style.display = 'none';
                 transferInfo.style.display = 'none';
@@ -1014,8 +1041,23 @@
                 modalMainButton.textContent = 'Pagar Ahora';
                 modalMainButton.onclick = moveToPaymentStep;
                 whatsappButton.style.display = 'none';
+                document.getElementById('modal-close-button').textContent = 'Cerrar';
                 updateTotalAndCheckStock(); // Revisa si el botón debe estar activo
-            } else if (step === 'payment') { // Paso 2: Datos del cliente
+
+            } else if (step === 'payment') { 
+                // Paso 2: Datos del cliente
+                const product = productData.find(p => p.id === currentSelection.productId);
+                const quantity = currentSelection.quantity;
+                
+                // Determinar el monto a pagar ahora
+                const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
+                const totalAmount = FIXED_PRICE * quantity;
+                const paymentDue = isHalfPayment ? (totalAmount / 2).toFixed(2) : totalAmount.toFixed(2);
+
+                document.getElementById('final-quantity-display').textContent = quantity;
+                document.getElementById('final-size-display').textContent = currentSelection.size;
+                document.getElementById('final-price-display').textContent = `$${paymentDue} MXN`;
+                
                 selectionStep.style.display = 'none';
                 paymentStep.style.display = 'block';
                 transferInfo.style.display = 'none';
@@ -1024,48 +1066,58 @@
                 modalMainButton.disabled = false;
                 modalMainButton.onclick = processOrderReservation;
                 whatsappButton.style.display = 'none';
-            } else if (step === 'confirmed' && order) { // Paso 3: Info de transferencia
+                document.getElementById('modal-close-button').textContent = 'Cancelar Pedido';
+
+            } else if (step === 'confirmed') { 
+                // Paso 3: Confirmación y Datos de Transferencia
+                const product = productData.find(p => p.id === currentSelection.productId);
+                const variantName = product.variants[currentSelection.color].name;
+                
+                // Determinar el monto final pagado
+                const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
+                const totalAmount = FIXED_PRICE * order.quantity;
+                const finalAmountPaid = isHalfPayment ? (totalAmount / 2).toFixed(2) : totalAmount.toFixed(2);
+
+                document.getElementById('client-name-display').textContent = order.clientName;
+                document.getElementById('final-qty-conf').textContent = order.quantity;
+                document.getElementById('final-item-display').textContent = variantName;
+                document.getElementById('final-size-conf').textContent = order.size;
+                document.getElementById('final-amount-conf').textContent = `$${finalAmountPaid} MXN`;
+                
+                // Generar mensaje de WhatsApp
+                const paymentTypeText = isHalfPayment ? `Apartado/Medio Pago ($${finalAmountPaid} MXN)` : `Pago Total ($${finalAmountPaid} MXN)`;
+                const whatsappMessage = `¡Hola! Acabo de hacer una orden de preventa con ID *#${order.id}*.%0A%0A*Detalles del Pedido:*%0A- Producto: ${variantName}%0A- Talla: ${order.size}%0A- Cantidad: ${order.quantity} pieza(s)%0A- Tipo de Pago: ${paymentTypeText}%0A%0A*Mis Datos:*%0A- Nombre: ${order.clientName}%0A- Teléfono: ${order.clientPhone}%0A- Dirección: ${order.clientAddress}%0A%0AAdjunto el comprobante de pago por transferencia. ¡Gracias!`;
+                
+                whatsappButton.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`;
+                whatsappButton.setAttribute('data-order-id', order.id);
+
                 selectionStep.style.display = 'none';
                 paymentStep.style.display = 'none';
                 transferInfo.style.display = 'block';
-                modalMainButton.style.display = 'none';
-                
-                // Preparar la info final
-                const halfPrice = (FIXED_PRICE * order.quantity / 2).toFixed(2);
-                const whatsappMsg = `¡Hola! Acabo de hacer un apartado. Mi orden es *#${order.id}*.\n\n*Producto:* ${order.productName}\n*Color:* ${order.colorName}\n*Talla:* ${order.size}\n*Cantidad:* ${order.quantity}\n*Monto de Apartado:* $${halfPrice} MXN\n\n*Mis Datos:*\n*Nombre:* ${order.clientName}\n*Teléfono:* ${order.clientPhone}\n*Dirección:* ${order.clientAddress}\n\nAquí adjunto el comprobante de pago por $${halfPrice} MXN.`;
-
-                whatsappButton.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMsg)}`;
-                whatsappButton.setAttribute('data-order-id', order.id);
+                modalMainButton.style.display = 'none'; 
                 whatsappButton.style.display = 'block';
-                
-                // Actualizar la UI de confirmación
-                document.getElementById('client-name-display').textContent = order.clientName;
-                document.getElementById('final-qty-conf').textContent = order.quantity;
-                document.getElementById('final-item-display').textContent = order.productName;
-                document.getElementById('final-size-conf').textContent = order.size;
-                document.getElementById('final-amount-conf').textContent = `$${halfPrice} MXN`;
                 document.getElementById('modal-close-button').textContent = 'Cerrar';
-                whatsappButton.removeAttribute('data-stock-applied'); 
+                whatsappButton.removeAttribute('data-stock-applied');
             }
         }
         
-        function moveToPaymentStep() {
-            // Se asume que updateTotalAndCheckStock ya se ejecutó y validó la disponibilidad
-            if (document.getElementById('modal-main-button').disabled) {
-                return; 
-            }
-            
-            const selectedProduct = productData.find(p => p.id === currentSelection.productId);
-            const quantity = currentSelection.quantity;
-            const totalPrice = (FIXED_PRICE * quantity).toFixed(2);
-            
-            document.getElementById('final-quantity-display').textContent = quantity;
-            document.getElementById('final-size-display').textContent = currentSelection.size;
-            document.getElementById('final-price-display').textContent = `$${totalPrice} MXN`;
-            
-            updateModalUI('payment');
-        }
+        // --- 7. FLUJO DE COMPRA ---
 
+        function moveToPaymentStep() {
+            if (currentSelection.size && currentSelection.quantity > 0) {
+                // Verificar stock por última vez
+                const currentStock = getStock(currentSelection.productId, currentSelection.color, currentSelection.size);
+                if (currentStock >= currentSelection.quantity) {
+                     updateModalUI('payment');
+                } else {
+                    alert(`El stock disponible cambió a ${currentStock}. Por favor, ajusta la cantidad.`);
+                    updateTotalAndCheckStock();
+                }
+            } else {
+                alert("Por favor, selecciona una talla y cantidad válidas.");
+            }
+        }
+        
         function processOrderReservation() {
             const clientName = document.getElementById('clientName').value.trim();
             const clientPhone = document.getElementById('clientPhone').value.trim();
@@ -1079,13 +1131,13 @@
             }
 
             errorDiv.style.display = 'none';
-            
+
             // Intentar reservar el stock (descuenta temporalmente)
             const order = reserveStock(
                 currentSelection.productId,
-                currentSelection.color, 
-                currentSelection.size,  
-                selectedQuantity, 
+                currentSelection.color,
+                currentSelection.size,
+                selectedQuantity,
                 clientName,
                 clientPhone,
                 clientAddress
@@ -1094,29 +1146,26 @@
             if (order) {
                 // Reserva exitosa, muestra la info de transferencia
                 updateModalUI('confirmed', order);
+                // Vuelve a renderizar las tarjetas para reflejar el stock descontado
+                renderProductCards(); 
             } else {
-                // Esto no debería ocurrir si el botón se desactiva correctamente, pero es una buena medida de seguridad
-                alert("Error de stock: Lo sentimos, se ha agotado el stock de esa talla/cantidad mientras realizabas el pedido. Por favor, intenta con otra selección.");
-                updateModalUI(false); 
+                alert("Error: El stock se agotó antes de poder reservar. Intenta con una cantidad menor o un producto diferente.");
+                updateModalUI(false);
             }
         }
 
-
-        // --- 7. LISTENERS PRINCIPALES ---
-        
+        // --- 8. INICIALIZACIÓN Y LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
-            generateInitialInventory();
-            loadInventoryStorage();
-            renderProductCards();
             
-            // Listener para el botón de WhatsApp (descuenta el stock permanentemente)
-            const whatsappButton = document.getElementById('whatsapp-confirm-button');
+            // 1. Inicializar Bootstrap Modal
+            paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'), {});
 
+            // 2. Listener para descontar stock al enviar WhatsApp
+            const whatsappButton = document.getElementById('whatsapp-confirm-button');
             if (whatsappButton) {
                 whatsappButton.addEventListener('click', (event) => {
-                    
+                    // Solo descontar stock si no se ha hecho antes
                     if (whatsappButton.getAttribute('data-stock-applied') !== 'true') {
-                        
                         const orderIdToApply = parseInt(whatsappButton.getAttribute('data-order-id'));
                         const order = PENDING_ORDERS.find(o => o.id === orderIdToApply);
                         
@@ -1130,34 +1179,40 @@
                 });
             }
             
-            // Listener para abrir el modal desde las tarjetas
+            // 3. Listener para abrir el modal desde las tarjetas
             document.getElementById('product-list').addEventListener('click', (e) => {
-                if (e.target.matches('.btn-buy')) {
-                    const productId = e.target.getAttribute('data-product-id');
+                const target = e.target.closest('.btn-buy');
+                if (target) {
+                    const productId = target.getAttribute('data-product-id');
                     openModalDetail(productId); 
                 }
             });
             
-            // Listener para actualizar precio/stock al cambiar cantidad
+            // 4. Listener para actualizar precio/stock al cambiar cantidad
             const quantityInput = document.getElementById('quantityInput');
             if (quantityInput) {
                 quantityInput.addEventListener('change', updateTotalAndCheckStock);
                 quantityInput.addEventListener('input', updateTotalAndCheckStock);
             }
+            
+            // 5. Listener para actualizar el monto a pagar al marcar/desmarcar "Pagar la Mitad"
+            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
+            if (halfPaymentCheck) {
+                halfPaymentCheck.addEventListener('change', updateTotalAndCheckStock);
+            }
 
-            // Resetear el modal al cerrarse
-            const paymentModal = document.getElementById('paymentModal');
-            paymentModal.addEventListener('hidden.bs.modal', () => {
+            // 6. Resetear el modal al cerrarse
+            const paymentModalElement = document.getElementById('paymentModal');
+            paymentModalElement.addEventListener('hidden.bs.modal', () => {
                 updateModalUI(false); 
             });
 
+            // 7. Cargar datos e inventario
+            generateInitialInventory();
+            loadInventoryStorage();
+            renderProductCards();
         });
 
     </script>
 </body>
 </html>
-
-
-
-
-
