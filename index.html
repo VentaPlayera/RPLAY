@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPLAY - Catálogo Completo</title>
+    <title>RPLAY - Venta de Playeras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* ======================================= */
-        /* ESTILOS CSS GENERALES */
-        /* ======================================= */
         body {
             background-color: #f8f9fa;
         }
@@ -29,8 +26,8 @@
             background-color: #e6004b;
             color: white;
         }
-        /* Esto oculta el badge de stock en la tarjeta */
-        .stock-badge {
+        /* ESTO OCULTA EL BADGE DE STOCK EN LA TARJETA Y EN EL MODAL DE DETALLE */
+        .stock-badge, #stockIndicator {
             display: none !important; 
         }
         .carousel-item img {
@@ -73,29 +70,6 @@
         .carousel-indicators .active {
             opacity: 1;
         }
-
-        /* ======================================= */
-        /* ESTILOS NUEVOS PARA COLOR SWATCH */
-        /* ======================================= */
-        .color-swatch {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            margin-right: 10px;
-            border: 2px solid #ccc;
-            cursor: pointer;
-            display: inline-block;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        /* Asignación de color */
-        .color-swatch[data-color-key="NEGRO"] { background-color: black; }
-        .color-swatch[data-color-key="BLANCO"] { background-color: white; border-color: #666; }
-
-        .color-swatch.active {
-            border-color: #ff3366; /* Color de acento */
-            box-shadow: 0 0 5px #ff3366;
-            transform: scale(1.1);
-        }
     </style>
 </head>
 <body>
@@ -106,7 +80,7 @@
 
     <header class="p-3 mb-4 bg-white shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
-            <img src='https://ventaplayera.github.io/RPLAY/logo.png' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
+            <img src='https://i.imgur.com/tu_logo_rplay_ejemplo.png' alt="Logo de mi tienda" style="max-width: 150px; height: auto;">
             <h1 class="h3 text-primary d-none d-md-block">Catálogo RPLAY</h1>
             <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
                 Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
@@ -118,7 +92,7 @@
         <div class="row" id="product-list">
             </div>
 
-    </main>
+        </main>
 
     <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -131,8 +105,10 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-indicators" id="carouselIndicators"></div>
-                                <div class="carousel-inner" id="carouselInner"></div>
+                                <div class="carousel-indicators" id="carouselIndicators">
+                                    </div>
+                                <div class="carousel-inner" id="carouselInner">
+                                    </div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                     <span class="visually-hidden">Previous</span>
@@ -143,7 +119,6 @@
                                 </button>
                             </div>
                         </div>
-                        
                         <div class="col-md-6">
                             <h2 id="modalProductName" class="text-primary"></h2>
                             <p id="modalProductDescription" class="text-muted"></p>
@@ -152,14 +127,16 @@
                             
                             <form id="orderForm">
                                 <input type="hidden" id="modalProductId" name="productId">
-                                <input type="hidden" id="selectedColorKey" name="colorKey"> 
 
-                                <div class="mb-3" id="colorSelectorContainer">
-                                    </div>
-
+                                <div class="mb-3" id="colorSelectContainer" style="display:none;">
+                                    <label for="colorSelect" class="form-label">Color:</label>
+                                    <select class="form-select" id="colorSelect" name="color">
+                                        </select>
+                                </div>
                                 <div class="mb-3">
                                     <label for="sizeSelect" class="form-label">Talla:</label>
-                                    <select class="form-select" id="sizeSelect" name="size" required></select>
+                                    <select class="form-select" id="sizeSelect" name="size" required>
+                                        </select>
                                 </div>
 
                                 <div class="mb-3">
@@ -167,7 +144,7 @@
                                     <input type="number" class="form-control" id="quantityInput" name="quantity" value="1" min="1" required>
                                 </div>
 
-                                <div class="mb-3" style="display:none;">
+                                <div class="mb-3">
                                     <span id="stockIndicator" class="badge"></span>
                                 </div>
 
@@ -238,20 +215,23 @@
                     </button>
                 </div>
             </div>
+            </div>
         </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
         // =======================================================
-        // 1. CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
+        // DECLARACIÓN DE VARIABLES GLOBALES Y CONSTANTES
         // =======================================================
         const PRODUCT_PRICE = 450.00; 
         const MINIMUM_TO_SHIP = 1;   
-        
-        // Número de WhatsApp para el pedido final
         const WHATSAPP_NUMBER = '529991480151'; 
+        
+        // --- CONSTANTES DE IMAGEN (REEMPLAZAR CON TUS ENLACES REALES) ---
+        const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
+        // 🚨 BASE URL: ¡REEMPLAZA TuUsuario/TuRepositorio CON TU RUTA DE IMÁGENES!
+        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/TuUsuario/TuRepositorio/main/img/';
         
         let productData = []; 
         let productInventory = {}; 
@@ -260,132 +240,151 @@
         let orderIdCounter = 0;
         let PENDING_ORDERS = []; 
 
-        // Tallas por defecto para casi todos los modelos
-        const DEFAULT_GLOBAL_SIZES = ['S', 'M', 'L', 'XL'];
-        const DEFAULT_COLOR_KEY = 'NEGRO'; 
-
         // =======================================================
-        // 2. FUNCIÓN DE INVENTARIO INICIAL (Genera todos los modelos 1 a 44)
+        // FUNCIÓN DE INVENTARIO INICIAL (CONFIGURACIÓN DE STOCK POR TALLA/COLOR)
         // =======================================================
 
         function generateInitialInventory() {
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
 
-            const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
-            // 🚨 Asegúrate de que todas estas imágenes existan en tu GITHUB para que el color dinámico funcione
-            const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/'; 
+            // --- DEFINICIÓN DEL STOCK POR MODELO Y TALLA (AQUÍ PUEDES MODIFICAR) ---
+            const defaultStock = { 'S': 50, 'M': 50, 'L': 50, 'XL': 50 };
             
-            let initialStock = 50; 
+            const initialProducts = [
+                // EJEMPLOS DE STOCK Y TALLAS
+                { i: 1, name: 'XIME-1', description: 'Playera Modelo 1: Lánzate a la aventura.', stock: { 'S': 10, 'M': 20, 'L': 5, 'XL': 15 } },
+                { i: 2, name: 'XIME-2', description: 'Playera Modelo 2: Diseño retro con alas.', stock: { 'S': 5, 'M': 5, 'L': 5, 'XL': 5 } },
+                { i: 3, name: 'XIME-3', description: 'Playera Modelo 3: La vida es mejor en el mar.', stock: { 'M': 30, 'L': 15, 'XL': 10 } }, 
+                { i: 4, name: 'XIME-4', description: 'Playera Modelo 4: Fuego y pasión.', stock: defaultStock },
+                { i: 5, name: 'BRUNO MARS', description: 'Diseño inspirado en el gran Bruno Mars.', stock: { 'M': 10, 'L': 10 } }, 
+                { i: 6, name: 'PLAYERA 6', description: 'Diseño exclusivo #6. ¡Modifica este texto!', stock: { 'S': 25, 'M': 25, 'L': 25, 'XL': 25 } },
+                { i: 7, name: 'PLAYERA 7', description: 'Modelo 7 - Patrón abstracto.', stock: defaultStock },
+                { i: 8, name: 'PLAYERA 8', description: 'Modelo 8 - Estilo urbano.', stock: { 'M': 5, 'L': 5, 'XXL': 10 } }, 
+                { i: 9, name: 'PLAYERA 9', description: 'Modelo 9 - Edición limitada.', stock: { 'S': 3, 'M': 3 } }, 
+                { i: 10, name: 'PLAYERA 10', description: 'Modelo 10 - Clásico y simple.', stock: defaultStock },
+                // ... (agregar otros modelos hasta el 42 si es necesario, o se rellenarán automáticamente)
+                // --- MODELOS CON OPCIÓN DE COLOR ---
+                { i: 43, name: 'XIME-43', description: 'Modelo 43 con opción de color.', stock: defaultStock, colors: ['Blanco', 'Negro'] },
+                { i: 44, name: 'XIME-44', description: 'Modelo 44 con opción de color.', stock: defaultStock, colors: ['Blanco', 'Negro'] },
+            ];
+
+            // Rellenar hasta el modelo 44 con stock por defecto si no están definidos
+            const MAX_MODELS = 44;
+            const existingIndices = initialProducts.map(p => p.i);
             
-            for (let i = 1; i <= 44; i++) {
+            for (let i = 1; i <= MAX_MODELS; i++) {
+                if (!existingIndices.includes(i)) {
+                    initialProducts.push({
+                        i: i,
+                        name: `Playera Modelo No. ${i}`,
+                        description: `Diseño exclusivo #${i}. ¡Modifica este texto!`,
+                        stock: defaultStock 
+                    });
+                }
+            }
+            initialProducts.sort((a, b) => a.i - b.i);
+
+
+            // --- LÓGICA DE PROCESAMIENTO ---
+            initialProducts.forEach(prod => {
+                const i = prod.i;
                 const id = `PROD_${String(i).padStart(3, '0')}`;
                 
-                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
-                let productName = `Playera Modelo No. ${i}`;
-                let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
+                const modelSizes = Object.keys(prod.stock).filter(size => prod.stock[size] > 0); 
                 
-                let frontImg, backImg, sideImg = GENERIC_SIDE_IMAGE;
-                
-                let colorVariations = [];
-                let hasColors = false;
-
-                // --- AJUSTE DE DATOS, ENLACES DE IMAGEN Y TALLAS POR MODELO ---
-                
-                if (i === 1) { 
-                    productName = 'BTS (Blanco)'; 
-                    productDescription = 'Diseño original de BTS en blanco. Edición especial.';
-                    frontImg = GITHUB_BASE_URL + 'Xime1.png';
-                    backImg = GITHUB_BASE_URL + 'Xime2.png';
-                    sideImg = GITHUB_BASE_URL + 'blanco.png'; 
-                } 
-                else if (i === 2) { 
-                    productName = 'BTS (Negro)'; 
-                    productDescription = 'Diseño original de BTS en negro. Edición especial.';
-                    frontImg = GITHUB_BASE_URL + 'Xime3.png';
-                    backImg = GITHUB_BASE_URL + 'Xime4.png';
-                    sideImg = GITHUB_BASE_URL + 'negro.png'; 
-                } 
-                else if (i === 5) { 
-                    productName = 'BRUNO MARS'; 
-                    productDescription = 'Playera inspirada en Bruno Mars. ¡Stock limitado en tallas!'; 
-                    modelSizes = ['M', 'L']; 
-                } 
-                else if (i === 43) { 
-                    // 🚨 MODELO 43 CON VARIACIÓN DE COLOR
-                    productName = 'Playera BLACKPINK';
-                    productDescription = 'Diseño oficial de Blackpink, disponible en negro y blanco.';
-                    modelSizes = ['S', 'M', 'L', 'XL'];
-                    hasColors = true;
-                    colorVariations = [
-                        // ASEGÚRATE QUE LAS SIGUIENTES RUTAS EXISTAN:
-                        { name: 'Negro', key: 'NEGRO', mainImg: GITHUB_BASE_URL + '43_negro_frente.png', backImg: GITHUB_BASE_URL + '43_negro_espalda.png' },
-                        { name: 'Blanco', key: 'BLANCO', mainImg: GITHUB_BASE_URL + '43_blanco_frente.png', backImg: GITHUB_BASE_URL + '43_blanco_espalda.png' }
-                    ];
-                }
-                else if (i === 44) { 
-                    // 🚨 MODELO 44 CON VARIACIÓN DE COLOR
-                    productName = 'Playera Modelo 44 (Dama)';
-                    productDescription = 'Diseño con corte ajustado para dama, disponible en negro y blanco.';
-                    modelSizes = ['S', 'M', 'L'];
-                    hasColors = true;
-                    colorVariations = [
-                        // ASEGÚRATE QUE LAS SIGUIENTES RUTAS EXISTAN:
-                        { name: 'Negro', key: 'NEGRO', mainImg: GITHUB_BASE_URL + '44_negro_frente.png', backImg: GITHUB_BASE_URL + '44_negro_espalda.png' },
-                        { name: 'Blanco', key: 'BLANCO', mainImg: GITHUB_BASE_URL + '44_blanco_frente.png', backImg: GITHUB_BASE_URL + '44_blanco_espalda.png' }
-                    ];
-                }
-                
-                // --- CONVENCIÓN DE NOMBRES POR DEFECTO ---
-                if (!hasColors) {
-                    if (!frontImg) {
-                        frontImg = `${GITHUB_BASE_URL}xime${i}_frente.png`; 
-                        backImg = `${GITHUB_BASE_URL}xime${i}_espalda.png`; 
+                // --- INVENTARIO INICIAL POR ID_TALLA ---
+                modelSizes.forEach(size => {
+                    const stockAmount = prod.stock[size];
+                    if (stockAmount > 0) {
+                       productInventory[`${id}_${size}`] = stockAmount;
                     }
-                } else {
-                    // Si tiene colores, la imagen principal de la tarjeta es el primer color (Negro)
-                    frontImg = colorVariations.find(c => c.key === DEFAULT_COLOR_KEY)?.mainImg || colorVariations[0].mainImg;
-                    backImg = colorVariations.find(c => c.key === DEFAULT_COLOR_KEY)?.backImg || colorVariations[0].backImg;
-                }
+                });
                 
-                const mainImg = frontImg; 
-
-                // --- INVENTARIO INICIAL ---
-                if (hasColors) {
-                    colorVariations.forEach(color => {
-                        for (const size of modelSizes) {
-                            // Key incluye color: PROD_043_NEGRO_S
-                            productInventory[`${id}_${color.key}_${size}`] = initialStock;
-                        }
-                    });
-                } else {
-                    for (const size of modelSizes) {
-                        // Key normal: PROD_001_S
-                        productInventory[`${id}_${size}`] = initialStock;
-                    }
+                // Set the correct side image URL or generic fallback
+                let sideImg = `${GITHUB_BASE_URL}xime${i}_lateral.jpg`; 
+                if (sideImg.includes('lateral')) {
+                    sideImg = GENERIC_SIDE_IMAGE;
                 }
                 
                 // --- CREACIÓN DEL OBJETO PRODUCTO ---
                 const product = {
                     id: id,
-                    name: productName,
-                    description: productDescription,
+                    name: prod.name,
+                    description: prod.description,
                     price: PRODUCT_PRICE,
                     sizes: modelSizes, 
-                    hasColors: hasColors, 
-                    colors: colorVariations, 
-                    mainImg: mainImg, // Imagen de la tarjeta
-                    frontImg: frontImg, 
-                    backImg: backImg,
+                    colors: prod.colors || [], // Se usa para 43 y 44
+                    mainImg: `${GITHUB_BASE_URL}xime${i}_frente.jpg`,
+                    frontImg: `${GITHUB_BASE_URL}xime${i}_frente.jpg`,
+                    backImg: `${GITHUB_BASE_URL}xime${i}_espalda.jpg`,
                     sideImg: sideImg,
                 };
 
                 productData.push(product);
-            }
+            });
         }
 
         // =======================================================
-        // 3. FUNCIONES DE ALMACENAMIENTO (STORAGE)
+        // FUNCIÓN DE ADMINISTRACIÓN OCULTA (SOLO COMANDOS)
+        // =======================================================
+        
+        // Reporte de Stock para el Administrador (se llama desde la consola)
+        window.showInventoryReport = function() {
+            // ... (función para reporte de inventario) ...
+            console.log("\n==============================================");
+            console.log("     REPORTE DE INVENTARIO (ADMIN)");
+            console.log("==============================================");
+            
+            let totalStock = 0;
+            const report = [];
+
+            productData.forEach(product => {
+                product.sizes.forEach(size => {
+                    const key = `${product.id}_${size}`;
+                    const stock = productInventory[key] || 0;
+                    
+                    if (stock > 0) {
+                        report.push(`Modelo: ${product.name} | Talla: ${size} | Stock: ${stock} unidades`);
+                        totalStock += stock;
+                    }
+                });
+            });
+
+            if (report.length > 0) {
+                console.log(report.join('\n'));
+                console.log("----------------------------------------------");
+                console.log(`TOTAL DE ARTÍCULOS EN STOCK: ${totalStock}`);
+            } else {
+                console.log("El inventario está vacío.");
+            }
+            console.log("==============================================");
+            return "Inventario impreso en la consola.";
+        }
+        
+        // Función de Reinicio para el Administrador (se llama desde la consola)
+        window.resetInventoryAndOrders = function() {
+            if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
+            
+            generateInitialInventory(); 
+            saveInventoryStorage();
+            
+            PENDING_ORDERS = [];
+            orderIdCounter = 0;
+            currentOrder = [];
+            saveOrdersStorage();
+            
+            renderProductCards();
+            
+            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+            if(ordersModal) ordersModal.hide();
+            
+            alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5) para asegurar una carga limpia!");
+        }
+
+
+        // =======================================================
+        // FUNCIONES DE ALMACENAMIENTO (STORAGE)
         // =======================================================
 
         function saveInventoryStorage() {
@@ -395,11 +394,12 @@
         function loadInventoryStorage() {
             const storedInventory = localStorage.getItem('productInventory');
             if (storedInventory) {
-                productInventory = JSON.parse(storedInventory); 
-            } else {
-                // Si no hay inventario guardado, generarlo y guardarlo
-                generateInitialInventory(); 
-                saveInventoryStorage();
+                const loadedInventory = JSON.parse(storedInventory); 
+                for (const key in loadedInventory) {
+                    if (productInventory.hasOwnProperty(key)) {
+                        productInventory[key] = loadedInventory[key];
+                    }
+                }
             }
         }
         
@@ -421,17 +421,16 @@
         }
 
         // =======================================================
-        // 4. LÓGICA DE STOCKS (Ahora acepta Color)
+        // LÓGICA DE STOCKS
         // =======================================================
 
-        function getStock(productId, size, colorKey = null) {
-            // La clave de stock incluye color solo si colorKey NO es null
-            const key = colorKey ? `${productId}_${colorKey}_${size}` : `${productId}_${size}`;
+        function getStock(productId, size) {
+            const key = `${productId}_${size}`;
             return productInventory[key] || 0; 
         }
 
         // =======================================================
-        // 5. RENDERIZACIÓN DE TARJETAS DE PRODUCTO
+        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO
         // =======================================================
 
         function renderProductCards() {
@@ -439,13 +438,7 @@
             list.innerHTML = ''; 
 
             productData.forEach(product => {
-                const maxStock = product.sizes.reduce((max, size) => {
-                    if (product.hasColors) {
-                        return product.colors.reduce((c_max, color) => Math.max(c_max, getStock(product.id, size, color.key)), max);
-                    } else {
-                        return Math.max(max, getStock(product.id, size));
-                    }
-                }, 0);
+                const maxStock = product.sizes.reduce((max, size) => Math.max(max, getStock(product.id, size)), 0);
                 
                 const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
                 const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
@@ -453,13 +446,14 @@
                 const card = `
                     <div class="col-6 col-md-4 col-lg-3">
                         <div class="card product-card h-100">
-                            <span class="stock-badge ${statusClass}">${status}</span> 
+                            <span class="stock-badge ${statusClass} badge fs-6 p-2 rounded-0">${status}</span> 
                             <img src="${product.mainImg}" class="card-img-top p-2" alt="${product.name}">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">${product.name}</h5>
                                 <p class="card-text text-success fw-bold">$${product.price.toFixed(2)}</p>
-                                <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}">
-                                    Ver / Pedir
+                                <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}" 
+                                        ${maxStock === 0 ? 'disabled' : ''}>
+                                    ${maxStock === 0 ? 'Agotado' : (product.colors.length > 0 ? 'Ver Colores / Pedir' : 'Ver / Pedir')}
                                 </button>
                             </div>
                         </div>
@@ -470,133 +464,119 @@
         }
         
         // =======================================================
-        // 6. LÓGICA DE MODAL DE DETALLE Y ADD TO ORDER
+        // LÓGICA DE MODAL DE DETALLE
         // =======================================================
-        
-        // Función maestra para actualizar la UI del modal de detalle
-        function updateModalDetailsUI(product, colorKey, size) {
-            // Obtiene las imágenes específicas para el color seleccionado (si aplica)
-            let currentImages = { frontImg: product.frontImg, backImg: product.backImg, sideImg: product.sideImg };
-
-            if (product.hasColors && colorKey) {
-                const colorInfo = product.colors.find(c => c.key === colorKey);
-                if (colorInfo) {
-                    currentImages.frontImg = colorInfo.mainImg;
-                    currentImages.backImg = colorInfo.backImg;
-                    // Mantener el sideImg genérico o específico del producto si no cambia por color
-                    // currentImages.sideImg = product.sideImg; 
-                }
-            }
-
-            renderCarousel(currentImages);
-            updateTotalAndCheckStock(product.id, size, colorKey);
-        }
 
         function openModalDetail(productId) {
             const product = productData.find(p => p.id === productId);
             if (!product) return;
 
-            // 1. Inicialización de campos de texto
             document.getElementById('modalProductId').value = productId;
             document.getElementById('modalProductName').textContent = product.name;
             document.getElementById('modalProductDescription').textContent = product.description;
             document.getElementById('modalProductPrice').textContent = `$${product.price.toFixed(2)}`;
             
-            // 2. Tallas
-            const sizeSelect = document.getElementById('sizeSelect');
-            sizeSelect.innerHTML = '';
-            product.sizes.forEach(size => {
-                const option = document.createElement('option');
-                option.value = size;
-                option.textContent = size;
-                sizeSelect.appendChild(option);
-            });
-            document.getElementById('quantityInput').value = 1;
+            const colorContainer = document.getElementById('colorSelectContainer');
+            const colorSelect = document.getElementById('colorSelect');
+            
+            let defaultColor = null;
 
-            // 3. Colores (NUEVO)
-            const colorContainer = document.getElementById('colorSelectorContainer');
-            let defaultColorKey = null;
+            // 1. Manejar el Selector de Color
+            if (product.colors && product.colors.length > 0) {
+                colorContainer.style.display = 'block';
+                colorSelect.innerHTML = '';
+                product.colors.forEach(color => {
+                    const option = document.createElement('option');
+                    option.value = color;
+                    option.textContent = color;
+                    colorSelect.appendChild(option);
+                });
+                
+                defaultColor = product.colors[0]; // Usar el primer color como predeterminado
+                
+                // Listener para el cambio de color
+                colorSelect.onchange = () => {
+                    const selectedColor = colorSelect.value;
+                    renderCarousel(product, selectedColor);
+                    updateTotalAndCheckStock(); 
+                };
 
-            if (product.hasColors) {
-                colorContainer.innerHTML = '<label class="form-label">Color:</label><div id="colorSwatches" data-product-id="' + productId + '"></div>';
-                defaultColorKey = product.colors[0].key; 
-                document.getElementById('selectedColorKey').value = defaultColorKey; 
-                renderColorSelector(product, defaultColorKey);
             } else {
-                colorContainer.innerHTML = ''; // Ocultar si no tiene colores
-                document.getElementById('selectedColorKey').value = null; // Asegurar que es null si no aplica
+                colorContainer.style.display = 'none';
+                colorSelect.innerHTML = '';
             }
             
-            // 4. Valores iniciales
-            const initialSize = sizeSelect.value;
-            updateModalDetailsUI(product, defaultColorKey, initialSize);
-            
-            // 5. Adjuntar Listeners para actualizar UI
-            sizeSelect.onchange = () => {
-                const newSize = sizeSelect.value;
-                const currentColor = document.getElementById('selectedColorKey').value;
-                updateModalDetailsUI(product, currentColor, newSize);
-            };
-            
-            const quantityInput = document.getElementById('quantityInput');
-            quantityInput.onchange = () => updateTotalAndCheckStock(productId, sizeSelect.value, document.getElementById('selectedColorKey').value);
-            quantityInput.oninput = () => updateTotalAndCheckStock(productId, sizeSelect.value, document.getElementById('selectedColorKey').value);
+            // 2. Renderizar Carrusel con el color inicial o estándar
+            renderCarousel(product, defaultColor);
 
-            // 6. Mostrar Modal
+
+            // 3. Renderizar Tallas
+            const sizeSelect = document.getElementById('sizeSelect');
+            sizeSelect.innerHTML = '';
+            let firstAvailableSize = null;
+
+            product.sizes.forEach(size => {
+                const stock = getStock(productId, size);
+                
+                if (stock > 0) {
+                    const option = document.createElement('option');
+                    option.value = size;
+                    option.textContent = `${size}`; 
+                    sizeSelect.appendChild(option);
+
+                    if (!firstAvailableSize) {
+                        firstAvailableSize = size;
+                    }
+                }
+            });
+            
+            document.getElementById('quantityInput').value = 1;
+
             const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
             modal.show();
-        }
-        
-        // 🔴 NUEVA FUNCIÓN: RENDERIZA LOS BOTONES DE COLOR
-        function renderColorSelector(product, defaultColorKey) {
-            const swatchesContainer = document.getElementById('colorSwatches');
-            swatchesContainer.innerHTML = '';
             
-            product.colors.forEach(color => {
-                const swatch = document.createElement('span');
-                swatch.className = 'color-swatch';
-                swatch.title = color.name;
-                swatch.setAttribute('data-color-key', color.key);
-                
-                if (color.key === defaultColorKey) {
-                    swatch.classList.add('active');
-                }
-
-                swatch.onclick = function() {
-                    // 1. Obtener datos y actualizar el campo oculto
-                    const productId = swatchesContainer.getAttribute('data-product-id');
-                    const currentProduct = productData.find(p => p.id === productId);
-                    const newColorKey = color.key;
-                    document.getElementById('selectedColorKey').value = newColorKey;
-                    
-                    // 2. Desactivar todos y activar el actual
-                    swatchesContainer.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // 3. Actualizar carrusel y stock
-                    const size = document.getElementById('sizeSelect').value;
-                    updateModalDetailsUI(currentProduct, newColorKey, size);
-                };
-                
-                swatchesContainer.appendChild(swatch);
-            });
+            if (firstAvailableSize) {
+                sizeSelect.value = firstAvailableSize;
+            }
+            updateTotalAndCheckStock(); 
+            
+            sizeSelect.onchange = updateTotalAndCheckStock;
         }
         
-        // Función para renderizar carrusel con imágenes correctas
-        function renderCarousel(images) {
+        // FUNCIÓN CLAVE PARA RENDERIZAR IMÁGENES CON COLOR
+        function renderCarousel(product, color = null) {
             const indicators = document.getElementById('carouselIndicators');
             const inner = document.getElementById('carouselInner');
             indicators.innerHTML = '';
             inner.innerHTML = '';
+            
+            const isColorProduct = product.colors && product.colors.length > 0;
+            const i = parseInt(product.id.split('_')[1], 10);
+            
+            // Si es un producto de color, creamos el sufijo del color en minúsculas (ej: "_negro")
+            const colorSuffix = color && isColorProduct ? `_${color.toLowerCase()}` : '';
 
-            // Utilizamos las imágenes pasadas (que ya fueron resueltas por color si aplica)
-            const imageSet = [
-                { url: images.frontImg, alt: `Frente` },
-                { url: images.backImg, alt: `Espalda` },
-                { url: images.sideImg, alt: `Lateral` }
+            // Definimos las variantes de imagen
+            const imageVariants = [
+                { variant: 'frente', isDefault: true, alt: 'Frente' }, 
+                { variant: 'espalda', isDefault: true, alt: 'Espalda' },
+                { variant: 'lateral', isDefault: false, alt: 'Lateral' }
             ];
 
-            imageSet.forEach((img, index) => {
+            let index = 0;
+            
+            imageVariants.forEach((item) => {
+                let imgUrl;
+                let altText = `${product.name} ${item.alt} ${color ? `(${color})` : ''}`;
+
+                if (item.variant === 'lateral' && product.sideImg === GENERIC_SIDE_IMAGE) {
+                    // Usar la imagen genérica si se definió como fallback
+                    imgUrl = GENERIC_SIDE_IMAGE;
+                } else {
+                    // Construir URL con sufijo de color
+                    imgUrl = `${GITHUB_BASE_URL}xime${i}_${item.variant}${colorSuffix}.jpg`;
+                }
+
                 indicators.innerHTML += `
                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" 
                         class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" 
@@ -606,22 +586,20 @@
                 
                 inner.innerHTML += `
                     <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                        <img src="${img.url}" class="d-block w-100" alt="${img.alt}">
+                        <img src="${imgUrl}" class="d-block w-100" alt="${altText}">
                     </div>
                 `;
+                index++;
             });
-            // Reiniciar el carrusel para mostrar la primera imagen (frontal)
-            const carouselElement = document.getElementById('productCarousel');
-            const carousel = bootstrap.Carousel.getInstance(carouselElement) || new bootstrap.Carousel(carouselElement);
-            carousel.to(0);
         }
-        
-        // Función para actualizar stock (Ahora usa Color)
-        function updateTotalAndCheckStock(productId, size, colorKey = null) {
+
+        function updateTotalAndCheckStock() {
+            // ... (función para verificar stock, no necesita cambio, ya que el stock es por talla) ...
+            const productId = document.getElementById('modalProductId').value;
+            const size = document.getElementById('sizeSelect').value;
             const quantityInput = document.getElementById('quantityInput');
             let quantity = parseInt(quantityInput.value);
-            
-            const stock = getStock(productId, size, colorKey);
+            const stock = getStock(productId, size);
             const addButton = document.getElementById('addToOrderButton');
 
             if (quantity < 1 || isNaN(quantity)) {
@@ -629,51 +607,47 @@
                 quantity = 1;
             }
 
-            if (quantity > stock && stock > 0) {
-                quantityInput.value = stock;
-                quantity = stock;
-            }
-
-            if (stock > 0 && quantity > 0) {
+            if (stock > 0) {
                 addButton.disabled = false;
                 addButton.textContent = `Añadir ${quantity} a Pedido`;
+                
+                if (quantity > stock) {
+                    quantityInput.value = stock;
+                    quantity = stock;
+                    addButton.textContent = `Añadir ${stock} a Pedido`;
+                }
+                
             } else {
                 addButton.disabled = true;
                 addButton.textContent = 'Añadir al Pedido (Agotado)';
+                quantityInput.value = 0;
             }
-            
-            document.getElementById('stockIndicator').textContent = `Stock: ${stock}`;
         }
 
-
-        // 🔴 CRÍTICO: MANEJO DEL ENVÍO DEL FORMULARIO 'Añadir al Pedido' (Ahora con Color)
         document.getElementById('orderForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
             const productId = document.getElementById('modalProductId').value;
             const product = productData.find(p => p.id === productId);
             const size = document.getElementById('sizeSelect').value;
-            const colorKey = document.getElementById('selectedColorKey').value;
             const quantity = parseInt(document.getElementById('quantityInput').value);
 
-            if (!product || quantity <= 0 || !size) return;
+            // NUEVO: Obtener el color seleccionado
+            const colorSelect = document.getElementById('colorSelect');
+            const color = colorSelect.style.display !== 'none' ? colorSelect.value : null;
 
-            // Chequeo de Stock con Color
-            const stock = getStock(productId, size, colorKey);
+            if (!product || quantity <= 0) return;
+
+            const stock = getStock(productId, size);
 
             if (quantity > stock) {
-                alert(`Error: Solo quedan ${stock} unidades disponibles en ${colorKey ? colorKey + ' ' : ''} talla ${size}. Por favor, reduce la cantidad.`);
+                alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size}. Por favor, reduce la cantidad.`);
                 return;
             }
-            
-            // Obtener el nombre del color para mostrarlo en el carrito
-            const colorName = colorKey 
-                ? product.colors.find(c => c.key === colorKey)?.name || colorKey
-                : null;
 
-
+            // MODIFICADO: Busca si ya existe un item con la misma talla Y el mismo color
             const existingItemIndex = currentOrder.findIndex(item => 
-                item.productId === productId && item.size === size && item.colorKey === colorKey
+                item.productId === productId && item.size === size && item.color === color
             );
 
             if (existingItemIndex !== -1) {
@@ -683,8 +657,7 @@
                     productId: productId,
                     name: product.name,
                     size: size,
-                    colorKey: colorKey, 
-                    colorName: colorName, 
+                    color: color, // Almacenar el color
                     quantity: quantity,
                     price: product.price
                 });
@@ -696,7 +669,7 @@
         });
 
         // =======================================================
-        // 7. LÓGICA DE MODAL DE PEDIDOS (Carrito) (Ahora con Color)
+        // LÓGICA DE MODAL DE PEDIDOS (CHECKOUT)
         // =======================================================
 
         function openOrdersModal() {
@@ -709,7 +682,9 @@
             const list = document.getElementById('currentOrdersList');
             const emptyMessage = document.getElementById('emptyOrdersMessage');
             
-            list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => item.remove());
+            list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => {
+                if(item !== emptyMessage) item.remove();
+            });
             
             if (currentOrder.length === 0) {
                 emptyMessage.style.display = 'block';
@@ -721,16 +696,20 @@
             }
 
             emptyMessage.style.display = 'none';
+            let totalItems = 0;
 
             currentOrder.forEach((item, index) => {
                 const totalPrice = item.quantity * item.price;
-                const colorDisplay = item.colorName ? ` (${item.colorName})` : ''; // Mostrar color si existe
+                totalItems += item.quantity;
+                
+                // NUEVO: Incluir color en la visualización
+                const colorText = item.color ? ` (${item.color})` : '';
 
                 const listItem = document.createElement('li');
                 listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
                 listItem.innerHTML = `
                     <div>
-                        <span class="fw-bold">${item.name}</span>${colorDisplay} (${item.size}) x ${item.quantity}
+                        <span class="fw-bold">${item.name}</span> (${item.size})${colorText} x ${item.quantity}
                         <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
                     </div>
                     <div class="d-flex align-items-center">
@@ -745,7 +724,7 @@
             
             updateOrdersCounter(currentOrder.length);
             updateModalUI(true);
-            updateOrdersTotal();
+            updateOrdersTotal(); 
         }
 
         function removeItemFromOrder(index) {
@@ -770,8 +749,10 @@
             }
         }
         
+        document.getElementById('halfPaymentCheck').addEventListener('change', updateOrdersTotal); 
+
         function updateOrdersCounter(count) {
-            document.getElementById('ordersCounter').textContent = count;
+            document.getElementById('ordersCounter').textContent = currentOrder.length; 
         }
 
         function updateModalUI(hasItems) {
@@ -779,9 +760,8 @@
             const clientDataForm = document.getElementById('clientDataForm');
             const paymentDetailsSection = document.getElementById('paymentDetailsSection');
             
-            // Si hay items y los datos del cliente son válidos, el botón está habilitado
             if (hasItems) {
-                finalizeButton.disabled = !clientDataForm.checkValidity(); 
+                finalizeButton.disabled = !document.getElementById('clientDataForm').checkValidity();
                 clientDataForm.style.display = 'block';
                 paymentDetailsSection.style.display = 'block';
             } else {
@@ -790,9 +770,15 @@
                 paymentDetailsSection.style.display = 'none';
             }
         }
+        
+        document.getElementById('clientDataForm').addEventListener('input', () => {
+            if (currentOrder.length > 0) {
+                document.getElementById('finalizeOrderButton').disabled = !document.getElementById('clientDataForm').checkValidity();
+            }
+        });
 
         // =======================================================
-        // 8. LÓGICA DE ENVÍO POR WHATSAPP (Ahora con Color)
+        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK
         // =======================================================
 
         function sendOrderToWhatsapp() {
@@ -813,9 +799,10 @@
             orderText += `*Total a Pagar:* $${amountToPay.toFixed(2)} (${isHalfPayment ? 'Anticipo 50%' : 'Pago Completo'})\n`;
             orderText += `*Productos:*\n`;
             
+            // MODIFICADO: Incluye el color en el mensaje de WhatsApp
             currentOrder.forEach((item, index) => {
-                const colorDisplay = item.colorName ? ` (${item.colorName})` : '';
-                orderText += `${index + 1}. ${item.name}${colorDisplay} (${item.size}) - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+                const colorText = item.color ? ` (${item.color})` : '';
+                orderText += `${index + 1}. ${item.name} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
             });
 
             orderText += `\n*Datos del Cliente:*\n`;
@@ -826,7 +813,7 @@
 
             const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
 
-            // 1. Guardar historial y aumentar el contador
+            // 1. CREAR HISTORIAL
             orderIdCounter++;
             PENDING_ORDERS.push({
                 id: orderIdCounter,
@@ -837,15 +824,11 @@
                 date: new Date().toLocaleString()
             });
 
-            // 2. APLICAR EL DESCUENTO DEL STOCK (Ahora usa Color)
+            // 2. APLICAR EL DESCUENTO DEL STOCK (por ID y Talla)
             currentOrder.forEach(item => {
-                const colorPart = item.colorKey ? `${item.colorKey}_` : '';
-                const key = `${item.productId}_${colorPart}${item.size}`;
-                
-                if (productInventory[key] >= item.quantity) {
+                const key = `${item.productId}_${item.size}`;
+                if (productInventory[key] !== undefined && productInventory[key] >= item.quantity) {
                     productInventory[key] -= item.quantity;
-                } else {
-                    productInventory[key] = 0; 
                 }
             });
 
@@ -853,71 +836,42 @@
             currentOrder = [];
             saveInventoryStorage();
             saveOrdersStorage();
-            renderProductCards();
             
-            // 4. Cerrar el modal y redirigir a WhatsApp
+            // 4. Cerrar el modal y redirigir
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             ordersModal.hide();
+
+            // 5. Rerenderizar las tarjetas 
+            renderProductCards();
             
             window.open(whatsappURL, '_blank');
         }
 
         // =======================================================
-        // 9. FUNCIÓN DE ADMINISTRACIÓN (SOLO POR CONSOLA)
-        // =======================================================
-        
-        // ⚠️ Esta función SOLO se puede llamar desde la consola del navegador.
-        window.resetInventoryAndOrders = function() {
-            if (!confirm("⛔ ADMINISTRADOR: ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
-            
-            generateInitialInventory();
-            saveInventoryStorage();
-            
-            PENDING_ORDERS = [];
-            orderIdCounter = 0;
-            currentOrder = [];
-            saveOrdersStorage();
-            
-            renderProductCards();
-            
-            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
-            if(ordersModal) ordersModal.hide();
-            
-            alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5) para asegurar una carga limpia!");
-        }
-
-        // =======================================================
-        // 10. INICIALIZACIÓN
+        // INICIALIZACIÓN
         // =======================================================
 
         document.addEventListener('DOMContentLoaded', () => {
             
             loadOrdersStorage();
             
-            // 1. Listener para abrir el modal de detalle
+            generateInitialInventory();
+            loadInventoryStorage(); 
+
             document.getElementById('product-list').addEventListener('click', (e) => {
                 const target = e.target.closest('.btn-buy');
-                if (target) {
+                if (target && !target.disabled) {
                     const productId = target.getAttribute('data-product-id');
                     openModalDetail(productId); 
                 }
             });
             
-            // 2. Listener para revalidar el botón de pedido final al cambiar los datos del cliente
-            const clientDataForm = document.getElementById('clientDataForm');
-            if (clientDataForm) {
-                clientDataForm.addEventListener('input', () => updateModalUI(currentOrder.length > 0));
+            const quantityInput = document.getElementById('quantityInput');
+            if (quantityInput) {
+                quantityInput.addEventListener('change', updateTotalAndCheckStock);
+                quantityInput.addEventListener('input', updateTotalAndCheckStock);
             }
-
-            // 3. Listener para actualizar el monto a pagar al marcar/desmarcar "Pagar la Mitad"
-            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
-            if (halfPaymentCheck) {
-                halfPaymentCheck.addEventListener('change', updateOrdersTotal);
-            }
-
-            // Llamada a la inicialización de datos y renderización
-            generateInitialInventory();
-            loadInventoryStorage(); // Cargar inventario guardado o inicial por defecto
+            
             renderProductCards();
         });
 
