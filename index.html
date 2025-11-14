@@ -26,1428 +26,778 @@
             background-color: #e6004b;
             color: white;
         }
+        /* ESTO OCULTA EL BADGE DE STOCK EN LA TARJETA */
         .stock-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-weight: bold;
+            display: none !important; 
+        }
+        .carousel-item img {
+            max-height: 500px;
+            object-fit: contain;
+        }
+        /* Estilo para el botón de WhatsApp fijo */
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #25d366;
             color: white;
-            z-index: 10;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 60px;
+            font-size: 30px;
+            z-index: 1000;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-        .stock-badge.in-stock { background-color: green; } /* Usado para "Preventa" */
-        .stock-badge.out-stock { background-color: red; } /* Usado para "Agotado" */
-
-        /* --- IMAGEN DEL MODAL --- */
-        .modal-image {
-            object-fit: contain; 
-            height: 450px;       
-            width: 100%;         
-            display: block;      
-            background-color: #f0f0f0; 
+        .whatsapp-button:hover {
+            background-color: #128c7e;
         }
-        /* Estilos para el panel de administración */
-        .order-item {
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 5px;
-            background-color: #f8f9fa;
+        .whatsapp-button i {
+            display: inline-block;
+            transform: translateY(10%);
+        }
+        /* Estilos para el carrusel de imágenes */
+        .carousel-indicators [data-bs-target] {
+            background-color: #ff3366;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+        .carousel-indicators .active {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
 
-    <div class="container my-5">
-        
-        <div class="d-flex align-items-center justify-content-center mb-5">
-            <img src='https://ventaplayera.github.io/RPLAY/logo.png' alt="Logo de mi tienda' style="max-width: 250px; height: auto;">
-        </div>
-        <h1 class="text-center mb-5" style="color: #ff3366;">RPLAY</h1>
-        
-        <div class="container mb-5" id="manualManagementPanel" style="display:none;">
-            <h3 class="text-danger mb-3">Administración de Pedidos Apartados</h3>
-            <p class="text-muted small">Estos pedidos han sido **reservados temporalmente** (se restó del stock al cliente ver la ficha de pago). Haz clic en "Liberar Stock" si el cliente NO completó el pago.</p>
-            <div id="ordersList" class="p-3 border rounded bg-white">
-                <p class="text-center text-secondary" id="noOrdersMessage">No hay pedidos pendientes actualmente.</p>
-            </div>
-            <hr>
-            <button class="btn btn-sm btn-outline-danger" onclick="resetAllStock()">REINICIAR TODO EL INVENTARIO Y ÓRDENES</button>
-            <p class="text-muted small mt-2">
-                Para *modificar el stock inicial*, usa la función **setStock** en la consola (F12).
-                <br>Ejemplo: **setStock('PROD_001', 'Default', 'M', 5)**
-                <br>Para **mostrar** este panel, usa la función **showAdminPanel()** en la consola.
-            </p>
-        </div>
-        
-        <div class="row" id="product-list">
-        </div>
-    </div>
+    <a href="https://wa.me/529991480151" target="_blank" class="whatsapp-button" title="Haz tu pedido por WhatsApp">
+        &#x2705; 
+    </a>
 
-    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <header class="p-3 mb-4 bg-white shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <img src='TU_URL_RAW_DEL_LOGO_COMPLETA' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
+            <h1 class="h3 text-primary d-none d-md-block">Catálogo RPLAY</h1>
+            <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
+                Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="row" id="product-list">
+            </div>
+
+        </main>
+
+    <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="paymentModalLabel">Detalle y Pago</h5>
+                    <h5 class="modal-title" id="productDetailModalLabel">Detalles del Producto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3">
                             <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-indicators">
-                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-                                </div>
-                                <div class="carousel-inner">
-                                    <div class="carousel-item active">
-                                        <img id="modal-img-front" src="" class="modal-image" alt="Delantera de la Playera">
+                                <div class="carousel-indicators" id="carouselIndicators">
                                     </div>
-                                    <div class="carousel-item">
-                                        <img id="modal-img-back" src="" class="modal-image" alt="Espalda de la Playera">
+                                <div class="carousel-inner" id="carouselInner">
                                     </div>
-                                    <div class="carousel-item">
-                                        <img id="modal-img-side" src="" class="modal-image" alt="Vista Lateral de la Playera">
-                                    </div>
-                                </div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
                                 </button>
                                 <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
                                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
                                 </button>
                             </div>
                         </div>
-
                         <div class="col-md-6">
+                            <h2 id="modalProductName" class="text-primary"></h2>
+                            <p id="modalProductDescription" class="text-muted"></p>
                             
-                            <div id="selection-step">
-                                <h4 class="mt-3" id="product-name"></h4>
-                                <p class="text-muted" id="product-description"></p>
-                                
-                                <div class="mb-4" id="color-selection-container" style="display:none;">
-                                    <h6>Color:</h6>
-                                    <div id="color-options"></div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <h6>Talla:</h6>
-                                    <div id="size-options"></div>
-                                    <small id="size-status" class="text-secondary mt-2"></small>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <h6>Cantidad de Piezas:</h6>
-                                    <input type="number" id="quantityInput" class="form-control" value="1" min="1" max="10" style="width: 100px;">
-                                    <small id="quantity-status" class="text-secondary mt-2"></small>
-                                </div>
-                                
-                                <hr>
-                                
-                                <p>Precio Total: <strong id="total-price" class="text-danger"></strong></p>
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck" checked>
-                                    <label class="form-check-label" for="halfPaymentCheck">Pagar la Mitad Ahora (Apartar)</label>
-                                </div>
-                                <p>Monto a Pagar Ahora: <strong id="payment-due" style="font-size: 1.4rem; color: green;"></strong></p>
-                                <small class="text-muted">El resto se pagará al momento de la entrega el 28 de Noviembre.</small>
-                            </div>
-
-                            <div id="payment-step" style="display:none;">
-                                <h4 class="mt-3 mb-4">Datos del Comprador y Envío</h4>
-                                <p class="alert alert-info small">
-                                    Estás comprando <strong id="final-quantity-display">1</strong> pieza(s) talla <strong id="final-size-display"></strong> por <strong id="final-price-display"></strong>.
-                                    Llena tus datos para guardar el pedido y ver las instrucciones de pago por transferencia.
-                                </p>
-
-                                <div class="mb-3">
-                                    <label for="clientName" class="form-label">Nombre Completo (*):</label>
-                                    <input type="text" class="form-control" id="clientName" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="clientPhone" class="form-label">Teléfono/WhatsApp (*):</label>
-                                    <input type="tel" class="form-control" id="clientPhone" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="clientAddress" class="form-label">Dirección de Envío Completa (*):</label>
-                                    <textarea class="form-control" id="clientAddress" rows="2" required></textarea>
-                                </div>
-                                
-                                <div id="payment-error" class="text-danger mb-3" style="display:none;">Por favor, completa todos los campos requeridos (*).</div>
-                            </div>
+                            <h3 id="modalProductPrice" class="my-3 text-success"></h3>
                             
-                            <div id="transfer-info" style="display:none;">
-                                <h4 class="mt-3 mb-4 text-success">¡Pedido Generado!</h4>
-                                <p>Hola <strong id="client-name-display"></strong>. Para confirmar tu compra de <span id="final-qty-conf">1</span> playera(s) (<span id="final-item-display"></span>, Talla <span id="final-size-conf"></span>), realiza la transferencia por el monto de <strong id="final-amount-conf" class="text-success"></strong> a la siguiente cuenta:</p>
-                                <hr>
-                                
-                                <h5 class="text-primary">Datos de Transferencia Bancaria</h5>
-                                <p class="mb-1"><strong>Banco:</strong> BANCOMER (BBVA)</p>
-                                <p class="mb-1"><strong>Número de Cuenta:</strong> 0123 4567 8901 2345</p>
-                                <p class="mb-1"><strong>CLABE Interbancaria:</strong> 012000000000000000</p>
-                                <p class="mb-1"><strong>Beneficiario:</strong> MI TIENDA DE PLAYERAS S.A. DE C.V.</p>
-                                
-                                <hr>
-                                <p class="text-center">¡Haz clic en el botón de WhatsApp abajo para enviar tus datos y el comprobante! **(El stock se descontará de forma permanente al presionar)**</p>
-                            </div>
+                            <form id="orderForm">
+                                <input type="hidden" id="modalProductId" name="productId">
+
+                                <div class="mb-3" id="colorSelectorGroup" style="display:none;">
+                                    <label for="colorSelect" class="form-label">Color:</label>
+                                    <select class="form-select" id="colorSelect" name="color">
+                                        <option value="negro" selected>Negro</option>
+                                        <option value="blanco">Blanco</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sizeSelect" class="form-label">Talla:</label>
+                                    <select class="form-select" id="sizeSelect" name="size" required>
+                                        </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="quantityInput" class="form-label">Cantidad:</label>
+                                    <input type="number" class="form-control" id="quantityInput" name="quantity" value="1" min="1" required>
+                                </div>
+
+                                <div class="mb-3" style="display:none;">
+                                    <span id="stockIndicator" class="badge"></span>
+                                </div>
+
+                                <button type="submit" class="btn btn-buy w-100" id="addToOrderButton">Añadir al Pedido</button>
+                            </form>
                         </div>
                     </div>
-                </div>
-
-                <div class="modal-footer">
-                    <a href="#" target="_blank" class="btn btn-success" id="whatsapp-confirm-button" style="display:none;">
-                        Enviar Comprobante por WhatsApp
-                    </a>
-                    
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modal-close-button">Cerrar</button>
-                    
-                    <button type="button" class="btn btn-buy" id="modal-main-button" disabled>Pagar Ahora</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        
-        // --- 1. CONFIGURACIÓN GLOBAL ---
-        const WHATSAPP_NUMBER = '5219991480151'; // Sustituye con tu número
-        const FIXED_PRICE = 250.00; 
-        const DEFAULT_STOCK_PER_SIZE = 1;
-        const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; 
-        // Nota: L se usa como G (grande) en el código.
+    <div class="modal fade" id="ordersModal" tabindex="-1" aria-labelledby="ordersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="ordersModalLabel">Mi Pedido</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group mb-4" id="currentOrdersList">
+                        <li class="list-group-item text-center text-muted" id="emptyOrdersMessage" style="display: none;">Tu pedido está vacío.</li>
+                    </ul>
 
-        // Estructuras de datos
-        const productInventory = {}; 
-        const productData = []; 
-        let PENDING_ORDERS = []; 
-        let orderIdCounter = 0; 
-
-        const PRODUCT_LIST_CONTAINER = document.getElementById('product-list');
-        // Valores por defecto para la selección actual. Se inicializan al abrir el modal.
-        let currentSelection = { 
-            productId: null, 
-            color: 'Default', 
-            size: 'M', 
-            quantity: 1, 
-            orderId: null 
-        };
-        
-        // --- FUNCIONES DE ADMINISTRACIÓN (Acceso por Consola) ---
-        
-        // COMANDO PARA MOSTRAR EL PANEL DE ADMINISTRACIÓN (Requerimiento del usuario)
-        function showAdminPanel() {
-            const adminPanel = document.getElementById('manualManagementPanel');
-            if (adminPanel) {
-                adminPanel.style.display = 'block';
-                renderOrdersList(); 
-                console.log("✅ Panel de Administración de Pedidos activado. Para ocultar: hideAdminPanel()");
-            }
-        }
-        
-        function hideAdminPanel() {
-            const adminPanel = document.getElementById('manualManagementPanel');
-            if (adminPanel) {
-                adminPanel.style.display = 'none';
-                console.log("Panel de Administración de Pedidos oculto.");
-            }
-        }
-
-        // Esta función es global y usable en consola.
-        function setStock(productId, colorName, size, newStock) {
-            if (productInventory[productId] && productInventory[productId][colorName] && productInventory[productId][colorName][size] !== undefined) {
-                productInventory[productId][colorName][size] = newStock;
-                saveInventoryStorage();
-                renderProductCards();
-                renderOrdersList();
-                console.log(`Stock actualizado: ${productId}, ${colorName}, Talla ${size} -> ${newStock}`);
-            } else {
-                console.error(`Error: Talla ${size} no existe para ${productId}, ${colorName}. No se pudo actualizar el stock.`);
-            }
-        }
-        
-        // --- 2. GESTIÓN DEL INVENTARIO Y STORAGE ---
-
-        function saveInventoryStorage() {
-            localStorage.setItem('productInventory', JSON.stringify(productInventory));
-            localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
-            localStorage.setItem('orderIdCounter', orderIdCounter);
-        }
-
-        /**
-         * @function loadInventoryStorage
-         * Carga el inventario almacenado en localStorage,
-         * asegurando NO introducir tallas no definidas por el código actual. (CORRECCIÓN CLAVE)
-         */
-        function loadInventoryStorage() {
-            const storedInventory = localStorage.getItem('productInventory');
-            const storedOrders = localStorage.getItem('pendingOrders');
-            const storedCounter = localStorage.getItem('orderIdCounter');
-            
-            // 1. Cargar Órdenes y Contador
-            if (storedOrders) {
-                PENDING_ORDERS = JSON.parse(storedOrders);
-            }
-            if (storedCounter) {
-                orderIdCounter = parseInt(storedCounter);
-            }
-
-            // 2. Cargar Inventario (Corrección de tallas fantasma)
-            if (storedInventory) {
-                const tempInventory = JSON.parse(storedInventory);
-                
-                // Iterar sobre la estructura de inventario actual (la correcta)
-                for (const productId in productInventory) { 
-                    if (tempInventory[productId]) {
-                        // Iterar sobre los colores actuales
-                        for (const color in productInventory[productId]) { 
-                            if (tempInventory[productId][color]) {
-                                // Iterar solo sobre las tallas que están definidas en el código (M, L, XL, etc.)
-                                for (const size in productInventory[productId][color]) { 
-                                    // Si el valor EXISTE en la data antigua, lo cargamos.
-                                    if (tempInventory[productId][color][size] !== undefined) {
-                                        productInventory[productId][color][size] = tempInventory[productId][color][size];
-                                    }
-                                }
-                                // NOTA: Si tempInventory[productId][color] tiene una talla 'S' 
-                                // que no definiste en el código, será ignorada.
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        function getStock(productId, colorName, size) {
-            // Usa el inventario real (productInventory) para la verificación
-            return productInventory[productId]?.[colorName]?.[size] || 0;
-        }
-        
-        function resetAllStock() {
-            if (confirm("¿Estás seguro de que quieres REINICIAR TODO el inventario y borrar todas las órdenes pendientes? Esta acción es irreversible.")) {
-                localStorage.removeItem('productInventory');
-                localStorage.removeItem('pendingOrders');
-                localStorage.removeItem('orderIdCounter');
-                // Vuelve a cargar el inventario inicial
-                generateInitialInventory(); 
-                PENDING_ORDERS = [];
-                orderIdCounter = 0;
-                renderProductCards();
-                renderOrdersList();
-                alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5) para asegurar una carga limpia!");
-                // Se sugiere recargar para asegurar que la caché local no interfiera.
-            }
-        }
-        
-        // --- 3. FUNCIONES DE RESERVA Y LIBERACIÓN ---
-        
-        // Reserva el stock (lo descuenta temporalmente) y crea la orden pendiente
-        function reserveStock(productId, colorName, size, quantity, clientName, clientPhone, clientAddress) {
-            const currentStock = getStock(productId, colorName, size);
-            
-            if (currentStock < quantity) {
-                return false; 
-            }
-
-            // 1. Descontar stock (reserva temporal)
-            // Llama a setStock para actualizar el inventario y el storage
-            setStock(productId, colorName, size, currentStock - quantity); 
-
-            // 2. Crear y guardar la orden pendiente
-            orderIdCounter++;
-            const product = productData.find(p => p.id === productId);
-            // El `variantName` se almacena en el pedido para referencia
-            const variantName = product.variants[colorName].name; 
-            
-            const order = {
-                id: orderIdCounter,
-                timestamp: new Date().getTime(),
-                productId: productId,
-                colorName: colorName, // Guardamos el color
-                size: size,
-                quantity: quantity,
-                clientName: clientName,
-                clientPhone: clientPhone,
-                clientAddress: clientAddress,
-                productName: variantName, 
-                isConfirmed: false 
-            };
-            
-            PENDING_ORDERS.push(order);
-            saveInventoryStorage(); // Guardar el nuevo arreglo de órdenes
-            renderOrdersList();
-            
-            return order;
-        }
-        
-        // Descuenta el stock permanentemente (remueve de la lista de gestión, ya se descontó antes)
-        function applyStockReduction(order) {
-            // Nota: El stock ya fue descontado en `reserveStock`. 
-            // Esto solo remueve la orden de la lista de "pendientes por liberar".
-            PENDING_ORDERS = PENDING_ORDERS.filter(o => o.id !== order.id);
-            saveInventoryStorage();
-            renderOrdersList();
-        }
-
-        // Libera el stock (lo devuelve al inventario si el pago no se hizo)
-        function releaseStock(order) {
-            // 1. Devolver el stock al inventario
-            const currentStock = getStock(order.productId, order.colorName, order.size);
-            // Llama a setStock para devolver el stock, actualizando el inventario y el storage
-            setStock(order.productId, order.colorName, order.size, currentStock + order.quantity);
-
-            // 2. Eliminar la orden de la lista de pendientes
-            PENDING_ORDERS = PENDING_ORDERS.filter(o => o.id !== order.id);
-            saveInventoryStorage();
-            renderProductCards(); // Asegurar que las tarjetas se actualicen
-            renderOrdersList();
-        }
-
-        function releaseOrderManually(orderId) {
-            const order = PENDING_ORDERS.find(o => o.id === orderId);
-            if (order && confirm(`¿Seguro que quieres liberar la reserva para ${order.clientName} (Talla ${order.size}, Cantidad ${order.quantity})? El stock volverá al inventario.`)) {
-                releaseStock(order);
-            }
-        }
-
-        // --- 4. RENDERIZADO ---
-        
-        function renderOrdersList() {
-            const listContainer = document.getElementById('ordersList');
-            if (!listContainer) return; 
-            
-            listContainer.innerHTML = '';
-
-            if (PENDING_ORDERS.length === 0) {
-                listContainer.innerHTML = '<p class="text-center text-secondary" id="noOrdersMessage">No hay pedidos pendientes actualmente.</p>';
-                return;
-            }
-
-            PENDING_ORDERS.forEach(order => {
-                const orderDiv = document.createElement('div');
-                orderDiv.className = 'order-item d-flex justify-content-between align-items-center';
-                orderDiv.innerHTML = `
-                    <div>
-                        <small class="text-muted">Pedido #${order.id} | ${new Date(order.timestamp).toLocaleTimeString()}</small><br>
-                        <strong>${order.clientName}</strong> (${order.clientPhone})<br>
-                        ${order.quantity}x ${order.productName} (Talla: ${order.size})<br>
-                        <small>Dir: ${order.clientAddress}</small>
+                    <h4 class="mb-3">Total a Pagar: <span id="ordersTotal" class="text-success">$0.00</span></h4>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck">
+                        <label class="form-check-label" for="halfPaymentCheck">
+                            Pagar el 50% de anticipo (<span id="halfPaymentAmount">$0.00</span>)
+                        </label>
                     </div>
-                    <button class="btn btn-sm btn-outline-warning" onclick="releaseOrderManually(${order.id})">Liberar Stock</button>
-                `;
-                listContainer.appendChild(orderDiv);
-            });
-        }
+
+                    <hr>
+
+                    <form id="clientDataForm" class="mt-4">
+                        <h5 class="text-primary">Datos para Envío y Contacto</h5>
+                        <div class="mb-3">
+                            <label for="clientName" class="form-label">Nombre Completo:</label>
+                            <input type="text" class="form-control" id="clientName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clientAddress" class="form-label">Dirección Completa (Calle, Número, Colonia, C.P.):</label>
+                            <textarea class="form-control" id="clientAddress" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clientPhone" class="form-label">Teléfono (WhatsApp):</label>
+                            <input type="tel" class="form-control" id="clientPhone" required>
+                        </div>
+                    </form>
+
+                    <div id="paymentDetailsSection" style="display: none;">
+                        <hr>
+                        <h5 class="text-primary">Datos de Transferencia Bancaria</h5>
+                        <p class="mb-1"><strong>Banco:</strong> 🚨 TU BANCO 🚨</p>
+                        <p class="mb-1"><strong>Número de Cuenta:</strong> 🚨 TU NÚMERO DE CUENTA REAL 🚨</p>
+                        <p class="mb-1"><strong>CLABE Interbancaria:</strong> 🚨 TU CLABE INTERBANCARIA REAL 🚨</p>
+                        <p class="mb-1"><strong>Beneficiario:</strong> 🚨 TU NOMBRE/EMPRESA 🚨</p>
+                        
+                        <p class="mt-3 text-muted">Una vez hecha la transferencia o depósito, presiona "Enviar Pedido por WhatsApp" y adjunta tu comprobante.</p>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
+                    <button type="button" class="btn btn-buy" id="finalizeOrderButton" disabled onclick="sendOrderToWhatsapp()">
+                        Enviar Pedido por WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // =======================================================
+        // DECLARACIÓN DE VARIABLES GLOBALES
+        // =======================================================
+        const PRODUCT_PRICE = 450.00; 
+        const MINIMUM_TO_SHIP = 1;   
         
-        function renderProductCards() {
-            PRODUCT_LIST_CONTAINER.innerHTML = '';
-            productData.forEach(product => {
-                const colors = Object.keys(product.variants);
-                const firstColor = colors[0] || 'Default';
-                const mainVariant = product.variants[firstColor];
+        // WhatsApp configurado al número solicitado
+        const WHATSAPP_NUMBER = '529991480151'; 
+        
+        let productData = []; 
+        let productInventory = {}; 
+        let currentOrder = []; 
+
+        let orderIdCounter = 0;
+        let PENDING_ORDERS = []; 
+
+        // Tallas disponibles para todos los modelos
+        const DEFAULT_GLOBAL_SIZES = ['S', 'M', 'L', 'XL'];
+        const COLOR_PRODUCTS = ['PROD_043', 'PROD_044'];
+
+        // =======================================================
+        // FUNCIÓN DE INVENTARIO INICIAL
+        // =======================================================
+
+        function generateInitialInventory() {
+            productData.length = 0; 
+            for (const key in productInventory) { delete productInventory[key]; }
+
+            const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
+            
+            // 🚨 BASE URL DE GITHUB RAW. REEMPLAZA LOS DATOS.
+            const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/TuUsuario/TuRepositorio/main/img/';
+            
+            // Stock inicial alto para cada talla/color
+            let initialStock = 50; 
+            
+            for (let i = 1; i <= 44; i++) {
+                const id = `PROD_${String(i).padStart(3, '0')}`;
+                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
+                let productName = `Playera Modelo No. ${i}`;
+                let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
+                let availableColors = ['default']; // Para la mayoría de productos
+
+                // --- AJUSTE DE DATOS Y ENLACES DE IMAGEN POR MODELO ---
+                // ... (mantenemos la lógica de nombres simplificada por concisión)
+                if (i === 1) { productName = 'XIME-1'; productDescription = 'Playera Modelo 1: Lánzate a la aventura.'; } 
+                else if (i === 5) { productName = 'BRUNO MARS'; productDescription = 'Diseño inspirado en el gran Bruno Mars.'; } 
+                else if (i === 43) { 
+                    productName = 'Playera Modelo 43 (Multicolor)';
+                    availableColors = ['negro', 'blanco']; // Colores para 43
+                }
+                else if (i === 44) { 
+                    productName = 'Playera Modelo 44 (Multicolor)';
+                    availableColors = ['negro', 'blanco']; // Colores para 44
+                }
                 
-                let totalStock = 0;
-                // Sumar stock de todas las variantes/tallas
-                for (const color in productInventory[product.id]) {
-                    for (const size in productInventory[product.id][color]) {
-                        totalStock += productInventory[product.id][color][size];
+                // --- DEFINICIÓN DE IMÁGENES Y CREACIÓN DE INVENTARIO ---
+                let mainImg, frontImg, backImg, sideImg;
+
+                for (const color of availableColors) {
+                    const colorSuffix = color === 'default' ? '' : `_${color}`;
+
+                    frontImg = `${GITHUB_BASE_URL}xime${i}_frente${colorSuffix}.jpg`; 
+                    backImg = `${GITHUB_BASE_URL}xime${i}_espalda${colorSuffix}.jpg`; 
+                    sideImg = `${GITHUB_BASE_URL}xime${i}_lateral${colorSuffix}.jpg`; 
+
+                    if (sideImg.includes('undefined') || sideImg.includes('lateral')) {
+                        sideImg = GENERIC_SIDE_IMAGE;
+                    }
+                    
+                    // --- INVENTARIO INICIAL (Key: ID_TALLA_COLOR) ---
+                    for (const size of modelSizes) {
+                        const inventoryKey = `${id}_${size}_${color}`;
+                        productInventory[inventoryKey] = initialStock;
+                    }
+
+                    // Guardar imágenes en el objeto de producto solo si es el color por defecto (o el primero)
+                    // Para 43/44, guardamos las imágenes por color en un objeto para el lookup posterior
+                    if (color === 'default' || (i >= 43 && color === availableColors[0])) {
+                        mainImg = frontImg;
+                    }
+
+                    if (i >= 43) {
+                        const colorName = color.charAt(0).toUpperCase() + color.slice(1);
+                        if (!productData.find(p => p.id === id)) {
+                             // Si es un producto con variantes de color, inicializamos el array de colores
+                             productData.push({
+                                id: id,
+                                name: productName,
+                                description: productDescription,
+                                price: PRODUCT_PRICE,
+                                sizes: modelSizes,
+                                colors: availableColors,
+                                images: {} // Objeto para guardar imágenes por color
+                            });
+                        }
+                        
+                        const productObj = productData.find(p => p.id === id);
+                        productObj.images[color] = { front: frontImg, back: backImg, side: sideImg, main: frontImg };
+
+                    } else if (color === 'default') {
+                        // Creación para productos sin variantes de color
+                        productData.push({
+                            id: id,
+                            name: productName,
+                            description: productDescription,
+                            price: PRODUCT_PRICE,
+                            sizes: modelSizes,
+                            mainImg: mainImg,
+                            frontImg: frontImg,
+                            backImg: backImg,
+                            sideImg: sideImg,
+                            colors: ['default'] 
+                        });
                     }
                 }
+            }
+        }
 
-                let badgeClass = 'out-stock';
-                let badgeText = 'Agotado';
+        // =======================================================
+        // LÓGICA DE STOCKS Y LOOKUP DE IMÁGENES
+        // =======================================================
+
+        function getStock(productId, size, color) {
+            const key = `${productId}_${size}_${color}`;
+            return productInventory[key] || 0; 
+        }
+
+        function getImagesForProduct(productId, color) {
+            const product = productData.find(p => p.id === productId);
+            if (!product) return {};
+
+            if (COLOR_PRODUCTS.includes(productId) && product.images && product.images[color]) {
+                return product.images[color];
+            }
+            
+            // Si no tiene colores o el color no existe, devuelve las imágenes predeterminadas
+            return {
+                front: product.frontImg,
+                back: product.backImg,
+                side: product.sideImg,
+                main: product.mainImg
+            };
+        }
+
+        // =======================================================
+        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO (No cambia)
+        // =======================================================
+
+        function renderProductCards() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = ''; 
+
+            productData.forEach(product => {
+                // Cálculo de stock máximo sobre todas las tallas y colores
+                let maxStock = 0;
+                const colors = product.colors || ['default'];
+                product.sizes.forEach(size => {
+                    colors.forEach(color => {
+                        maxStock = Math.max(maxStock, getStock(product.id, size, color));
+                    });
+                });
                 
-                // --- LÓGICA DE BADGE: Preventa o Agotado (Requerimiento del usuario) ---
-                if (totalStock > 0) {
-                    badgeClass = 'in-stock'; 
-                    badgeText = 'Preventa';
-                }
+                const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
+                const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
 
-                const cardHtml = `
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="card product-card" style="position: relative;">
-                            <span class="stock-badge ${badgeClass}">${badgeText}</span>
-                            <img src="${product.mainImg}" class="card-img-top" alt="${product.name}">
-                            <div class="card-body">
+                // Usamos mainImg solo para la tarjeta (aunque para 43/44 será el primer color)
+                const mainImgSrc = COLOR_PRODUCTS.includes(product.id) ? product.images[product.colors[0]].main : product.mainImg;
+
+                const card = `
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card product-card h-100">
+                            <span class="stock-badge ${statusClass}">${status}</span> 
+                            <img src="${mainImgSrc}" class="card-img-top p-2" alt="${product.name}">
+                            <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">${product.name}</h5>
-                                <p class="card-text text-muted small">${product.description}</p>
-                                <p class="card-text"><strong>$${FIXED_PRICE.toFixed(2)} MXN</strong></p>
-                                <button class="btn btn-buy w-100" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#paymentModal" 
-                                    data-product-id="${product.id}">
-                                    Comprar
+                                <p class="card-text text-success fw-bold">$${product.price.toFixed(2)}</p>
+                                <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}">
+                                    Ver / Pedir
                                 </button>
                             </div>
                         </div>
                     </div>
                 `;
-                PRODUCT_LIST_CONTAINER.innerHTML += cardHtml;
+                list.innerHTML += card;
             });
         }
-
-        // --- 5. DATOS DE INVENTARIO (44 Playeras con Tallas y URLs Explícitas) ---
-
-        function generateInitialInventory() {
-            // Limpiar datos anteriores para regenerar
-            productData.length = 0; 
-            for (const key in productInventory) { delete productInventory[key]; }
-
-            // URL genérica para usar como placeholder si no se especifica una vista lateral
-            const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
-            const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/main/img/';
-            
-            for (let i = 1; i <= 44; i++) { 
-                const id = `PROD_${String(i).padStart(3, '0')}`;
-                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
-                let initialStockOverrides = {}; 
-                let productName = `Playera Modelo No. ${i}`; 
-                let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
-                let variants = {}; 
-                let mainImg, frontImg, backImg, sideImg = GENERIC_SIDE_IMAGE; // Valores por defecto
-
-                let customName = productName; 
-
-                // ***************************************************************
-                // ** ZONA DE CONFIGURACIÓN DE PRODUCTOS INDIVIDUALES (1 a 42) ***
-                // ** ¡MODIFICA LAS URLs DE IMAGEN AQUÍ!                         **
-                // ***************************************************************
-                
-                if (i === 1) { 
-                    productName = 'BTS'; 
-                    productDescription = 'Diseño original de BTS en blanco. ¡Edición especial!';
-                    customName = 'BTS (Blanco) #1';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/xime1.png'; 
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-                   
-
-                } else if (i === 2) { 
-                    productName = 'BTS'; 
-                    productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
-                    customName = 'BTS (Negro) #2';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Xime3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Xime4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-                
-                } else if (i === 3) { 
-                    productName = 'ADO'; 
-                    productDescription = 'Diseño original de ADO en blanco. ¡Edición especial!'; 
-                    customName = 'ADO (Blanco) #3';
-                    initialStockOverrides = {M: 1, XL: 1}; 
-                    modelSizes = ["M", "XL"]; 
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy1.png'; 
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Lucy2.png'; 
-                     sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-
-                } else if (i === 4) { 
-                    productName = 'ADO'; 
-                    productDescription = 'Diseño original de ADO en negro. ¡Edición especial!';
-                    customName = 'ADO (Negro) #4';
-                    initialStockOverrides = {M: 1, L: 1, XL: 2}; 
-                    modelSizes = ["M", "L", "XL"]; 
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Lucy3.png'; 
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Lucy4.png'; 
-                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 5) { 
-                    productName = 'BRUNO MARS'; 
-                    productDescription = 'Diseño original de BRUNO MARS en negro. ¡Edición especial!';
-                    customName = 'BRUNO MARS #5';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Raul1.png'; 
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Raul2.png'; 
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 6) { 
-                    productName = 'BRUNO MARS';
-                    productDescription = 'Diseño original de BRUNO MARS en negro. ¡Edición especial!';
-                    customName = 'BRUNO MARS #6';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Raul3.png'; 
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Raul4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 7) { 
-                    productName = 'MICHAEL JACKSON'; 
-                    productDescription = 'Diseño original de MICHAEL JACKSON en blanco. ¡Edición especial!';
-                    customName = 'MICHAEL JACKSON (Blanco) #7';
-                    initialStockOverrides = {S: 1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Abi1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Abi2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-
-                } else if (i === 8) { 
-                    productName = 'MICHAEL JACKSON'; 
-                    productDescription = 'Diseño original de MICHAEL JACKSON en negro. ¡Edición especial!';
-                    initialStockOverrides = {M: 1, L: 1};
-                    customName = 'MICHAEL JACKSON (Negro) #8';
-                    modelSizes = ['M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Abi3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Abi4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 9) { 
-                    productName = 'LATIN MAFIA';
-                    productDescription = 'Diseño original de LATIN MAFIA en blanco. ¡Edición especial!'; 
-                    customName = 'LATIN MAFIA (Blanco) #9';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dani1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Dani2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-
-                } else if (i === 10) { 
-                    productName = 'LATIN MAFIA'; 
-                    productDescription = 'Diseño original de LATIN MAFIA en negro. ¡Edición especial!';
-                    customName = 'LATIN MAFIA (Negro) #10';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dani3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Dani4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 11) { 
-                    productName = 'AESPA'; 
-                    productDescription = 'Diseño original de AESPA en negro. ¡Edición especial!'; 
-                    customName = 'AESPA #11';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dali1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Dali2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 12) { 
-                    productName = 'AESPA';
-                    productDescription = 'Diseño original de AESPA en negro. ¡Edición especial!'; 
-                    customName = 'AESPA #12';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dali3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Dali4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 13) { 
-                    productName = 'BILLIE EILISH'; 
-                    productDescription = 'Diseño original de BILLIE EILISH en negro. ¡Edición especial!';
-                    customName = 'BILLIE EILISH #13';
-                    initialStockOverrides = {L: 2, XL: 1};
-                    modelSizes = ['L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Yose1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Yose2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 14) { 
-                    productName = 'BILLIE EILISH';  
-                    productDescription = 'Diseño original de BILLIE EILISH en negro. ¡Edición especial!';
-                    customName = 'BILLIE EILISH #14';
-                    initialStockOverrides = {L: 1, XL: 2};
-                    modelSizes = ['L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Yose3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Yose4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 15) { 
-                    productName = 'LANA DEL REY'; 
-                    productDescription = 'Diseño original de LANA DEL REY en blanco. ¡Edición especial!';
-                    customName = 'LANA DEL REY (Blanco) #15';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Keila1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Keila2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-
-                } else if (i === 16) { 
-                    productName = 'LANA DEL REY';
-                    productDescription = 'Diseño original de LANA DEL REY en negro. ¡Edición especial!';
-                    customName = 'LANA DEL REY (Negro) #16';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Keila3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Keila4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 17) { 
-                    productName = 'MY CHEMICAL ROMANCE'; 
-                    productDescription = 'Diseño original de MY CHEMICAL ROMANCE en negro. ¡Edición especial!';
-                    customName = 'MY CHEMICAL ROMANCE #17';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Kenji2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 18) { 
-                    productName = 'MY CHEMICAL ROMANCE'; 
-                    productDescription = 'Diseño original de MY CHEMICAL ROMANCE en negro. ¡Edición especial!';
-                    customName = 'MY CHEMICAL ROMANCE #18';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Kenji3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Kenji4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 19) { 
-                    productName = 'TWENTY ONE PILOTS'; 
-                    productDescription = 'Diseño original de TWENTY ONE PILOTS en negro. ¡Edición especial!';
-                    customName = 'TWENTY ONE PILOTS #19';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Alli1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Alli2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 20) { 
-                    productName = 'TWENTY ONE PILOTS'; 
-                    productDescription = 'Diseño original de TWENTY ONE PILOTS en negro. ¡Edición especial!';
-                    customName = 'TWENTY ONE PILOTS #20';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Alli3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Alli4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 21) { 
-                    productName = 'ARCTIC MONKEYS'; 
-                    productDescription = 'Diseño original de ARCTIC MONKEYS en arena. ¡Edición especial!';
-                    customName = 'ARCTIC MONKEYS (Arena) #21';
-                    initialStockOverrides = { XL: 1};
-                    modelSizes = [ 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Ale1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Ale2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png';
-                    
-                } else if (i === 22) { 
-                    productName = 'ARCTIC MONKEYS'; 
-                    productDescription = 'Diseño original de ARCTIC MONKEYS en arena. ¡Edición especial!';
-                    customName = 'ARCTIC MONKEYS (Arena) #22';
-                    initialStockOverrides = {XL: 1};
-                    modelSizes = ['XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Ale3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Ale4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png';
-
-                } else if (i === 23) { 
-                    productName = 'OLIVIA RODRIGO'; 
-                    productDescription = 'Diseño original de OLIVIA RODRIGO en negro. ¡Edición especial!';
-                    customName = 'OLIVIA RODRIGO #23';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Miri1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Miri2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 24) { 
-                    productName = 'OLIVIA RODRIGO'; 
-                    productDescription = 'Diseño original de OLIVIA RODRIGO en negro. ¡Edición especial!'; 
-                    customName = 'OLIVIA RODRIGO #24';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'hhttps://ventaplayera.github.io/RPLAY/Miri3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Miri4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 25) { 
-                    productName = 'BAD BUNNY'; 
-                    productDescription = 'Diseño original de BAD BUNNY en negro. ¡Edición especial!';
-                    customName = 'BAD BUNNY (Negro) #25';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Didi1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Didi2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 26) { 
-                    productName = 'BAD BUNNY'; 
-                    productDescription = 'Diseño original de BAD BUNNY en arena. ¡Edición especial!';
-                    customName = 'BAD BUNNY (Arena) #26';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Didi3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Didi4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png';
-
-                } else if (i === 27) { 
-                    productName = 'TAYLOR SWIFT'; 
-                    productDescription = 'Diseño original de TAYLOR SWIFT en arena. ¡Edición especial!';
-                    customName = 'TAYLOR SWIFT (Arena) #27';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Vale1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Vale2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/arena.png';
-
-
-                } else if (i === 28) { 
-                    productName = 'TAYLOR SWIFT'; 
-                    productDescription = 'Diseño original de TAYLOR SWIFT en negro. ¡Edición especial!';
-                    customName = 'TAYLOR SWIFT (Negro) #28';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Vale3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Vale4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-
-                } else if (i === 29) { 
-                    productName = 'HUMBE'; 
-                    productDescription = 'Diseño original de HUMBE en negro. ¡Edición especial!';
-                    customName = 'HUMBE #29';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Caro1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Caro2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 30) { 
-                    productName = 'HUMBE';  
-                    productDescription = 'Diseño original de HUMBE en negro. ¡Edición especial!';
-                    customName = 'HUMBE #30';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Caro3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Caro4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 31) { 
-                    productName = 'KATY PERRY'; 
-                    productDescription = 'Diseño original de KATY PERRY en negro. ¡Edición especial!';
-                    customName = 'KATY PERRY (Negro) #31';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Gon1.PNG;
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Gon2.PNG';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-
-                } else if (i === 32) { 
-                    productName = 'KATY PERRY';  
-                    productDescription = 'Diseño original de KATY PERRY en blanco. ¡Edición especial!';
-                    customName = 'KATY PERRY (Blanco) #32';
-                    initialStockOverrides = {M: 1, L: 1, XL: 1};
-                    modelSizes = ['M', 'L', 'XL'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Katy3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Katy4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-
-
-                } else if (i === 33) { 
-                    productName = 'TAYLOR SWIFT'; 
-                    productDescription = 'Diseño original de TAYLOR SWIFT en blanco. ¡Edición especial!';
-                    customName = 'TAYLOR SWIFT (Blanco) #33';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Bere1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Bere2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-
-                } else if (i === 34) { 
-                    productName = 'TAYLOR SWIFT';  
-                    productDescription = 'Diseño original de TAYLOR SWIFT en negro. ¡Edición especial!';
-                    customName = 'TAYLOR SWIFT (Negro) #34';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Bere3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Bere4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 35) { 
-                    productName = 'BTS'; 
-                    productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
-                    customName = 'BTS (Negro) #35';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dan1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Dan2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 36) { 
-                    productName = 'BTS'; 
-                    productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
-                    customName = 'BTS (Negro) #36';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Dan3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Dan4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 37) { 
-                    productName = 'NCT DREAM'; 
-                    productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
-                    customName = 'NCT DREAM #37';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Gera1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Gera2.png';
-                     sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 38) { 
-                    productName = 'NCT DREAM'; 
-                    productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
-                    customName = 'NCT DREAM #38';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Gera3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Gera4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 39) { 
-                    productName = 'HUNTRIX/SJA BOYS'; 
-                    productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
-                    customName = 'HUNTRIX/SJA BOYS #39';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Bra1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Bra2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 40) { 
-                    productName = 'HUNTRIX/SJA BOYS';  
-                    productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
-                    customName = 'HUNTRIX/SJA BOYS #40';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Bra3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Bra4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 41) { 
-                    productName = 'HOOZIER'; 
-                    productDescription = 'Diseño original de HOOZIER en negro. ¡Edición especial!';
-                    customName = 'HOOZIER (Negro) #41';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Adri1.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Adri2.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-
-                } else if (i === 42) { 
-                    productName = 'HOOZIER';  
-                    productDescription = 'Diseño original de HOOZIER en blanco. ¡Edición especial!';
-                    customName = 'HOOZIER (Blanco) #42';
-                    initialStockOverrides = {S:1, M: 1, L: 1};
-                    modelSizes = ['S', 'M', 'L'];
-                    
-                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/Adri3.png';
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Adri4.png';
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-                }
-
-                
-                if (i <= 42) {
-                    // Si el producto no tiene variantes (es de un solo color/diseño), se usa 'Default'
-                    let stock = {};
-                    // Usamos las tallas definidas en `modelSizes` y las sobrescribimos con `initialStockOverrides`
-                    modelSizes.forEach(s => {
-                        stock[s] = initialStockOverrides[s] !== undefined ? initialStockOverrides[s] : DEFAULT_STOCK_PER_SIZE;
-                    });
-                    
-                    // CREAR LA VARIANTE 'Default'
-                    variants['Default'] = {
-                        name: customName, 
-                        img_front: frontImg, 
-                        img_back: backImg,
-                        img_side: sideImg,
-                        stock: stock
-                    };
-                    
-                    mainImg = frontImg;
-
-                } else { 
-                    // ***************************************************************
-                    // ** ZONA DE PRODUCTOS MULTIVARIANTES (43 y 44)                **
-                    // ** ¡MODIFICA LAS URLs DE IMAGEN AQUÍ!                         **
-                    // ***************************************************************
-                    
-                    if (i === 43) { 
-                        productName = 'BLACKPINK';
-                        productDescription = 'Diseño original de Blackpink en negro/blanco. ¡Edición especial!';
-                        modelSizes = ["S", "M", "L", "XL"]; 
-
-                        variants['Negro'] = { 
-                            name: 'Playera BLACKPINK (Negro)', 
-                            // --- ENLACES DE IMAGEN BLACKPINK NEGRO ---
-                            img_front: 'https://ventaplayera.github.io/RPLAY/Aro1.png';
-                            img_back: 'https://ventaplayera.github.io/RPLAY/Aro2.png';
-                            sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-                            img_side: GENERIC_SIDE_IMAGE, 
-                            stock: {L: 1 } 
-                        };
-                        variants['Blanco'] = { 
-                            name: 'Playera BLACKPINK (Blanco)', 
-                            // --- ENLACES DE IMAGEN BLACKPINK BLANCO ---
-                            img_front: 'https://ventaplayera.github.io/RPLAY/Aro3.png';
-                            img_back: 'https://ventaplayera.github.io/RPLAY/Aro4.png'; 
-                            sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-                            img_side: GENERIC_SIDE_IMAGE, 
-                            stock: { S: 1, M: 1 } 
-                        };
-                        mainImg = variants['Blanco'].img_front;
-
-                    } else if (i === 44) { 
-                        productName = 'K-POP';
-                        productDescription = 'Diseño original K-POP en negro/blanco. ¡Edición especial!';
-                        modelSizes = ["S", "M", "L", "XL"];
-                        
-                        variants['Negro'] = { 
-                            name: 'Playera K-POP (Negro)', 
-                            // --- ENLACES DE IMAGEN K-POP NEGRO ---
-                            img_front: 'https://ventaplayera.github.io/RPLAY/Aro5.png'; 
-                            img_back: 'https://ventaplayera.github.io/RPLAY/Aro6.png'; 
-                            sideImg = 'https://ventaplayera.github.io/RPLAY/negro.png';
-                            img_side: GENERIC_SIDE_IMAGE, 
-                            stock: { L: 1 } 
-                        };
-                        variants['Blanco'] = { 
-                            name: 'Playera K-POP (Blanco)', 
-                            // --- ENLACES DE IMAGEN K-POP BLANCO ---
-                            img_front: 'https://ventaplayera.github.io/RPLAY/Aro7.png';
-                            img_back: 'https://ventaplayera.github.io/RPLAY/Aro8.png';
-                            sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png';
-                            img_side: GENERIC_SIDE_IMAGE, 
-                            stock: { S: 1, M: 1 } 
-                        };
-                        mainImg = variants['Negro'].img_front;
-                    }
-                }
-                
-                // Inicializa la estructura del inventario de stock 
-                productInventory[id] = {};
-                for (const colorName in variants) {
-                    // Copiar stock de la variante al inventario global
-                    productInventory[id][colorName] = { ...variants[colorName].stock };
-                }
-
-                // Guarda los datos del producto
-                productData.push({
-                    id: id,
-                    name: productName,
-                    description: productDescription,
-                    price: FIXED_PRICE,
-                    mainImg: mainImg,
-                    sizes: modelSizes, // Esta lista es la que determina qué tallas se inicializarán
-                    variants: variants,
-                    hasColors: Object.keys(variants).length > 1
-                });
-            }
-        }
-
-        // --- 6. GESTIÓN DEL MODAL (COMPRA) ---
-
-        let paymentModal;
         
-        function updateModalContent(product, selectedColor) {
-            const variant = product.variants[selectedColor];
-            
-            // Actualizar imágenes y descripción
-            document.getElementById('modal-img-front').src = variant.img_front;
-            document.getElementById('modal-img-back').src = variant.img_back;
-            document.getElementById('modal-img-side').src = variant.img_side;
-            document.getElementById('product-name').textContent = variant.name;
-            document.getElementById('product-description').textContent = product.description;
-
-            // Renderizar opciones de talla 
-            const sizeOptionsContainer = document.getElementById('size-options');
-            sizeOptionsContainer.innerHTML = '';
-            
-            // Usar el stock ACTUAL (del productInventory) para mostrar disponibilidad.
-            const currentStockForColor = productInventory[product.id][selectedColor] || {}; 
-            
-            // --- MODIFICACIÓN CLAVE: Filtrar solo tallas con stock disponible ---
-            const sizesWithStock = Object.keys(currentStockForColor)
-                                        .filter(size => currentStockForColor[size] > 0)
-                                        .sort((a, b) => {
-                                            // Ordenar S, M, L, XL
-                                            const order = ["S", "M", "L", "XL"];
-                                            return order.indexOf(a) - order.indexOf(b);
-                                        }); 
-            
-            let defaultSize = null;
-
-            if (sizesWithStock.length === 0) {
-                 // No hay tallas disponibles
-                 sizeOptionsContainer.innerHTML = '<p class="text-danger fw-bold">¡Agotado en todas las tallas para este color!</p>';
-                 currentSelection.size = null;
-            } else {
-                 // Renderizar botones solo para tallas con stock
-                sizesWithStock.forEach(size => {
-                    const button = document.createElement('button');
-                    button.type = 'button';
-                    button.className = `btn btn-outline-secondary btn-sm me-2 mb-2 size-option`;
-                    button.textContent = size;
-                    button.setAttribute('data-size', size);
-                    
-                    button.addEventListener('click', () => {
-                        document.querySelectorAll('.size-option').forEach(btn => btn.classList.remove('active'));
-                        button.classList.add('active');
-                        currentSelection.size = size;
-                        updateTotalAndCheckStock();
-                    });
-                    sizeOptionsContainer.appendChild(button);
-                });
-                
-                // Seleccionar la primera talla disponible por defecto
-                defaultSize = sizesWithStock[0];
-                currentSelection.size = defaultSize;
-                
-                // Activar el botón de la talla por defecto
-                if (defaultSize) {
-                    const defaultButton = document.querySelector(`.size-option[data-size="${defaultSize}"]`);
-                    if (defaultButton) {
-                        defaultButton.classList.add('active');
-                    }
-                }
-            }
-
-
-            // Si el producto tiene colores, mostrarlos
-            const colorContainer = document.getElementById('color-selection-container');
-            if (product.hasColors) {
-                colorContainer.style.display = 'block';
-                const colorOptions = document.getElementById('color-options');
-                colorOptions.innerHTML = '';
-                Object.keys(product.variants).forEach(color => {
-                    const button = document.createElement('button');
-                    button.type = 'button';
-                    button.className = `btn btn-outline-dark btn-sm me-2 mb-2 color-option ${color === selectedColor ? 'active' : ''}`;
-                    button.textContent = color;
-                    button.setAttribute('data-color', color);
-                    button.addEventListener('click', () => {
-                        document.querySelectorAll('.color-option').forEach(btn => btn.classList.remove('active'));
-                        button.classList.add('active');
-                        currentSelection.color = color;
-                        // Recargar contenido para la nueva variante (llama a esta misma función)
-                        updateModalContent(product, color); 
-                    });
-                    colorOptions.appendChild(button);
-                });
-            } else {
-                colorContainer.style.display = 'none';
-            }
-            
-            // Forzar actualización de precio y stock al cargar
-            updateTotalAndCheckStock();
-        }
-
-        function updateTotalAndCheckStock() {
-            const sizeStatus = document.getElementById('size-status');
-            const quantityStatus = document.getElementById('quantity-status');
-            const mainButton = document.getElementById('modal-main-button');
-            const quantityInput = document.getElementById('quantityInput');
-
-            // Asegurar que la cantidad es válida
-            let quantity = parseInt(quantityInput.value) || 1;
-            if (quantity < 1) { quantity = 1; quantityInput.value = 1; }
-            currentSelection.quantity = quantity;
-
-            // Obtener stock actual
-            const currentStock = getStock(currentSelection.productId, currentSelection.color, currentSelection.size);
-
-            if (currentSelection.size) {
-                sizeStatus.textContent = `Stock disponible en Talla ${currentSelection.size}: ${currentStock} pieza(s).`;
-                quantityInput.max = currentStock;
-
-                if (currentStock === 0) {
-                    mainButton.disabled = true;
-                    quantityStatus.textContent = `Agotado. Selecciona otra talla.`;
-                } else if (currentStock < currentSelection.quantity) {
-                    mainButton.disabled = true;
-                    quantityStatus.textContent = `Solo quedan ${currentStock} piezas en stock.`;
-                } else {
-                    mainButton.disabled = false;
-                    quantityStatus.textContent = `Máximo a comprar: ${currentStock} pieza(s).`;
-                }
-
-            } else {
-                // No hay talla seleccionada (todo agotado)
-                sizeStatus.textContent = `No hay stock disponible para este modelo o talla.`;
-                mainButton.disabled = true;
-                quantityInput.max = 0;
-            }
-            
-            const totalPrice = (FIXED_PRICE * quantity).toFixed(2);
-            // Si la casilla de pagar mitad está marcada, calcular la mitad
-            const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
-            const paymentDue = isHalfPayment ? (FIXED_PRICE * quantity / 2).toFixed(2) : totalPrice;
-            
-            document.getElementById('total-price').textContent = `$${totalPrice} MXN`;
-            document.getElementById('payment-due').textContent = `$${paymentDue} MXN`;
-        }
+        // =======================================================
+        // LÓGICA DE MODAL DE DETALLE (Con selector de color)
+        // =======================================================
 
         function openModalDetail(productId) {
             const product = productData.find(p => p.id === productId);
             if (!product) return;
-
-            currentSelection.productId = productId;
-            // Seleccionar color por defecto (el primero)
-            const firstColor = Object.keys(product.variants)[0];
-            currentSelection.color = firstColor;
-
-            updateModalContent(product, firstColor);
             
-            // Forzar el paso de selección al abrir
-            updateModalUI(false); 
-        }
-
-        function updateModalUI(step, order = null) {
-            const selectionStep = document.getElementById('selection-step');
-            const paymentStep = document.getElementById('payment-step');
-            const transferInfo = document.getElementById('transfer-info');
-            const modalMainButton = document.getElementById('modal-main-button');
-            const whatsappButton = document.getElementById('whatsapp-confirm-button');
-
-            // Limpiar campos de cliente y errores
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientPhone').value = '';
-            document.getElementById('clientAddress').value = '';
-            document.getElementById('payment-error').style.display = 'none';
-
-            if (step === false) { 
-                // Paso 1: Selección de producto/talla/cantidad
-                selectionStep.style.display = 'block';
-                paymentStep.style.display = 'none';
-                transferInfo.style.display = 'none';
-                modalMainButton.style.display = 'block';
-                modalMainButton.textContent = 'Pagar Ahora';
-                modalMainButton.onclick = moveToPaymentStep;
-                whatsappButton.style.display = 'none';
-                document.getElementById('modal-close-button').textContent = 'Cerrar';
-                updateTotalAndCheckStock(); // Revisa si el botón debe estar activo
-
-            } else if (step === 'payment') { 
-                // Paso 2: Datos del cliente
-                const product = productData.find(p => p.id === currentSelection.productId);
-                const quantity = currentSelection.quantity;
-                
-                // Determinar el monto a pagar ahora
-                const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
-                const totalAmount = FIXED_PRICE * quantity;
-                const paymentDue = isHalfPayment ? (totalAmount / 2).toFixed(2) : totalAmount.toFixed(2);
-
-                document.getElementById('final-quantity-display').textContent = quantity;
-                document.getElementById('final-size-display').textContent = currentSelection.size;
-                document.getElementById('final-price-display').textContent = `$${paymentDue} MXN`;
-                
-                selectionStep.style.display = 'none';
-                paymentStep.style.display = 'block';
-                transferInfo.style.display = 'none';
-                modalMainButton.style.display = 'block';
-                modalMainButton.textContent = 'Reservar y Ver Pago';
-                modalMainButton.disabled = false;
-                modalMainButton.onclick = processOrderReservation;
-                whatsappButton.style.display = 'none';
-                document.getElementById('modal-close-button').textContent = 'Cancelar Pedido';
-
-            } else if (step === 'confirmed') { 
-                // Paso 3: Confirmación y Datos de Transferencia
-                const product = productData.find(p => p.id === order.productId);
-                const variantName = product.variants[order.colorName].name;
-
-                // 1. Determinar el monto final pagado
-                const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
-                const totalAmount = FIXED_PRICE * order.quantity;
-                const finalAmountPaid = isHalfPayment ? (totalAmount / 2).toFixed(2) : totalAmount.toFixed(2);
-                
-                // 2. Mostrar datos en el modal
-                document.getElementById('client-name-display').textContent = order.clientName;
-                document.getElementById('final-qty-conf').textContent = order.quantity;
-                document.getElementById('final-item-display').textContent = variantName;
-                document.getElementById('final-size-conf').textContent = order.size;
-                document.getElementById('final-amount-conf').textContent = `$${finalAmountPaid} MXN`;
-                
-                // 3. Generar mensaje de WhatsApp (Punto clave modificado)
-                const colorDisplay = order.colorName === 'Default' ? 'Único' : order.colorName;
-                const paymentTypeText = isHalfPayment ? `Apartado/Medio Pago` : `Pago Total`;
-                
-                // Se han añadido explícitamente el Modelo/Nombre, Color, Talla y Monto a Pagar
-                const whatsappMessage = `¡Hola! Acabo de hacer una orden de preventa con ID *#${order.id}*.%0A%0A*Detalles del Pedido:*%0A- Modelo/Nombre: ${variantName}%0A- Color: ${colorDisplay}%0A- Talla: ${order.size}%0A- Cantidad: ${order.quantity} pieza(s)%0A- Monto a Pagar Ahora: *$${finalAmountPaid} MXN* (%2A${paymentTypeText}%2A)%0A%0A*Mis Datos:*%0A- Nombre: ${order.clientName}%0A- Teléfono: ${order.clientPhone}%0A- Dirección: ${order.clientAddress}%0A%0AAdjunto el comprobante de pago por transferencia. ¡Gracias!`;
-                
-                whatsappButton.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`;
-                whatsappButton.setAttribute('data-order-id', order.id);
-
-                selectionStep.style.display = 'none';
-                paymentStep.style.display = 'none';
-                transferInfo.style.display = 'block';
-                modalMainButton.style.display = 'none'; 
-                whatsappButton.style.display = 'block';
-                document.getElementById('modal-close-button').textContent = 'Cerrar';
-                whatsappButton.removeAttribute('data-stock-applied');
-            }
-        }
-        
-        // --- 7. FLUJO DE COMPRA ---
-
-        function moveToPaymentStep() {
-            if (currentSelection.size && currentSelection.quantity > 0) {
-                // Verificar stock por última vez
-                const currentStock = getStock(currentSelection.productId, currentSelection.color, currentSelection.size);
-                if (currentStock >= currentSelection.quantity) {
-                     updateModalUI('payment');
-                } else {
-                    alert(`El stock disponible cambió a ${currentStock}. Por favor, ajusta la cantidad.`);
-                    updateTotalAndCheckStock();
-                }
+            const colorSelectorGroup = document.getElementById('colorSelectorGroup');
+            const colorSelect = document.getElementById('colorSelect');
+            
+            // 1. Mostrar/Ocultar Selector de Color
+            if (COLOR_PRODUCTS.includes(productId)) {
+                colorSelectorGroup.style.display = 'block';
+                colorSelect.innerHTML = product.colors.map(c => 
+                    `<option value="${c}">${c.charAt(0).toUpperCase() + c.slice(1)}</option>`
+                ).join('');
             } else {
-                alert("Por favor, selecciona una talla y cantidad válidas.");
+                colorSelectorGroup.style.display = 'none';
+                colorSelect.value = 'default';
             }
+
+            document.getElementById('modalProductId').value = productId;
+            document.getElementById('modalProductName').textContent = product.name;
+            document.getElementById('modalProductDescription').textContent = product.description;
+            document.getElementById('modalProductPrice').textContent = `$${product.price.toFixed(2)}`;
+
+            // Renderizar Tallas
+            const sizeSelect = document.getElementById('sizeSelect');
+            sizeSelect.innerHTML = '';
+            product.sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+            
+            document.getElementById('quantityInput').value = 1;
+
+            const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+            modal.show();
+            
+            // Asignar listeners (o reasignarlos)
+            sizeSelect.onchange = updateTotalAndCheckStock;
+            colorSelect.onchange = updateTotalAndCheckStock;
+            
+            updateTotalAndCheckStock(); 
         }
         
-        function processOrderReservation() {
-            const clientName = document.getElementById('clientName').value.trim();
-            const clientPhone = document.getElementById('clientPhone').value.trim();
-            const clientAddress = document.getElementById('clientAddress').value.trim();
-            const errorDiv = document.getElementById('payment-error');
-            const selectedQuantity = currentSelection.quantity;
+        // Esta función se encarga de cambiar las imágenes del carrusel.
+        function renderCarousel(productId, selectedColor) {
+            const images = getImagesForProduct(productId, selectedColor);
 
-            if (!clientName || !clientPhone || !clientAddress) {
-                errorDiv.style.display = 'block';
+            const indicators = document.getElementById('carouselIndicators');
+            const inner = document.getElementById('carouselInner');
+            indicators.innerHTML = '';
+            inner.innerHTML = '';
+
+            const imageList = [
+                { url: images.front, alt: `Frente (${selectedColor})` },
+                { url: images.back, alt: `Espalda (${selectedColor})` },
+                { url: images.side, alt: `Lateral (${selectedColor})` }
+            ];
+
+            imageList.forEach((img, index) => {
+                indicators.innerHTML += `
+                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" 
+                        class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" 
+                        aria-label="Slide ${index + 1}">
+                    </button>
+                `;
+                
+                inner.innerHTML += `
+                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                        <img src="${img.url}" class="d-block w-100" alt="${img.alt}">
+                    </div>
+                `;
+            });
+        }
+
+        function updateTotalAndCheckStock() {
+            const productId = document.getElementById('modalProductId').value;
+            const size = document.getElementById('sizeSelect').value;
+            const color = document.getElementById('colorSelect').value || 'default'; // Obtiene el color o 'default'
+            
+            const quantityInput = document.getElementById('quantityInput');
+            let quantity = parseInt(quantityInput.value);
+            
+            const stock = getStock(productId, size, color); // Usa el color en la consulta de stock
+            const addButton = document.getElementById('addToOrderButton');
+
+            if (quantity < 1 || isNaN(quantity)) {
+                quantityInput.value = 1;
+                quantity = 1;
+            }
+            
+            // Renderiza el carrusel con las imágenes del color seleccionado
+            renderCarousel(productId, color); 
+
+            if (stock > 0) {
+                addButton.disabled = false;
+                addButton.textContent = `Añadir ${quantity} a Pedido`;
+            } else {
+                addButton.disabled = true;
+                addButton.textContent = 'Añadir al Pedido (Agotado)';
+            }
+            
+            if (quantity > stock && stock > 0) {
+                quantityInput.value = stock;
+                addButton.textContent = `Añadir ${stock} a Pedido`;
+            }
+
+            // Actualiza el indicador de stock (oculto)
+            document.getElementById('stockIndicator').textContent = `Stock: ${stock}`;
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const productId = document.getElementById('modalProductId').value;
+            const product = productData.find(p => p.id === productId);
+            const size = document.getElementById('sizeSelect').value;
+            const color = document.getElementById('colorSelect').value || 'default'; // Obtiene el color
+            const quantity = parseInt(document.getElementById('quantityInput').value);
+
+            if (!product || quantity <= 0) return;
+
+            const stock = getStock(productId, size, color);
+
+            if (quantity > stock) {
+                alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size} y color ${color.toUpperCase()}. Por favor, reduce la cantidad.`);
                 return;
             }
 
-            errorDiv.style.display = 'none';
+            // La clave de un item en el pedido ahora incluye el color
+            const orderKey = `${productId}_${size}_${color}`;
 
-            // Intentar reservar el stock (descuenta temporalmente)
-            const order = reserveStock(
-                currentSelection.productId,
-                currentSelection.color,
-                currentSelection.size,
-                selectedQuantity,
-                clientName,
-                clientPhone,
-                clientAddress
+            const existingItemIndex = currentOrder.findIndex(item => 
+                item.orderKey === orderKey
             );
 
-            if (order) {
-                // Reserva exitosa, muestra la info de transferencia
-                updateModalUI('confirmed', order);
-                // Vuelve a renderizar las tarjetas para reflejar el stock descontado
-                renderProductCards(); 
+            if (existingItemIndex !== -1) {
+                currentOrder[existingItemIndex].quantity += quantity;
             } else {
-                alert("Error: El stock se agotó antes de poder reservar. Intenta con una cantidad menor o un producto diferente.");
+                currentOrder.push({
+                    orderKey: orderKey, // Nueva clave para la identificación única
+                    productId: productId,
+                    name: product.name,
+                    size: size,
+                    color: color, // Nuevo campo de color
+                    quantity: quantity,
+                    price: product.price
+                });
+            }
+
+            const detailModal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
+            detailModal.hide();
+            openOrdersModal(); 
+        });
+
+        // =======================================================
+        // LÓGICA DE MODAL DE PEDIDOS
+        // =======================================================
+
+        function openOrdersModal() {
+            renderOrdersList();
+            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
+            modal.show();
+        }
+
+        function renderOrdersList() {
+            const list = document.getElementById('currentOrdersList');
+            const emptyMessage = document.getElementById('emptyOrdersMessage');
+            
+            list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => item.remove());
+            
+            if (currentOrder.length === 0) {
+                emptyMessage.style.display = 'block';
+                document.getElementById('finalizeOrderButton').disabled = true;
+                updateOrdersCounter(0);
                 updateModalUI(false);
+                updateOrdersTotal(); 
+                return;
+            }
+
+            emptyMessage.style.display = 'none';
+
+            currentOrder.forEach((item, index) => {
+                const totalPrice = item.quantity * item.price;
+                
+                // Muestra el color solo si no es 'default'
+                const colorDisplay = item.color !== 'default' ? ` (${item.color.toUpperCase()})` : '';
+
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                listItem.innerHTML = `
+                    <div>
+                        <span class="fw-bold">${item.name}</span> (${item.size})${colorDisplay} x ${item.quantity}
+                        <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold text-primary me-3">$${totalPrice.toFixed(2)}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeItemFromOrder(${index})">
+                            &times;
+                        </button>
+                    </div>
+                `;
+                list.insertBefore(listItem, emptyMessage);
+            });
+            
+            updateOrdersCounter(currentOrder.length);
+            updateModalUI(true);
+            updateOrdersTotal(); 
+        }
+
+        function removeItemFromOrder(index) {
+            currentOrder.splice(index, 1);
+            renderOrdersList();
+        }
+
+        function updateOrdersTotal() {
+            const totalElement = document.getElementById('ordersTotal');
+            const halfPaymentElement = document.getElementById('halfPaymentAmount');
+            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
+            
+            const subtotal = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            
+            const halfAmount = subtotal / 2;
+            halfPaymentElement.textContent = `$${halfAmount.toFixed(2)}`;
+
+            if (halfPaymentCheck.checked) {
+                totalElement.textContent = `$${halfAmount.toFixed(2)}`;
+            } else {
+                totalElement.textContent = `$${subtotal.toFixed(2)}`;
+            }
+        }
+        
+        function updateOrdersCounter(count) {
+            document.getElementById('ordersCounter').textContent = count;
+        }
+
+        function updateModalUI(hasItems) {
+            const finalizeButton = document.getElementById('finalizeOrderButton');
+            const clientDataForm = document.getElementById('clientDataForm');
+            const paymentDetailsSection = document.getElementById('paymentDetailsSection');
+            
+            if (hasItems) {
+                finalizeButton.disabled = false;
+                clientDataForm.style.display = 'block';
+                paymentDetailsSection.style.display = 'block';
+            } else {
+                finalizeButton.disabled = true;
+                clientDataForm.style.display = 'none';
+                paymentDetailsSection.style.display = 'none';
             }
         }
 
-        // --- 8. INICIALIZACIÓN Y LISTENERS ---
+        // =======================================================
+        // LÓGICA DE ENVÍO POR WHATSAPP (Añadido el color)
+        // =======================================================
+
+        function sendOrderToWhatsapp() {
+            if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
+                alert("Por favor, añade productos al pedido y completa tus datos de envío.");
+                return;
+            }
+
+            const clientName = document.getElementById('clientName').value;
+            const clientAddress = document.getElementById('clientAddress').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
+            
+            const total = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const amountToPay = isHalfPayment ? total / 2 : total;
+
+            let orderText = `*PEDIDO #${orderIdCounter + 1} - RPLAY*\n\n`;
+            orderText += `*Total a Pagar:* $${amountToPay.toFixed(2)} (${isHalfPayment ? 'Anticipo 50%' : 'Pago Completo'})\n`;
+            orderText += `*Productos:*\n`;
+            
+            currentOrder.forEach((item, index) => {
+                const colorDisplay = item.color !== 'default' ? ` (${item.color.toUpperCase()})` : '';
+                orderText += `${index + 1}. ${item.name} (${item.size})${colorDisplay} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+            });
+
+            orderText += `\n*Datos del Cliente:*\n`;
+            orderText += `Nombre: ${clientName}\n`;
+            orderText += `Teléfono: ${clientPhone}\n`;
+            orderText += `Dirección: ${clientAddress}\n`;
+            orderText += `\n*IMPORTANTE:* Adjunta aquí tu comprobante de pago o transferencia para confirmar tu pedido.`;
+
+            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
+
+            // 1. Crear el historial de pedidos
+            orderIdCounter++;
+            PENDING_ORDERS.push({
+                id: orderIdCounter,
+                items: JSON.parse(JSON.stringify(currentOrder)), 
+                client: { name: clientName, address: clientAddress, phone: clientPhone },
+                total: total,
+                amountPaid: amountToPay,
+                date: new Date().toLocaleString()
+            });
+
+            // 2. APLICAR EL DESCUENTO DEL STOCK (Usando la nueva clave con color)
+            currentOrder.forEach(item => {
+                const key = item.orderKey; // orderKey ya tiene el formato ID_TALLA_COLOR
+                if (productInventory[key] >= item.quantity) {
+                    productInventory[key] -= item.quantity;
+                } else {
+                    productInventory[key] = 0; 
+                }
+            });
+
+            // 3. Limpiar el pedido actual y guardar todo
+            currentOrder = [];
+            saveInventoryStorage();
+            saveOrdersStorage();
+            renderProductCards();
+            
+            // 4. Cerrar el modal y redirigir a WhatsApp
+            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+            ordersModal.hide();
+            
+            window.open(whatsappURL, '_blank');
+        }
+
+        // =======================================================
+        // OTRAS FUNCIONES (Acceso por Comando)
+        // =======================================================
+        
+        function saveInventoryStorage() {
+            localStorage.setItem('productInventory', JSON.stringify(productInventory));
+        }
+
+        function loadInventoryStorage() {
+            const storedInventory = localStorage.getItem('productInventory');
+            if (storedInventory) {
+                productInventory = JSON.parse(storedInventory); 
+            }
+        }
+        
+        function saveOrdersStorage() {
+            localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
+            localStorage.setItem('orderIdCounter', orderIdCounter);
+            document.getElementById('ordersCounter').textContent = currentOrder.length;
+        }
+
+        function loadOrdersStorage() {
+            const storedOrders = localStorage.getItem('pendingOrders');
+            if (storedOrders) {
+                PENDING_ORDERS = JSON.parse(storedOrders);
+            }
+            const storedCounter = localStorage.getItem('orderIdCounter');
+            if (storedCounter) {
+                orderIdCounter = parseInt(storedCounter);
+            }
+        }
+
+        // FUNCIÓN ACCESIBLE SOLO POR CONSOLA (COMANDO)
+        window.resetInventoryAndOrders = function() {
+            if (!confirm("⛔ ADMINISTRADOR: ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
+            
+            generateInitialInventory();
+            saveInventoryStorage();
+            
+            PENDING_ORDERS = [];
+            orderIdCounter = 0;
+            currentOrder = [];
+            saveOrdersStorage();
+            
+            renderProductCards();
+            
+            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+            if(ordersModal) ordersModal.hide();
+            
+            console.log("✅ INVENTARIO REINICIADO. Ejecuta 'generateInitialInventory()' para ver los datos de stock iniciales.");
+            alert("Inventario y órdenes reiniciados con éxito. ¡RECARGA LA PÁGINA (F5) para asegurar una carga limpia!");
+        }
+
+        // =======================================================
+        // INICIALIZACIÓN
+        // =======================================================
+
         document.addEventListener('DOMContentLoaded', () => {
             
-            // 1. Inicializar Bootstrap Modal
-            paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'), {});
-
-            // 2. Listener para descontar stock al enviar WhatsApp
-            const whatsappButton = document.getElementById('whatsapp-confirm-button');
-            if (whatsappButton) {
-                whatsappButton.addEventListener('click', (event) => {
-                    // Solo descontar stock si no se ha hecho antes
-                    if (whatsappButton.getAttribute('data-stock-applied') !== 'true') {
-                        const orderIdToApply = parseInt(whatsappButton.getAttribute('data-order-id'));
-                        const order = PENDING_ORDERS.find(o => o.id === orderIdToApply);
-                        
-                        if (order) {
-                            // Aplicar la reducción PERMANENTE (remueve de la lista de gestión)
-                            applyStockReduction(order); 
-                            whatsappButton.setAttribute('data-stock-applied', 'true');
-                        }
-                    }
-                    // El evento sigue su curso y abre WhatsApp
-                });
-            }
+            loadOrdersStorage();
             
-            // 3. Listener para abrir el modal desde las tarjetas
             document.getElementById('product-list').addEventListener('click', (e) => {
                 const target = e.target.closest('.btn-buy');
                 if (target) {
@@ -1456,26 +806,18 @@
                 }
             });
             
-            // 4. Listener para actualizar precio/stock al cambiar cantidad
             const quantityInput = document.getElementById('quantityInput');
             if (quantityInput) {
                 quantityInput.addEventListener('change', updateTotalAndCheckStock);
                 quantityInput.addEventListener('input', updateTotalAndCheckStock);
             }
             
-            // 5. Listener para actualizar el monto a pagar al marcar/desmarcar "Pagar la Mitad"
             const halfPaymentCheck = document.getElementById('halfPaymentCheck');
             if (halfPaymentCheck) {
-                halfPaymentCheck.addEventListener('change', updateTotalAndCheckStock);
+                halfPaymentCheck.addEventListener('change', updateOrdersTotal); 
             }
 
-            // 6. Resetear el modal al cerrarse
-            const paymentModalElement = document.getElementById('paymentModal');
-            paymentModalElement.addEventListener('hidden.bs.modal', () => {
-                updateModalUI(false); 
-            });
-
-            // 7. Cargar datos e inventario
+            // Llamada a la inicialización de datos
             generateInitialInventory();
             loadInventoryStorage();
             renderProductCards();
@@ -1484,33 +826,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
