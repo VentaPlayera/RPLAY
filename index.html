@@ -248,25 +248,27 @@
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
 
-            // --- DEFINICIÓN DEL STOCK POR MODELO Y TALLA (AQUÍ PUEDES MODIFICAR) ---
-            const defaultStock = { 'S': 50, 'M': 50, 'L': 50, 'XL': 50 };
+            // --- STOCK BASE PARA MODELOS NO DEFINIDOS (MAX 2 TALLAS) ---
+            // Puedes cambiar 'M' y 'L' a cualquier combinación (ej: 'S': 20, 'XL': 20)
+            const defaultStock = { 'M': 50, 'L': 50 }; 
             
             const initialProducts = [
-                // EJEMPLOS DE STOCK Y TALLAS
-                { i: 1, name: 'XIME-1', description: 'Playera Modelo 1: Lánzate a la aventura.', stock: { 'S': 10, 'M': 20, 'L': 5, 'XL': 15 } },
-                { i: 2, name: 'XIME-2', description: 'Playera Modelo 2: Diseño retro con alas.', stock: { 'S': 5, 'M': 5, 'L': 5, 'XL': 5 } },
-                { i: 3, name: 'XIME-3', description: 'Playera Modelo 3: La vida es mejor en el mar.', stock: { 'M': 30, 'L': 15, 'XL': 10 } }, 
-                { i: 4, name: 'XIME-4', description: 'Playera Modelo 4: Fuego y pasión.', stock: defaultStock },
-                { i: 5, name: 'BRUNO MARS', description: 'Diseño inspirado en el gran Bruno Mars.', stock: { 'M': 10, 'L': 10 } }, 
-                { i: 6, name: 'PLAYERA 6', description: 'Diseño exclusivo #6. ¡Modifica este texto!', stock: { 'S': 25, 'M': 25, 'L': 25, 'XL': 25 } },
-                { i: 7, name: 'PLAYERA 7', description: 'Modelo 7 - Patrón abstracto.', stock: defaultStock },
-                { i: 8, name: 'PLAYERA 8', description: 'Modelo 8 - Estilo urbano.', stock: { 'M': 5, 'L': 5, 'XXL': 10 } }, 
+                // EJEMPLOS DE STOCK PERSONALIZADO (MAX 2 TALLAS CON STOCK)
+                { i: 1, name: 'XIME-1', description: 'Playera Modelo 1: Lánzate a la aventura.', stock: { 'S': 10, 'M': 20 } },
+                { i: 2, name: 'XIME-2', description: 'Playera Modelo 2: Diseño retro con alas.', stock: { 'L': 5, 'XL': 5 } },
+                { i: 3, name: 'XIME-3', description: 'Playera Modelo 3: La vida es mejor en el mar.', stock: { 'M': 30, 'L': 15 } },
+                { i: 4, name: 'XIME-4', description: 'Playera Modelo 4: Fuego y pasión.', stock: { 'S': 50, 'M': 50 } },
+                { i: 5, name: 'BRUNO MARS', description: 'Diseño inspirado en el gran Bruno Mars.', stock: { 'M': 10, 'L': 10 } },
+                { i: 6, name: 'PLAYERA 6', description: 'Diseño exclusivo #6. ¡Modifica este texto!', stock: { 'S': 25, 'M': 25 } },
+                { i: 7, name: 'PLAYERA 7', description: 'Modelo 7 - Patrón abstracto.', stock: { 'L': 10, 'XL': 10 } },
+                { i: 8, name: 'PLAYERA 8', description: 'Modelo 8 - Estilo urbano.', stock: { 'M': 5, 'XXL': 10 } }, 
                 { i: 9, name: 'PLAYERA 9', description: 'Modelo 9 - Edición limitada.', stock: { 'S': 3, 'M': 3 } }, 
-                { i: 10, name: 'PLAYERA 10', description: 'Modelo 10 - Clásico y simple.', stock: defaultStock },
-                // ... (agregar otros modelos hasta el 42 si es necesario, o se rellenarán automáticamente)
-                // --- MODELOS CON OPCIÓN DE COLOR ---
-                { i: 43, name: 'XIME-43', description: 'Modelo 43 con opción de color.', stock: defaultStock, colors: ['Blanco', 'Negro'] },
-                { i: 44, name: 'XIME-44', description: 'Modelo 44 con opción de color.', stock: defaultStock, colors: ['Blanco', 'Negro'] },
+                { i: 10, name: 'PLAYERA 10', description: 'Modelo 10 - Clásico y simple.', stock: { 'M': 40, 'L': 40 } },
+                // ... (añade o modifica modelos hasta el 42 si es necesario)
+                
+                // --- MODELOS CON OPCIÓN DE COLOR (MAX 2 TALLAS CON STOCK) ---
+                { i: 43, name: 'XIME-43', description: 'Modelo 43 con opción de color.', stock: { 'M': 10, 'L': 10 }, colors: ['Blanco', 'Negro'] },
+                { i: 44, name: 'XIME-44', description: 'Modelo 44 con opción de color.', stock: { 'M': 10, 'L': 10 }, colors: ['Blanco', 'Negro'] },
             ];
 
             // Rellenar hasta el modelo 44 con stock por defecto si no están definidos
@@ -291,7 +293,14 @@
                 const i = prod.i;
                 const id = `PROD_${String(i).padStart(3, '0')}`;
                 
+                // Filtra para obtener las tallas que realmente tienen stock
                 const modelSizes = Object.keys(prod.stock).filter(size => prod.stock[size] > 0); 
+                
+                // Set the correct side image URL or generic fallback
+                let sideImg = `${GITHUB_BASE_URL}xime${i}_lateral.jpg`; 
+                if (sideImg.includes('lateral')) {
+                    sideImg = GENERIC_SIDE_IMAGE;
+                }
                 
                 // --- INVENTARIO INICIAL POR ID_TALLA ---
                 modelSizes.forEach(size => {
@@ -300,12 +309,6 @@
                        productInventory[`${id}_${size}`] = stockAmount;
                     }
                 });
-                
-                // Set the correct side image URL or generic fallback
-                let sideImg = `${GITHUB_BASE_URL}xime${i}_lateral.jpg`; 
-                if (sideImg.includes('lateral')) {
-                    sideImg = GENERIC_SIDE_IMAGE;
-                }
                 
                 // --- CREACIÓN DEL OBJETO PRODUCTO ---
                 const product = {
@@ -331,7 +334,6 @@
         
         // Reporte de Stock para el Administrador (se llama desde la consola)
         window.showInventoryReport = function() {
-            // ... (función para reporte de inventario) ...
             console.log("\n==============================================");
             console.log("     REPORTE DE INVENTARIO (ADMIN)");
             console.log("==============================================");
@@ -492,9 +494,8 @@
                     colorSelect.appendChild(option);
                 });
                 
-                defaultColor = product.colors[0]; // Usar el primer color como predeterminado
+                defaultColor = product.colors[0]; 
                 
-                // Listener para el cambio de color
                 colorSelect.onchange = () => {
                     const selectedColor = colorSelect.value;
                     renderCarousel(product, selectedColor);
@@ -553,10 +554,8 @@
             const isColorProduct = product.colors && product.colors.length > 0;
             const i = parseInt(product.id.split('_')[1], 10);
             
-            // Si es un producto de color, creamos el sufijo del color en minúsculas (ej: "_negro")
             const colorSuffix = color && isColorProduct ? `_${color.toLowerCase()}` : '';
 
-            // Definimos las variantes de imagen
             const imageVariants = [
                 { variant: 'frente', isDefault: true, alt: 'Frente' }, 
                 { variant: 'espalda', isDefault: true, alt: 'Espalda' },
@@ -570,10 +569,8 @@
                 let altText = `${product.name} ${item.alt} ${color ? `(${color})` : ''}`;
 
                 if (item.variant === 'lateral' && product.sideImg === GENERIC_SIDE_IMAGE) {
-                    // Usar la imagen genérica si se definió como fallback
                     imgUrl = GENERIC_SIDE_IMAGE;
                 } else {
-                    // Construir URL con sufijo de color
                     imgUrl = `${GITHUB_BASE_URL}xime${i}_${item.variant}${colorSuffix}.jpg`;
                 }
 
@@ -594,7 +591,6 @@
         }
 
         function updateTotalAndCheckStock() {
-            // ... (función para verificar stock, no necesita cambio, ya que el stock es por talla) ...
             const productId = document.getElementById('modalProductId').value;
             const size = document.getElementById('sizeSelect').value;
             const quantityInput = document.getElementById('quantityInput');
@@ -632,7 +628,6 @@
             const size = document.getElementById('sizeSelect').value;
             const quantity = parseInt(document.getElementById('quantityInput').value);
 
-            // NUEVO: Obtener el color seleccionado
             const colorSelect = document.getElementById('colorSelect');
             const color = colorSelect.style.display !== 'none' ? colorSelect.value : null;
 
@@ -645,7 +640,6 @@
                 return;
             }
 
-            // MODIFICADO: Busca si ya existe un item con la misma talla Y el mismo color
             const existingItemIndex = currentOrder.findIndex(item => 
                 item.productId === productId && item.size === size && item.color === color
             );
@@ -657,7 +651,7 @@
                     productId: productId,
                     name: product.name,
                     size: size,
-                    color: color, // Almacenar el color
+                    color: color, 
                     quantity: quantity,
                     price: product.price
                 });
@@ -702,7 +696,6 @@
                 const totalPrice = item.quantity * item.price;
                 totalItems += item.quantity;
                 
-                // NUEVO: Incluir color en la visualización
                 const colorText = item.color ? ` (${item.color})` : '';
 
                 const listItem = document.createElement('li');
@@ -799,7 +792,6 @@
             orderText += `*Total a Pagar:* $${amountToPay.toFixed(2)} (${isHalfPayment ? 'Anticipo 50%' : 'Pago Completo'})\n`;
             orderText += `*Productos:*\n`;
             
-            // MODIFICADO: Incluye el color en el mensaje de WhatsApp
             currentOrder.forEach((item, index) => {
                 const colorText = item.color ? ` (${item.color})` : '';
                 orderText += `${index + 1}. ${item.name} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
