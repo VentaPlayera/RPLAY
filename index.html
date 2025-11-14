@@ -259,14 +259,14 @@
 
         // Esta función es global y usable en consola.
         function setStock(productId, colorName, size, newStock) {
-            if (productInventory[productId] && productInventory[productId][colorName]) {
+            if (productInventory[productId] && productInventory[productId][colorName] && productInventory[productId][colorName][size] !== undefined) {
                 productInventory[productId][colorName][size] = newStock;
                 saveInventoryStorage();
                 renderProductCards();
                 renderOrdersList();
                 console.log(`Stock actualizado: ${productId}, ${colorName}, Talla ${size} -> ${newStock}`);
             } else {
-                console.error('Error: Producto, color o talla no encontrado para actualizar stock.');
+                console.error(`Error: Talla ${size} no existe para ${productId}, ${colorName}. No se pudo actualizar el stock.`);
             }
         }
         
@@ -278,30 +278,47 @@
             localStorage.setItem('orderIdCounter', orderIdCounter);
         }
 
+        /**
+         * @function loadInventoryStorage
+         * Carga el inventario almacenado en localStorage,
+         * asegurando NO introducir tallas no definidas por el código actual. (CORRECCIÓN CLAVE)
+         */
         function loadInventoryStorage() {
             const storedInventory = localStorage.getItem('productInventory');
             const storedOrders = localStorage.getItem('pendingOrders');
             const storedCounter = localStorage.getItem('orderIdCounter');
             
-            // Si hay inventario guardado, lo fusionamos con la estructura inicial.
-            if (storedInventory) {
-                const tempInventory = JSON.parse(storedInventory);
-                for (const productId in tempInventory) {
-                    if (productInventory[productId]) {
-                        for (const color in tempInventory[productId]) {
-                            if (productInventory[productId][color]) {
-                                // Sobrescribir el stock actual con el almacenado
-                                productInventory[productId][color] = tempInventory[productId][color];
-                            }
-                        }
-                    }
-                }
-            }
+            // 1. Cargar Órdenes y Contador
             if (storedOrders) {
                 PENDING_ORDERS = JSON.parse(storedOrders);
             }
             if (storedCounter) {
                 orderIdCounter = parseInt(storedCounter);
+            }
+
+            // 2. Cargar Inventario (Corrección de tallas fantasma)
+            if (storedInventory) {
+                const tempInventory = JSON.parse(storedInventory);
+                
+                // Iterar sobre la estructura de inventario actual (la correcta)
+                for (const productId in productInventory) { 
+                    if (tempInventory[productId]) {
+                        // Iterar sobre los colores actuales
+                        for (const color in productInventory[productId]) { 
+                            if (tempInventory[productId][color]) {
+                                // Iterar solo sobre las tallas que están definidas en el código (M, L, XL, etc.)
+                                for (const size in productInventory[productId][color]) { 
+                                    // Si el valor EXISTE en la data antigua, lo cargamos.
+                                    if (tempInventory[productId][color][size] !== undefined) {
+                                        productInventory[productId][color][size] = tempInventory[productId][color][size];
+                                    }
+                                }
+                                // NOTA: Si tempInventory[productId][color] tiene una talla 'S' 
+                                // que no definiste en el código, será ignorada.
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -321,7 +338,7 @@
                 orderIdCounter = 0;
                 renderProductCards();
                 renderOrdersList();
-                alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5)!");
+                alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5) para asegurar una carga limpia!");
                 // Se sugiere recargar para asegurar que la caché local no interfiera.
             }
         }
@@ -454,7 +471,7 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card product-card" style="position: relative;">
                             <span class="stock-badge ${badgeClass}">${badgeText}</span>
-                            <img src="${mainVariant.img_front}" class="card-img-top" alt="${product.name}">
+                            <img src="${product.mainImg}" class="card-img-top" alt="${product.name}">
                             <div class="card-body">
                                 <h5 class="card-title">${product.name}</h5>
                                 <p class="card-text text-muted small">${product.description}</p>
@@ -473,22 +490,15 @@
             });
         }
 
-        // --- 5. DATOS DE INVENTARIO (44 Playeras con Tallas CORREGIDAS y URLs RESTAURADAS) ---
+        // --- 5. DATOS DE INVENTARIO (44 Playeras con Tallas y URLs Explícitas) ---
 
         function generateInitialInventory() {
             // Limpiar datos anteriores para regenerar
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
 
-            // --- Funciones de RESTAURACIÓN DE IMAGENES (URLs con nombres 'Xime') ---
-            // !!! ADVERTENCIA CRÍTICA: Debes cambiar esta BASE_URL por el ENLACE REAL
-            // donde subiste las imágenes (ej: tu GitHub Pages O un host de imágenes como Imgur).
-            const BASE_URL = 'https://TU_ENLACE_CORREGIDO_AQUI/img/'; // <-- SUSTITUYE ESTE ENLACE
-            
-            // Función genérica para URLs de productos 1 a 42 (usa el formato XimeN_vista.jpg)
-            const IMAGE_URL = (number, view) => `${BASE_URL}Xime${number}_${view}.jpg`; 
-            const SIDE_IMAGE_URL = `${BASE_URL}modelo_side.jpg`; // Asume un placeholder lateral genérico
-            // -----------------------------------------------------------------
+            // URL genérica para usar como placeholder si no se especifica una vista lateral
+            const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
             
             for (let i = 1; i <= 44; i++) { 
                 const id = `PROD_${String(i).padStart(3, '0')}`;
@@ -497,279 +507,489 @@
                 let productName = `Playera Modelo No. ${i}`; 
                 let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
                 let variants = {}; 
-                let mainImg, frontImg, backImg, sideImg = SIDE_IMAGE_URL; 
-                
+                let mainImg, frontImg, backImg, sideImg = GENERIC_SIDE_IMAGE; // Valores por defecto
+
                 let customName = productName; 
 
-                if (i < 43) {
-                    // --- ZONA DE DATOS DE PRODUCTOS INDIVIDUALES (1 a 42) ---
+                // ***************************************************************
+                // ** ZONA DE CONFIGURACIÓN DE PRODUCTOS INDIVIDUALES (1 a 42) ***
+                // ** ¡MODIFICA LAS URLs DE IMAGEN AQUÍ!                         **
+                // ***************************************************************
+                
+                if (i === 1) { 
+                    productName = 'BTS'; 
+                    productDescription = 'Diseño original de BTS en blanco. ¡Edición especial!';
+                    customName = 'BTS (Blanco) #1';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
                     
-                    if (i === 1) { 
-                        productName = 'BTS'; 
-                        productDescription = 'Diseño original de BTS en blanco. ¡Edición especial!';
-                        customName = 'BTS (Blanco) #1';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 2) { 
-                        productName = 'BTS'; 
-                        productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
-                        customName = 'BTS (Negro) #2';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 3) { 
-                        productName = 'ADO'; 
-                        productDescription = 'Diseño original de ADO en blanco. ¡Edición especial!'; 
-                        customName = 'ADO (Blanco) #3';
-                        initialStockOverrides = {M: 1, XL: 1}; 
-                        modelSizes = ["M", "XL"]; 
-                    } else if (i === 4) { 
-                        productName = 'ADO'; 
-                        productDescription = 'Diseño original de ADO en negro. ¡Edición especial!';
-                        customName = 'ADO (Negro) #4';
-                        initialStockOverrides = {M: 1, L: 1, XL: 2}; 
-                        modelSizes = ["M", "L", "XL"]; 
-                    } else if (i === 5) { 
-                        productName = 'BRUNO MARS'; 
-                        productDescription = 'Diseño original de BRUNO MARS en negro. ¡Edición especial!';
-                        customName = 'BRUNO MARS #5';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 6) { 
-                        productName = 'BRUNO MARS';
-                        productDescription = 'Diseño original de BRUNO MARS en negro. ¡Edición especial!';
-                        customName = 'BRUNO MARS #6';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 7) { 
-                        productName = 'MICHAEL JACKSON'; 
-                        productDescription = 'Diseño original de MICHAEL JACKSON en blanco. ¡Edición especial!';
-                        customName = 'MICHAEL JACKSON (Blanco) #7';
-                        initialStockOverrides = {S: 1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 8) { 
-                        productName = 'MICHAEL JACKSON'; 
-                        productDescription = 'Diseño original de MICHAEL JACKSON en negro. ¡Edición especial!';
-                        initialStockOverrides = {M: 1, L: 1};
-                        customName = 'MICHAEL JACKSON (Negro) #8';
-                        modelSizes = ['M', 'L'];
-                    } else if (i === 9) { 
-                        productName = 'LATIN MAFIA';
-                        productDescription = 'Diseño original de LATIN MAFIA en blanco. ¡Edición especial!'; 
-                        customName = 'LATIN MAFIA (Blanco) #9';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 10) { 
-                        productName = 'LATIN MAFIA'; 
-                        productDescription = 'Diseño original de LATIN MAFIA en negro. ¡Edición especial!';
-                        customName = 'LATIN MAFIA (Negro) #10';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 11) { 
-                        productName = 'AESPA'; 
-                        productDescription = 'Diseño original de AESPA en negro. ¡Edición especial!'; 
-                        customName = 'AESPA #11';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 12) { 
-                        productName = 'AESPA';
-                        productDescription = 'Diseño original de AESPA en negro. ¡Edición especial!'; 
-                        customName = 'AESPA #12';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 13) { 
-                        productName = 'BILLIE EILISH'; 
-                        productDescription = 'Diseño original de BILLIE EILISH en negro. ¡Edición especial!';
-                        customName = 'BILLIE EILISH #13';
-                        initialStockOverrides = {L: 2, XL: 1};
-                        modelSizes = ['L', 'XL'];
-                    } else if (i === 14) { 
-                        productName = 'BILLIE EILISH';  
-                        productDescription = 'Diseño original de BILLIE EILISH en negro. ¡Edición especial!';
-                        customName = 'BILLIE EILISH #14';
-                        initialStockOverrides = {L: 1, XL: 2};
-                        modelSizes = ['L', 'XL'];
-                    } else if (i === 15) { 
-                        productName = 'LANA DEL REY'; 
-                        productDescription = 'Diseño original de LANA DEL REY en blanco. ¡Edición especial!';
-                        customName = 'LANA DEL REY (Blanco) #15';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 16) { 
-                        productName = 'LANA DEL REY';
-                        productDescription = 'Diseño original de LANA DEL REY en negro. ¡Edición especial!';
-                        customName = 'LANA DEL REY (Negro) #16';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 17) { 
-                        productName = 'MY CHEMICAL ROMANCE'; 
-                        productDescription = 'Diseño original de MY CHEMICAL ROMANCE en negro. ¡Edición especial!';
-                        customName = 'MY CHEMICAL ROMANCE #17';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 18) { 
-                        productName = 'MY CHEMICAL ROMANCE'; 
-                        productDescription = 'Diseño original de MY CHEMICAL ROMANCE en negro. ¡Edición especial!';
-                        customName = 'MY CHEMICAL ROMANCE #18';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 19) { 
-                        productName = 'TWENTY ONE PILOTS'; 
-                        productDescription = 'Diseño original de TWENTY ONE PILOTS en negro. ¡Edición especial!';
-                        customName = 'TWENTY ONE PILOTS #19';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 20) { 
-                        productName = 'TWENTY ONE PILOTS'; 
-                        productDescription = 'Diseño original de TWENTY ONE PILOTS en negro. ¡Edición especial!';
-                        customName = 'TWENTY ONE PILOTS #20';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 21) { 
-                        productName = 'ARCTIC MONKEYS'; 
-                        productDescription = 'Diseño original de ARCTIC MONKEYS en arena. ¡Edición especial!';
-                        customName = 'ARCTIC MONKEYS (Arena) #21';
-                        initialStockOverrides = { XL: 1};
-                        modelSizes = [ 'XL'];
-                    } else if (i === 22) { 
-                        productName = 'ARCTIC MONKEYS'; 
-                        productDescription = 'Diseño original de ARCTIC MONKEYS en arena. ¡Edición especial!';
-                        customName = 'ARCTIC MONKEYS (Arena) #22';
-                        initialStockOverrides = {XL: 1};
-                        modelSizes = ['XL'];
-                    } else if (i === 23) { 
-                        productName = 'OLIVIA RODRIGO'; 
-                        productDescription = 'Diseño original de OLIVIA RODRIGO en negro. ¡Edición especial!';
-                        customName = 'OLIVIA RODRIGO #23';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 24) { 
-                        productName = 'OLIVIA RODRIGO'; 
-                        productDescription = 'Diseño original de OLIVIA RODRIGO en negro. ¡Edición especial!'; 
-                        customName = 'OLIVIA RODRIGO #24';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 25) { 
-                        productName = 'BAD BUNNY'; 
-                        productDescription = 'Diseño original de BAD BUNNY en negro. ¡Edición especial!';
-                        customName = 'BAD BUNNY (Negro) #25';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 26) { 
-                        productName = 'BAD BUNNY'; 
-                        productDescription = 'Diseño original de BAD BUNNY en arena. ¡Edición especial!';
-                        customName = 'BAD BUNNY (Arena) #26';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 27) { 
-                        productName = 'TAYLOR SWIFT'; 
-                        productDescription = 'Diseño original de TAYLOR SWIFT en arena. ¡Edición especial!';
-                        customName = 'TAYLOR SWIFT (Arena) #27';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 28) { 
-                        productName = 'TAYLOR SWIFT'; 
-                        productDescription = 'Diseño original de TAYLOR SWIFT en negro. ¡Edición especial!';
-                        customName = 'TAYLOR SWIFT (Negro) #28';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 29) { 
-                        productName = 'HUMBE'; 
-                        productDescription = 'Diseño original de HUMBE en negro. ¡Edición especial!';
-                        customName = 'HUMBE #29';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 30) { 
-                        productName = 'HUMBE';  
-                        productDescription = 'Diseño original de HUMBE en negro. ¡Edición especial!';
-                        customName = 'HUMBE #30';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 31) { 
-                        productName = 'KATY PERRY'; 
-                        productDescription = 'Diseño original de KATY PERRY en negro. ¡Edición especial!';
-                        customName = 'KATY PERRY (Negro) #31';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 32) { 
-                        productName = 'KATY PERRY';  
-                        productDescription = 'Diseño original de KATY PERRY en blanco. ¡Edición especial!';
-                        customName = 'KATY PERRY (Blanco) #32';
-                        initialStockOverrides = {M: 1, L: 1, XL: 1};
-                        modelSizes = ['M', 'L', 'XL'];
-                    } else if (i === 33) { 
-                        productName = 'TAYLOR SWIFT'; 
-                        productDescription = 'Diseño original de TAYLOR SWIFT en blanco. ¡Edición especial!';
-                        customName = 'TAYLOR SWIFT (Blanco) #33';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 34) { 
-                        productName = 'TAYLOR SWIFT';  
-                        productDescription = 'Diseño original de TAYLOR SWIFT en negro. ¡Edición especial!';
-                        customName = 'TAYLOR SWIFT (Negro) #34';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 35) { 
-                        productName = 'BTS'; 
-                        productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
-                        customName = 'BTS (Negro) #35';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 36) { 
-                        productName = 'BTS'; 
-                        productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
-                        customName = 'BTS (Negro) #36';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 37) { 
-                        productName = 'NCT DREAM'; 
-                        productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
-                        customName = 'NCT DREAM #37';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 38) { 
-                        productName = 'NCT DREAM'; 
-                        productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
-                        customName = 'NCT DREAM #38';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 39) { 
-                        productName = 'HUNTRIX/SJA BOYS'; 
-                        productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
-                        customName = 'HUNTRIX/SJA BOYS #39';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 40) { 
-                        productName = 'HUNTRIX/SJA BOYS';  
-                        productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
-                        customName = 'HUNTRIX/SJA BOYS #40';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 41) { 
-                        productName = 'HOOZIER'; 
-                        productDescription = 'Diseño original de HOOZIER en negro. ¡Edición especial!';
-                        customName = 'HOOZIER (Negro) #41';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    } else if (i === 42) { 
-                        productName = 'HOOZIER';  
-                        productDescription = 'Diseño original de HOOZIER en blanco. ¡Edición especial!';
-                        customName = 'HOOZIER (Blanco) #42';
-                        initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'L'];
-                    }
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime1_frente.jpg'; // URL delantera
+                    backImg = 'https://ejemplo.com/img/Xime1_espalda.jpg'; // URL trasera
+                    // sideImg = GENERIC_SIDE_IMAGE; // Usa el genérico si no lo cambias
 
-                    // Establecer URLs usando el nombre XimeN
-                    frontImg = IMAGE_URL(i, 'frente');
-                    backImg = IMAGE_URL(i, 'espalda');
+                } else if (i === 2) { 
+                    productName = 'BTS'; 
+                    productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
+                    customName = 'BTS (Negro) #2';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
                     
-                    // 1. Aplicar stock por defecto si no fue sobrescrito
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime2_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime2_espalda.jpg';
+                
+                } else if (i === 3) { 
+                    productName = 'ADO'; 
+                    productDescription = 'Diseño original de ADO en blanco. ¡Edición especial!'; 
+                    customName = 'ADO (Blanco) #3';
+                    initialStockOverrides = {M: 1, XL: 1}; 
+                    modelSizes = ["M", "XL"]; 
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime3_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime3_espalda.jpg';
+
+                } else if (i === 4) { 
+                    productName = 'ADO'; 
+                    productDescription = 'Diseño original de ADO en negro. ¡Edición especial!';
+                    customName = 'ADO (Negro) #4';
+                    initialStockOverrides = {M: 1, L: 1, XL: 2}; 
+                    modelSizes = ["M", "L", "XL"]; 
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime4_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime4_espalda.jpg';
+
+                } else if (i === 5) { 
+                    productName = 'BRUNO MARS'; 
+                    productDescription = 'Diseño original de BRUNO MARS en negro. ¡Edición especial!';
+                    customName = 'BRUNO MARS #5';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime5_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime5_espalda.jpg';
+
+                } else if (i === 6) { 
+                    productName = 'BRUNO MARS';
+                    productDescription = 'Diseño original de BRUNO MARS en negro. ¡Edición especial!';
+                    customName = 'BRUNO MARS #6';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime6_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime6_espalda.jpg';
+
+                } else if (i === 7) { 
+                    productName = 'MICHAEL JACKSON'; 
+                    productDescription = 'Diseño original de MICHAEL JACKSON en blanco. ¡Edición especial!';
+                    customName = 'MICHAEL JACKSON (Blanco) #7';
+                    initialStockOverrides = {S: 1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime7_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime7_espalda.jpg';
+
+                } else if (i === 8) { 
+                    productName = 'MICHAEL JACKSON'; 
+                    productDescription = 'Diseño original de MICHAEL JACKSON en negro. ¡Edición especial!';
+                    initialStockOverrides = {M: 1, L: 1};
+                    customName = 'MICHAEL JACKSON (Negro) #8';
+                    modelSizes = ['M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime8_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime8_espalda.jpg';
+
+                } else if (i === 9) { 
+                    productName = 'LATIN MAFIA';
+                    productDescription = 'Diseño original de LATIN MAFIA en blanco. ¡Edición especial!'; 
+                    customName = 'LATIN MAFIA (Blanco) #9';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime9_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime9_espalda.jpg';
+
+                } else if (i === 10) { 
+                    productName = 'LATIN MAFIA'; 
+                    productDescription = 'Diseño original de LATIN MAFIA en negro. ¡Edición especial!';
+                    customName = 'LATIN MAFIA (Negro) #10';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime10_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime10_espalda.jpg';
+
+                } else if (i === 11) { 
+                    productName = 'AESPA'; 
+                    productDescription = 'Diseño original de AESPA en negro. ¡Edición especial!'; 
+                    customName = 'AESPA #11';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime11_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime11_espalda.jpg';
+
+                } else if (i === 12) { 
+                    productName = 'AESPA';
+                    productDescription = 'Diseño original de AESPA en negro. ¡Edición especial!'; 
+                    customName = 'AESPA #12';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime12_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime12_espalda.jpg';
+
+                } else if (i === 13) { 
+                    productName = 'BILLIE EILISH'; 
+                    productDescription = 'Diseño original de BILLIE EILISH en negro. ¡Edición especial!';
+                    customName = 'BILLIE EILISH #13';
+                    initialStockOverrides = {L: 2, XL: 1};
+                    modelSizes = ['L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime13_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime13_espalda.jpg';
+
+                } else if (i === 14) { 
+                    productName = 'BILLIE EILISH';  
+                    productDescription = 'Diseño original de BILLIE EILISH en negro. ¡Edición especial!';
+                    customName = 'BILLIE EILISH #14';
+                    initialStockOverrides = {L: 1, XL: 2};
+                    modelSizes = ['L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime14_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime14_espalda.jpg';
+
+                } else if (i === 15) { 
+                    productName = 'LANA DEL REY'; 
+                    productDescription = 'Diseño original de LANA DEL REY en blanco. ¡Edición especial!';
+                    customName = 'LANA DEL REY (Blanco) #15';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime15_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime15_espalda.jpg';
+
+                } else if (i === 16) { 
+                    productName = 'LANA DEL REY';
+                    productDescription = 'Diseño original de LANA DEL REY en negro. ¡Edición especial!';
+                    customName = 'LANA DEL REY (Negro) #16';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime16_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime16_espalda.jpg';
+
+                } else if (i === 17) { 
+                    productName = 'MY CHEMICAL ROMANCE'; 
+                    productDescription = 'Diseño original de MY CHEMICAL ROMANCE en negro. ¡Edición especial!';
+                    customName = 'MY CHEMICAL ROMANCE #17';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime17_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime17_espalda.jpg';
+
+                } else if (i === 18) { 
+                    productName = 'MY CHEMICAL ROMANCE'; 
+                    productDescription = 'Diseño original de MY CHEMICAL ROMANCE en negro. ¡Edición especial!';
+                    customName = 'MY CHEMICAL ROMANCE #18';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime18_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime18_espalda.jpg';
+
+                } else if (i === 19) { 
+                    productName = 'TWENTY ONE PILOTS'; 
+                    productDescription = 'Diseño original de TWENTY ONE PILOTS en negro. ¡Edición especial!';
+                    customName = 'TWENTY ONE PILOTS #19';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime19_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime19_espalda.jpg';
+
+                } else if (i === 20) { 
+                    productName = 'TWENTY ONE PILOTS'; 
+                    productDescription = 'Diseño original de TWENTY ONE PILOTS en negro. ¡Edición especial!';
+                    customName = 'TWENTY ONE PILOTS #20';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime20_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime20_espalda.jpg';
+
+                } else if (i === 21) { 
+                    productName = 'ARCTIC MONKEYS'; 
+                    productDescription = 'Diseño original de ARCTIC MONKEYS en arena. ¡Edición especial!';
+                    customName = 'ARCTIC MONKEYS (Arena) #21';
+                    initialStockOverrides = { XL: 1};
+                    modelSizes = [ 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime21_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime21_espalda.jpg';
+
+                } else if (i === 22) { 
+                    productName = 'ARCTIC MONKEYS'; 
+                    productDescription = 'Diseño original de ARCTIC MONKEYS en arena. ¡Edición especial!';
+                    customName = 'ARCTIC MONKEYS (Arena) #22';
+                    initialStockOverrides = {XL: 1};
+                    modelSizes = ['XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime22_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime22_espalda.jpg';
+
+                } else if (i === 23) { 
+                    productName = 'OLIVIA RODRIGO'; 
+                    productDescription = 'Diseño original de OLIVIA RODRIGO en negro. ¡Edición especial!';
+                    customName = 'OLIVIA RODRIGO #23';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime23_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime23_espalda.jpg';
+
+                } else if (i === 24) { 
+                    productName = 'OLIVIA RODRIGO'; 
+                    productDescription = 'Diseño original de OLIVIA RODRIGO en negro. ¡Edición especial!'; 
+                    customName = 'OLIVIA RODRIGO #24';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime24_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime24_espalda.jpg';
+
+                } else if (i === 25) { 
+                    productName = 'BAD BUNNY'; 
+                    productDescription = 'Diseño original de BAD BUNNY en negro. ¡Edición especial!';
+                    customName = 'BAD BUNNY (Negro) #25';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime25_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime25_espalda.jpg';
+
+                } else if (i === 26) { 
+                    productName = 'BAD BUNNY'; 
+                    productDescription = 'Diseño original de BAD BUNNY en arena. ¡Edición especial!';
+                    customName = 'BAD BUNNY (Arena) #26';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime26_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime26_espalda.jpg';
+
+                } else if (i === 27) { 
+                    productName = 'TAYLOR SWIFT'; 
+                    productDescription = 'Diseño original de TAYLOR SWIFT en arena. ¡Edición especial!';
+                    customName = 'TAYLOR SWIFT (Arena) #27';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime27_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime27_espalda.jpg';
+
+                } else if (i === 28) { 
+                    productName = 'TAYLOR SWIFT'; 
+                    productDescription = 'Diseño original de TAYLOR SWIFT en negro. ¡Edición especial!';
+                    customName = 'TAYLOR SWIFT (Negro) #28';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime28_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime28_espalda.jpg';
+
+                } else if (i === 29) { 
+                    productName = 'HUMBE'; 
+                    productDescription = 'Diseño original de HUMBE en negro. ¡Edición especial!';
+                    customName = 'HUMBE #29';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime29_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime29_espalda.jpg';
+
+                } else if (i === 30) { 
+                    productName = 'HUMBE';  
+                    productDescription = 'Diseño original de HUMBE en negro. ¡Edición especial!';
+                    customName = 'HUMBE #30';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime30_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime30_espalda.jpg';
+
+                } else if (i === 31) { 
+                    productName = 'KATY PERRY'; 
+                    productDescription = 'Diseño original de KATY PERRY en negro. ¡Edición especial!';
+                    customName = 'KATY PERRY (Negro) #31';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime31_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime31_espalda.jpg';
+
+                } else if (i === 32) { 
+                    productName = 'KATY PERRY';  
+                    productDescription = 'Diseño original de KATY PERRY en blanco. ¡Edición especial!';
+                    customName = 'KATY PERRY (Blanco) #32';
+                    initialStockOverrides = {M: 1, L: 1, XL: 1};
+                    modelSizes = ['M', 'L', 'XL'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime32_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime32_espalda.jpg';
+
+                } else if (i === 33) { 
+                    productName = 'TAYLOR SWIFT'; 
+                    productDescription = 'Diseño original de TAYLOR SWIFT en blanco. ¡Edición especial!';
+                    customName = 'TAYLOR SWIFT (Blanco) #33';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime33_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime33_espalda.jpg';
+
+                } else if (i === 34) { 
+                    productName = 'TAYLOR SWIFT';  
+                    productDescription = 'Diseño original de TAYLOR SWIFT en negro. ¡Edición especial!';
+                    customName = 'TAYLOR SWIFT (Negro) #34';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime34_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime34_espalda.jpg';
+
+                } else if (i === 35) { 
+                    productName = 'BTS'; 
+                    productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
+                    customName = 'BTS (Negro) #35';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime35_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime35_espalda.jpg';
+
+                } else if (i === 36) { 
+                    productName = 'BTS'; 
+                    productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
+                    customName = 'BTS (Negro) #36';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime36_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime36_espalda.jpg';
+
+                } else if (i === 37) { 
+                    productName = 'NCT DREAM'; 
+                    productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
+                    customName = 'NCT DREAM #37';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime37_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime37_espalda.jpg';
+
+                } else if (i === 38) { 
+                    productName = 'NCT DREAM'; 
+                    productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
+                    customName = 'NCT DREAM #38';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime38_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime38_espalda.jpg';
+
+                } else if (i === 39) { 
+                    productName = 'HUNTRIX/SJA BOYS'; 
+                    productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
+                    customName = 'HUNTRIX/SJA BOYS #39';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime39_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime39_espalda.jpg';
+
+                } else if (i === 40) { 
+                    productName = 'HUNTRIX/SJA BOYS';  
+                    productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
+                    customName = 'HUNTRIX/SJA BOYS #40';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime40_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime40_espalda.jpg';
+
+                } else if (i === 41) { 
+                    productName = 'HOOZIER'; 
+                    productDescription = 'Diseño original de HOOZIER en negro. ¡Edición especial!';
+                    customName = 'HOOZIER (Negro) #41';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime41_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime41_espalda.jpg';
+
+                } else if (i === 42) { 
+                    productName = 'HOOZIER';  
+                    productDescription = 'Diseño original de HOOZIER en blanco. ¡Edición especial!';
+                    customName = 'HOOZIER (Blanco) #42';
+                    initialStockOverrides = {S:1, M: 1, L: 1};
+                    modelSizes = ['S', 'M', 'L'];
+                    
+                    // --- ENLACES DE IMAGEN - ¡MODIFICAR AQUÍ! ---
+                    frontImg = 'https://ejemplo.com/img/Xime42_frente.jpg';
+                    backImg = 'https://ejemplo.com/img/Xime42_espalda.jpg';
+                }
+
+                
+                if (i <= 42) {
+                    // Si el producto no tiene variantes (es de un solo color/diseño), se usa 'Default'
                     let stock = {};
                     // Usamos las tallas definidas en `modelSizes` y las sobrescribimos con `initialStockOverrides`
                     modelSizes.forEach(s => {
                         stock[s] = initialStockOverrides[s] !== undefined ? initialStockOverrides[s] : DEFAULT_STOCK_PER_SIZE;
                     });
                     
-                    // 2. CREAR LA VARIANTE 'Default'
+                    // CREAR LA VARIANTE 'Default'
                     variants['Default'] = {
                         name: customName, 
                         img_front: frontImg, 
@@ -780,24 +1000,31 @@
                     
                     mainImg = frontImg;
 
-                } else { // i === 43 or i === 44
-                    // --- ZONA DE PRODUCTOS MULTIVARIANTES (43 y 44) ---
+                } else { 
+                    // ***************************************************************
+                    // ** ZONA DE PRODUCTOS MULTIVARIANTES (43 y 44)                **
+                    // ** ¡MODIFICA LAS URLs DE IMAGEN AQUÍ!                         **
+                    // ***************************************************************
+                    
                     if (i === 43) { 
                         productName = 'BLACKPINK';
                         productDescription = 'Diseño original de Blackpink en negro/blanco. ¡Edición especial!';
                         modelSizes = ["S", "M", "L", "XL"]; 
+
                         variants['Negro'] = { 
                             name: 'Playera BLACKPINK (Negro)', 
-                            img_front: `${BASE_URL}Xime43_Negro_frente.jpg`, 
-                            img_back: `${BASE_URL}Xime43_Negro_espalda.jpg`, 
-                            img_side: sideImg, 
+                            // --- ENLACES DE IMAGEN BLACKPINK NEGRO ---
+                            img_front: 'https://ejemplo.com/img/Xime43_Negro_frente.jpg', 
+                            img_back: 'https://ejemplo.com/img/Xime43_Negro_espalda.jpg', 
+                            img_side: GENERIC_SIDE_IMAGE, 
                             stock: {L: 1 } 
                         };
                         variants['Blanco'] = { 
                             name: 'Playera BLACKPINK (Blanco)', 
-                            img_front: `${BASE_URL}Xime43_Blanco_frente.jpg`, 
-                            img_back: `${BASE_URL}Xime43_Blanco_espalda.jpg`, 
-                            img_side: sideImg, 
+                            // --- ENLACES DE IMAGEN BLACKPINK BLANCO ---
+                            img_front: 'https://ejemplo.com/img/Xime43_Blanco_frente.jpg', 
+                            img_back: 'https://ejemplo.com/img/Xime43_Blanco_espalda.jpg', 
+                            img_side: GENERIC_SIDE_IMAGE, 
                             stock: { S: 1, M: 1 } 
                         };
                         mainImg = variants['Blanco'].img_front;
@@ -806,25 +1033,28 @@
                         productName = 'K-POP';
                         productDescription = 'Diseño original K-POP en negro/blanco. ¡Edición especial!';
                         modelSizes = ["S", "M", "L", "XL"];
+                        
                         variants['Negro'] = { 
                             name: 'Playera K-POP (Negro)', 
-                            img_front: `${BASE_URL}Xime44_Negro_frente.jpg`, 
-                            img_back: `${BASE_URL}Xime44_Negro_espalda.jpg`, 
-                            img_side: sideImg, 
+                            // --- ENLACES DE IMAGEN K-POP NEGRO ---
+                            img_front: 'https://ejemplo.com/img/Xime44_Negro_frente.jpg', 
+                            img_back: 'https://ejemplo.com/img/Xime44_Negro_espalda.jpg', 
+                            img_side: GENERIC_SIDE_IMAGE, 
                             stock: { L: 1 } 
                         };
                         variants['Blanco'] = { 
                             name: 'Playera K-POP (Blanco)', 
-                            img_front: `${BASE_URL}Xime44_Blanco_frente.jpg`, 
-                            img_back: `${BASE_URL}Xime44_Blanco_espalda.jpg`, 
-                            img_side: sideImg, 
+                            // --- ENLACES DE IMAGEN K-POP BLANCO ---
+                            img_front: 'https://ejemplo.com/img/Xime44_Blanco_frente.jpg', 
+                            img_back: 'https://ejemplo.com/img/Xime44_Blanco_espalda.jpg', 
+                            img_side: GENERIC_SIDE_IMAGE, 
                             stock: { S: 1, M: 1 } 
                         };
                         mainImg = variants['Negro'].img_front;
                     }
                 }
                 
-                // Inicializa la estructura del inventario de stock
+                // Inicializa la estructura del inventario de stock 
                 productInventory[id] = {};
                 for (const colorName in variants) {
                     // Copiar stock de la variante al inventario global
@@ -866,10 +1096,14 @@
             // Usar el stock ACTUAL (del productInventory) para mostrar disponibilidad.
             const currentStockForColor = productInventory[product.id][selectedColor] || {}; 
             
-            // --- MODIFICACIÓN CLAVE: Filtrar solo tallas con stock disponible (usando las definidas en el inventario) ---
+            // --- MODIFICACIÓN CLAVE: Filtrar solo tallas con stock disponible ---
             const sizesWithStock = Object.keys(currentStockForColor)
                                         .filter(size => currentStockForColor[size] > 0)
-                                        .sort(); 
+                                        .sort((a, b) => {
+                                            // Ordenar S, M, L, XL
+                                            const order = ["S", "M", "L", "XL"];
+                                            return order.indexOf(a) - order.indexOf(b);
+                                        }); 
             
             let defaultSize = null;
 
