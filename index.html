@@ -248,12 +248,12 @@
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
 
-            // --- STOCK BASE PARA MODELOS NO DEFINIDOS (MAX 2 TALLAS) ---
-            // Puedes cambiar 'M' y 'L' a cualquier combinación (ej: 'S': 20, 'XL': 20)
+            // --- STOCK BASE PARA MODELOS NO DEFINIDOS (MÁXIMO 2 TALLAS) ---
+            // AQUÍ PUEDES CAMBIAR LAS TALLAS Y CANTIDADES PREDETERMINADAS
             const defaultStock = { 'M': 50, 'L': 50 }; 
             
             const initialProducts = [
-                // EJEMPLOS DE STOCK PERSONALIZADO (MAX 2 TALLAS CON STOCK)
+                // EJEMPLOS DE STOCK PERSONALIZADO (MÁXIMO 2 TALLAS CON STOCK)
                 { i: 1, name: 'XIME-1', description: 'Playera Modelo 1: Lánzate a la aventura.', stock: { 'S': 10, 'M': 20 } },
                 { i: 2, name: 'XIME-2', description: 'Playera Modelo 2: Diseño retro con alas.', stock: { 'L': 5, 'XL': 5 } },
                 { i: 3, name: 'XIME-3', description: 'Playera Modelo 3: La vida es mejor en el mar.', stock: { 'M': 30, 'L': 15 } },
@@ -266,7 +266,7 @@
                 { i: 10, name: 'PLAYERA 10', description: 'Modelo 10 - Clásico y simple.', stock: { 'M': 40, 'L': 40 } },
                 // ... (añade o modifica modelos hasta el 42 si es necesario)
                 
-                // --- MODELOS CON OPCIÓN DE COLOR (MAX 2 TALLAS CON STOCK) ---
+                // --- MODELOS CON OPCIÓN DE COLOR (MÁXIMO 2 TALLAS CON STOCK) ---
                 { i: 43, name: 'XIME-43', description: 'Modelo 43 con opción de color.', stock: { 'M': 10, 'L': 10 }, colors: ['Blanco', 'Negro'] },
                 { i: 44, name: 'XIME-44', description: 'Modelo 44 con opción de color.', stock: { 'M': 10, 'L': 10 }, colors: ['Blanco', 'Negro'] },
             ];
@@ -317,7 +317,7 @@
                     description: prod.description,
                     price: PRODUCT_PRICE,
                     sizes: modelSizes, 
-                    colors: prod.colors || [], // Se usa para 43 y 44
+                    colors: prod.colors || [], 
                     mainImg: `${GITHUB_BASE_URL}xime${i}_frente.jpg`,
                     frontImg: `${GITHUB_BASE_URL}xime${i}_frente.jpg`,
                     backImg: `${GITHUB_BASE_URL}xime${i}_espalda.jpg`,
@@ -368,7 +368,9 @@
         window.resetInventoryAndOrders = function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
+            // 1. Carga el inventario inicial con la nueva estructura de 2 tallas
             generateInitialInventory(); 
+            // 2. Guarda ese nuevo inventario en la memoria local (storage)
             saveInventoryStorage();
             
             PENDING_ORDERS = [];
@@ -397,6 +399,7 @@
             const storedInventory = localStorage.getItem('productInventory');
             if (storedInventory) {
                 const loadedInventory = JSON.parse(storedInventory); 
+                // La diferencia es que solo cargamos datos para las tallas que existen en el nuevo inventario base
                 for (const key in loadedInventory) {
                     if (productInventory.hasOwnProperty(key)) {
                         productInventory[key] = loadedInventory[key];
