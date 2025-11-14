@@ -80,7 +80,7 @@
 
     <header class="p-3 mb-4 bg-white shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
-            <img src='TU_URL_RAW_DEL_LOGO_COMPLETA' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
+            <img src='https://ventaplayera.github.io/RPLAY/logo.png' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
             <h1 class="h3 text-primary d-none d-md-block">Catálogo RPLAY</h1>
             <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
                 Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
@@ -268,8 +268,10 @@
 
                 // --- AJUSTE DE DATOS Y ENLACES DE IMAGEN POR MODELO ---
                 // ... (mantenemos la lógica de nombres simplificada por concisión)
-                if (i === 1) { productName = 'XIME-1'; productDescription = 'Playera Modelo 1: Lánzate a la aventura.'; } 
-                else if (i === 5) { productName = 'BRUNO MARS'; productDescription = 'Diseño inspirado en el gran Bruno Mars.'; } 
+                if (i === 1) { productName = 'XIME-1'; 
+                              productDescription = 'Playera Modelo 1: Lánzate a la aventura.'; } 
+                else if (i === 5) { productName = 'BRUNO MARS'; 
+                                   productDescription = 'Diseño inspirado en el gran Bruno Mars.'; } 
                 else if (i === 43) { 
                     productName = 'Playera Modelo 43 (Multicolor)';
                     availableColors = ['negro', 'blanco']; // Colores para 43
@@ -285,9 +287,9 @@
                 for (const color of availableColors) {
                     const colorSuffix = color === 'default' ? '' : `_${color}`;
 
-                    frontImg = `${GITHUB_BASE_URL}xime${i}_frente${colorSuffix}.jpg`; 
-                    backImg = `${GITHUB_BASE_URL}xime${i}_espalda${colorSuffix}.jpg`; 
-                    sideImg = `${GITHUB_BASE_URL}xime${i}_lateral${colorSuffix}.jpg`; 
+                    frontImg = 'https://ventaplayera.github.io/RPLAY/xime1.png'; 
+                    backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png'; 
+                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
 
                     if (sideImg.includes('undefined') || sideImg.includes('lateral')) {
                         sideImg = GENERIC_SIDE_IMAGE;
@@ -826,3 +828,4 @@
     </script>
 </body>
 </html>
+
