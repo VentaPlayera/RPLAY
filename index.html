@@ -6,6 +6,9 @@
     <title>RPLAY - Venta de Playeras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* ======================================= */
+        /* ESTILOS CSS GENERALES */
+        /* ======================================= */
         body {
             background-color: #f8f9fa;
         }
@@ -80,7 +83,7 @@
 
     <header class="p-3 mb-4 bg-white shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
-            <img src='TU_URL_RAW_DEL_LOGO_COMPLETA' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
+            <img src='https://ventaplayera.github.io/RPLAY/logo.png' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
             <h1 class="h3 text-primary d-none d-md-block">Catálogo RPLAY</h1>
             <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
                 Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
@@ -92,12 +95,7 @@
         <div class="row" id="product-list">
             </div>
 
-        <div class="text-center my-4">
-            <button class="btn btn-sm btn-outline-danger" onclick="resetInventoryAndOrders()">
-                Reiniciar Inventario y Pedidos (Sólo si es necesario)
-            </button>
-        </div>
-    </main>
+        </main>
 
     <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -124,6 +122,7 @@
                                 </button>
                             </div>
                         </div>
+                        
                         <div class="col-md-6">
                             <h2 id="modalProductName" class="text-primary"></h2>
                             <p id="modalProductDescription" class="text-muted"></p>
@@ -219,19 +218,20 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         // =======================================================
-        // DECLARACIÓN DE VARIABLES GLOBALES
+        // 1. CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
         // =======================================================
         const PRODUCT_PRICE = 450.00; 
         const MINIMUM_TO_SHIP = 1;   
         
-        // WhatsApp configurado al número solicitado
+        // Número de WhatsApp para el pedido final
         const WHATSAPP_NUMBER = '529991480151'; 
         
-        let productData = []; 
-        let productInventory = {}; 
-        let currentOrder = []; 
+        let productData = []; // Almacena los datos estáticos de los modelos
+        let productInventory = {}; // Almacena el stock actual (se guarda en localStorage)
+        let currentOrder = []; // El carrito de compras actual
 
         let orderIdCounter = 0;
         let PENDING_ORDERS = []; 
@@ -240,7 +240,7 @@
         const DEFAULT_GLOBAL_SIZES = ['S', 'M', 'L', 'XL'];
 
         // =======================================================
-        // FUNCIÓN DE INVENTARIO INICIAL
+        // 2. FUNCIÓN DE INVENTARIO INICIAL (Genera todos los modelos 1 a 44)
         // =======================================================
 
         function generateInitialInventory() {
@@ -249,8 +249,8 @@
 
             const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
             
-            // 🚨 BASE URL DE GITHUB RAW. REEMPLAZA LOS DATOS.
-            const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/TuUsuario/TuRepositorio/main/img/';
+            // 🚨 BASE URL CORREGIDA DE GITHUB PAGES.
+            const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/'; 
             
             // Stock inicial alto para cada talla
             let initialStock = 50; 
@@ -262,57 +262,35 @@
                 let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
                 
                 // --- AJUSTE DE DATOS Y ENLACES DE IMAGEN POR MODELO ---
-                if (i === 1) { productName = 'XIME-1'; productDescription = 'Playera Modelo 1: Lánzate a la aventura.'; } 
-                else if (i === 2) { productName = 'XIME-2'; } 
-                else if (i === 3) { productName = 'XIME-3'; } 
-                else if (i === 4) { productName = 'XIME-4'; } 
-                else if (i === 5) { productName = 'BRUNO MARS'; productDescription = 'Diseño inspirado en el gran Bruno Mars.'; } 
-                else if (i === 6) { productName = 'PLAYERA 6'; } 
-                else if (i === 7) { productName = 'PLAYERA 7'; } 
-                else if (i === 8) { productName = 'PLAYERA 8'; } 
-                else if (i === 9) { productName = 'PLAYERA 9'; } 
-                else if (i === 10) { productName = 'PLAYERA 10'; } 
-                else if (i === 11) { productName = 'PLAYERA 11'; } 
-                else if (i === 12) { productName = 'PLAYERA 12'; } 
-                else if (i === 13) { productName = 'PLAYERA 13'; } 
-                else if (i === 14) { productName = 'PLAYERA 14'; } 
-                else if (i === 15) { productName = 'PLAYERA 15'; } 
-                else if (i === 16) { productName = 'PLAYERA 16'; } 
-                else if (i === 17) { productName = 'PLAYERA 17'; } 
-                else if (i === 18) { productName = 'PLAYERA 18'; } 
-                else if (i === 19) { productName = 'PLAYERA 19'; } 
-                else if (i === 20) { productName = 'PLAYERA 20'; } 
-                else if (i === 21) { productName = 'PLAYERA 21'; } 
-                else if (i === 22) { productName = 'PLAYERA 22'; } 
-                else if (i === 23) { productName = 'PLAYERA 23'; } 
-                else if (i === 24) { productName = 'PLAYERA 24'; } 
-                else if (i === 25) { productName = 'PLAYERA 25'; } 
-                else if (i === 26) { productName = 'PLAYERA 26'; } 
-                else if (i === 27) { productName = 'PLAYERA 27'; } 
-                else if (i === 28) { productName = 'PLAYERA 28'; } 
-                else if (i === 29) { productName = 'PLAYERA 29'; } 
-                else if (i === 30) { productName = 'PLAYERA 30'; } 
-                else if (i === 31) { productName = 'PLAYERA 31'; } 
-                else if (i === 32) { productName = 'PLAYERA 32'; } 
-                else if (i === 33) { productName = 'PLAYERA 33'; } 
-                else if (i === 34) { productName = 'PLAYERA 34'; } 
-                else if (i === 35) { productName = 'PLAYERA 35'; } 
-                else if (i === 36) { productName = 'PLAYERA 36'; } 
-                else if (i === 37) { productName = 'PLAYERA 37'; } 
-                else if (i === 38) { productName = 'PLAYERA 38'; } 
-                else if (i === 39) { productName = 'PLAYERA 39'; } 
-                else if (i === 40) { productName = 'PLAYERA 40'; } 
-                else if (i === 41) { productName = 'PLAYERA 41'; } 
-                else if (i === 42) { productName = 'PLAYERA 42'; } 
-                else if (i === 43) { productName = 'PLAYERA 43'; } 
-                else if (i === 44) { productName = 'PLAYERA 44'; }
+                let frontImg, backImg, sideImg;
                 
-                // --- ENLACES DE IMAGEN ---
-                const frontImg = `${GITHUB_BASE_URL}xime${i}_frente.jpg`; 
-                const backImg = `${GITHUB_BASE_URL}xime${i}_espalda.jpg`; 
-                let sideImg = `${GITHUB_BASE_URL}xime${i}_lateral.jpg`; 
+                if (i === 1) { 
+                    productName = 'BTS (Blanco)'; 
+                    productDescription = 'Diseño original de BTS en blanco. ¡Edición especial!';
+                    frontImg = GITHUB_BASE_URL + 'Xime1.png'; // Corregido el nombre de archivo
+                    backImg = GITHUB_BASE_URL + 'Xime2.png'; // Corregido el nombre de archivo
+                    sideImg = GITHUB_BASE_URL + 'blanco.png'; 
+                } 
+                else if (i === 2) { 
+                    productName = 'BTS (Negro)'; 
+                    productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
+                    frontImg = GITHUB_BASE_URL + 'Xime3.png'; // Corregido el nombre de archivo
+                    backImg = GITHUB_BASE_URL + 'Xime4.png'; // Corregido el nombre de archivo
+                    sideImg = GITHUB_BASE_URL + 'negro.png'; 
+                } 
+                else if (i === 5) { 
+                    productName = 'BRUNO MARS'; 
+                    productDescription = 'Playera inspirada en Bruno Mars.'; 
+                } 
+                // --- FIN DE AJUSTE POR MODELO ---
                 
-                if (sideImg.includes('undefined') || sideImg.includes('lateral')) {
+                if (!frontImg) {
+                    // Usar convención de nombres estándar si no está definido
+                    frontImg = `${GITHUB_BASE_URL}xime${i}_frente.png`; 
+                    backImg = `${GITHUB_BASE_URL}xime${i}_espalda.png`; 
+                }
+                
+                if (!sideImg || sideImg.includes('lateral')) {
                     sideImg = GENERIC_SIDE_IMAGE;
                 }
                 
@@ -342,7 +320,7 @@
         }
 
         // =======================================================
-        // FUNCIONES DE ALMACENAMIENTO (STORAGE)
+        // 3. FUNCIONES DE ALMACENAMIENTO (STORAGE)
         // =======================================================
 
         function saveInventoryStorage() {
@@ -374,7 +352,7 @@
         }
 
         // =======================================================
-        // LÓGICA DE STOCKS
+        // 4. LÓGICA DE STOCKS
         // =======================================================
 
         function getStock(productId, size) {
@@ -383,7 +361,7 @@
         }
 
         // =======================================================
-        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO
+        // 5. RENDERIZACIÓN DE TARJETAS DE PRODUCTO
         // =======================================================
 
         function renderProductCards() {
@@ -415,7 +393,7 @@
         }
         
         // =======================================================
-        // LÓGICA DE MODAL DE DETALLE
+        // 6. LÓGICA DE MODAL DE DETALLE Y ADD TO ORDER
         // =======================================================
 
         function openModalDetail(productId) {
@@ -447,7 +425,10 @@
             
             updateTotalAndCheckStock(); 
             
+            // Re-adjuntar listeners para actualizar stock al cambiar talla o cantidad
             sizeSelect.onchange = updateTotalAndCheckStock;
+            document.getElementById('quantityInput').onchange = updateTotalAndCheckStock;
+            document.getElementById('quantityInput').oninput = updateTotalAndCheckStock;
         }
 
         function renderCarousel(product) {
@@ -491,7 +472,13 @@
                 quantity = 1;
             }
 
-            if (stock > 0) {
+            // Asegurar que la cantidad no exceda el stock
+            if (quantity > stock && stock > 0) {
+                quantityInput.value = stock;
+                quantity = stock;
+            }
+
+            if (stock > 0 && quantity > 0) {
                 addButton.disabled = false;
                 addButton.textContent = `Añadir ${quantity} a Pedido`;
             } else {
@@ -499,14 +486,10 @@
                 addButton.textContent = 'Añadir al Pedido (Agotado)';
             }
             
-            if (quantity > stock && stock > 0) {
-                quantityInput.value = stock;
-                addButton.textContent = `Añadir ${stock} a Pedido`;
-            }
-
-            // Llamada necesaria en el modal de detalle para actualizar el botón de añadir si se ajusta la cantidad
+            document.getElementById('stockIndicator').textContent = `Stock: ${stock}`;
         }
 
+        // 🔴 CRÍTICO: MANEJO DEL ENVÍO DEL FORMULARIO 'Añadir al Pedido'
         document.getElementById('orderForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -542,12 +525,11 @@
 
             const detailModal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
             detailModal.hide();
-            // Abrir el modal de pedidos para ver lo seleccionado
             openOrdersModal(); 
         });
 
         // =======================================================
-        // LÓGICA DE MODAL DE PEDIDOS (FIX DE CÁLCULO)
+        // 7. LÓGICA DE MODAL DE PEDIDOS (Carrito)
         // =======================================================
 
         function openOrdersModal() {
@@ -560,7 +542,6 @@
             const list = document.getElementById('currentOrdersList');
             const emptyMessage = document.getElementById('emptyOrdersMessage');
             
-            // Limpiar la lista de productos
             list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => item.remove());
             
             if (currentOrder.length === 0) {
@@ -568,16 +549,14 @@
                 document.getElementById('finalizeOrderButton').disabled = true;
                 updateOrdersCounter(0);
                 updateModalUI(false);
-                updateOrdersTotal(); // Importante para resetear el total a $0.00
+                updateOrdersTotal(); 
                 return;
             }
 
             emptyMessage.style.display = 'none';
-            let totalItems = 0;
 
             currentOrder.forEach((item, index) => {
                 const totalPrice = item.quantity * item.price;
-                totalItems += item.quantity;
 
                 const listItem = document.createElement('li');
                 listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -593,13 +572,12 @@
                         </button>
                     </div>
                 `;
-                // Insertar el item antes del mensaje de vacío
                 list.insertBefore(listItem, emptyMessage);
             });
             
             updateOrdersCounter(currentOrder.length);
             updateModalUI(true);
-            updateOrdersTotal(); // <-- Se llama aquí para garantizar que el total es correcto
+            updateOrdersTotal();
         }
 
         function removeItemFromOrder(index) {
@@ -607,19 +585,16 @@
             renderOrdersList();
         }
 
-        // FUNCIÓN CLAVE PARA CALCULAR EL TOTAL
         function updateOrdersTotal() {
             const totalElement = document.getElementById('ordersTotal');
             const halfPaymentElement = document.getElementById('halfPaymentAmount');
             const halfPaymentCheck = document.getElementById('halfPaymentCheck');
             
-            // Calcula el subtotal total de todos los productos en el carrito
             const subtotal = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             
             const halfAmount = subtotal / 2;
             halfPaymentElement.textContent = `$${halfAmount.toFixed(2)}`;
 
-            // Actualiza el total a pagar dependiendo de si se eligió el anticipo
             if (halfPaymentCheck.checked) {
                 totalElement.textContent = `$${halfAmount.toFixed(2)}`;
             } else {
@@ -637,7 +612,8 @@
             const paymentDetailsSection = document.getElementById('paymentDetailsSection');
             
             if (hasItems) {
-                finalizeButton.disabled = false;
+                // Verificar la validez del formulario de cliente
+                finalizeButton.disabled = !clientDataForm.checkValidity(); 
                 clientDataForm.style.display = 'block';
                 paymentDetailsSection.style.display = 'block';
             } else {
@@ -648,10 +624,11 @@
         }
 
         // =======================================================
-        // LÓGICA DE ENVÍO POR WHATSAPP
+        // 8. LÓGICA DE ENVÍO POR WHATSAPP (BOTÓN FINAL)
         // =======================================================
 
         function sendOrderToWhatsapp() {
+            // Se valida de nuevo por si se manipuló el DOM
             if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
                 alert("Por favor, añade productos al pedido y completa tus datos de envío.");
                 return;
@@ -682,7 +659,7 @@
             // Codificar el texto para la URL de WhatsApp
             const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
 
-            // 1. Crear el historial de pedidos y aumentar el contador
+            // 1. Guardar historial y aumentar el contador
             orderIdCounter++;
             PENDING_ORDERS.push({
                 id: orderIdCounter,
@@ -717,11 +694,12 @@
         }
 
         // =======================================================
-        // OTRAS FUNCIONES
+        // 9. FUNCIÓN DE ADMINISTRACIÓN (SOLO POR CONSOLA)
         // =======================================================
         
-        function resetInventoryAndOrders() {
-            if (!confirm("¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
+        // ⚠️ Esta función ahora SÓLO se puede llamar desde la consola del navegador.
+        window.resetInventoryAndOrders = function() {
+            if (!confirm("⛔ ADMINISTRADOR: ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
             generateInitialInventory();
             saveInventoryStorage();
@@ -740,13 +718,14 @@
         }
 
         // =======================================================
-        // INICIALIZACIÓN
+        // 10. INICIALIZACIÓN
         // =======================================================
 
         document.addEventListener('DOMContentLoaded', () => {
             
             loadOrdersStorage();
             
+            // 1. Listener para abrir el modal de detalle
             document.getElementById('product-list').addEventListener('click', (e) => {
                 const target = e.target.closest('.btn-buy');
                 if (target) {
@@ -755,17 +734,16 @@
                 }
             });
             
-            // Listener para actualizar el botón del modal de detalle
-            const quantityInput = document.getElementById('quantityInput');
-            if (quantityInput) {
-                quantityInput.addEventListener('change', updateTotalAndCheckStock);
-                quantityInput.addEventListener('input', updateTotalAndCheckStock);
+            // 2. Listener para revalidar el botón de pedido final al cambiar los datos del cliente
+            const clientDataForm = document.getElementById('clientDataForm');
+            if (clientDataForm) {
+                clientDataForm.addEventListener('input', () => updateModalUI(currentOrder.length > 0));
             }
-            
-            // Listener para actualizar el monto a pagar al marcar/desmarcar "Pagar la Mitad"
+
+            // 3. Listener para actualizar el monto a pagar al marcar/desmarcar "Pagar la Mitad"
             const halfPaymentCheck = document.getElementById('halfPaymentCheck');
             if (halfPaymentCheck) {
-                halfPaymentCheck.addEventListener('change', updateOrdersTotal); // <-- LLAMADA CRÍTICA
+                halfPaymentCheck.addEventListener('change', updateOrdersTotal);
             }
 
             // Llamada a la inicialización de datos
