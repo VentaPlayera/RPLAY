@@ -29,7 +29,7 @@
             background-color: #e6004b;
             color: white;
         }
-        /* ESTO OCULTA EL BADGE DE STOCK EN LA TARJETA */
+        /* 🔴 CRÍTICO: ESTO OCULTA EL BADGE DE STOCK EN LA TARJETA */
         .stock-badge {
             display: none !important; 
         }
@@ -108,10 +108,8 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-indicators" id="carouselIndicators">
-                                    </div>
-                                <div class="carousel-inner" id="carouselInner">
-                                    </div>
+                                <div class="carousel-indicators" id="carouselIndicators"></div>
+                                <div class="carousel-inner" id="carouselInner"></div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                     <span class="visually-hidden">Previous</span>
@@ -134,8 +132,7 @@
 
                                 <div class="mb-3">
                                     <label for="sizeSelect" class="form-label">Talla:</label>
-                                    <select class="form-select" id="sizeSelect" name="size" required>
-                                        </select>
+                                    <select class="form-select" id="sizeSelect" name="size" required></select>
                                 </div>
 
                                 <div class="mb-3">
@@ -229,14 +226,13 @@
         // Número de WhatsApp para el pedido final
         const WHATSAPP_NUMBER = '529991480151'; 
         
-        let productData = []; // Almacena los datos estáticos de los modelos
-        let productInventory = {}; // Almacena el stock actual (se guarda en localStorage)
-        let currentOrder = []; // El carrito de compras actual
+        let productData = []; 
+        let productInventory = {}; 
+        let currentOrder = []; 
 
         let orderIdCounter = 0;
         let PENDING_ORDERS = []; 
 
-        // Tallas disponibles para todos los modelos
         const DEFAULT_GLOBAL_SIZES = ['S', 'M', 'L', 'XL'];
 
         // =======================================================
@@ -248,11 +244,8 @@
             for (const key in productInventory) { delete productInventory[key]; }
 
             const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
-            
-            // 🚨 BASE URL CORREGIDA DE GITHUB PAGES.
             const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/'; 
             
-            // Stock inicial alto para cada talla
             let initialStock = 50; 
             
             for (let i = 1; i <= 44; i++) {
@@ -261,27 +254,36 @@
                 let productName = `Playera Modelo No. ${i}`;
                 let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
                 
-                // --- AJUSTE DE DATOS Y ENLACES DE IMAGEN POR MODELO ---
                 let frontImg, backImg, sideImg;
+                
+                // --- AJUSTE DE DATOS Y ENLACES DE IMAGEN POR MODELO ---
                 
                 if (i === 1) { 
                     productName = 'BTS (Blanco)'; 
                     productDescription = 'Diseño original de BTS en blanco. ¡Edición especial!';
-                    frontImg = GITHUB_BASE_URL + 'Xime1.png'; // Corregido el nombre de archivo
-                    backImg = GITHUB_BASE_URL + 'Xime2.png'; // Corregido el nombre de archivo
+                    frontImg = GITHUB_BASE_URL + 'Xime1.png'; // CORREGIDO
+                    backImg = GITHUB_BASE_URL + 'Xime2.png'; // CORREGIDO
                     sideImg = GITHUB_BASE_URL + 'blanco.png'; 
                 } 
                 else if (i === 2) { 
                     productName = 'BTS (Negro)'; 
                     productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
-                    frontImg = GITHUB_BASE_URL + 'Xime3.png'; // Corregido el nombre de archivo
-                    backImg = GITHUB_BASE_URL + 'Xime4.png'; // Corregido el nombre de archivo
+                    frontImg = GITHUB_BASE_URL + 'Xime3.png'; // CORREGIDO
+                    backImg = GITHUB_BASE_URL + 'Xime4.png'; // CORREGIDO
                     sideImg = GITHUB_BASE_URL + 'negro.png'; 
                 } 
                 else if (i === 5) { 
                     productName = 'BRUNO MARS'; 
                     productDescription = 'Playera inspirada en Bruno Mars.'; 
                 } 
+                // Modelos 43 y 44 no tienen color variante en esta simplificación
+                else if (i === 43) { 
+                    productName = 'Playera BLACKPINK';
+                }
+                else if (i === 44) { 
+                    productName = 'Playera Modelo 44';
+                }
+                
                 // --- FIN DE AJUSTE POR MODELO ---
                 
                 if (!frontImg) {
@@ -290,7 +292,7 @@
                     backImg = `${GITHUB_BASE_URL}xime${i}_espalda.png`; 
                 }
                 
-                if (!sideImg || sideImg.includes('lateral')) {
+                if (!sideImg) {
                     sideImg = GENERIC_SIDE_IMAGE;
                 }
                 
@@ -298,6 +300,7 @@
 
                 // --- INVENTARIO INICIAL ---
                 for (const size of modelSizes) {
+                    // La clave de inventario ya no incluye color, ya que solo hay una variante por diseño
                     productInventory[`${id}_${size}`] = initialStock;
                 }
                 
@@ -312,7 +315,6 @@
                     frontImg: frontImg,
                     backImg: backImg,
                     sideImg: sideImg,
-                    variants: {},
                 };
 
                 productData.push(product);
@@ -369,6 +371,9 @@
             list.innerHTML = ''; 
 
             productData.forEach(product => {
+                // 🔴 CRÍTICO: SOLO RENDERIZAR LOS PRIMEROS 5 MODELOS
+                if (parseInt(product.id.split('_')[1]) > 5) return; 
+
                 const maxStock = product.sizes.reduce((max, size) => Math.max(max, getStock(product.id, size)), 0);
                 const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
                 const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
@@ -612,7 +617,6 @@
             const paymentDetailsSection = document.getElementById('paymentDetailsSection');
             
             if (hasItems) {
-                // Verificar la validez del formulario de cliente
                 finalizeButton.disabled = !clientDataForm.checkValidity(); 
                 clientDataForm.style.display = 'block';
                 paymentDetailsSection.style.display = 'block';
@@ -628,7 +632,6 @@
         // =======================================================
 
         function sendOrderToWhatsapp() {
-            // Se valida de nuevo por si se manipuló el DOM
             if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
                 alert("Por favor, añade productos al pedido y completa tus datos de envío.");
                 return;
@@ -656,7 +659,6 @@
             orderText += `Dirección: ${clientAddress}\n`;
             orderText += `\n*IMPORTANTE:* Adjunta aquí tu comprobante de pago o transferencia para confirmar tu pedido.`;
 
-            // Codificar el texto para la URL de WhatsApp
             const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
 
             // 1. Guardar historial y aumentar el contador
@@ -697,7 +699,7 @@
         // 9. FUNCIÓN DE ADMINISTRACIÓN (SOLO POR CONSOLA)
         // =======================================================
         
-        // ⚠️ Esta función ahora SÓLO se puede llamar desde la consola del navegador.
+        // ⚠️ Esta función SOLO se puede llamar desde la consola del navegador.
         window.resetInventoryAndOrders = function() {
             if (!confirm("⛔ ADMINISTRADOR: ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
