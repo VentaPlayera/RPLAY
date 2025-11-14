@@ -80,7 +80,7 @@
 
     <header class="p-3 mb-4 bg-white shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
-            <img src='https://ventaplayera.github.io/RPLAY/logo.png' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
+            <img src='TU_URL_RAW_DEL_LOGO_COMPLETA' alt="Logo de mi tienda" style="max-width: 250px; height: auto;">
             <h1 class="h3 text-primary d-none d-md-block">Catálogo RPLAY</h1>
             <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
                 Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
@@ -92,7 +92,12 @@
         <div class="row" id="product-list">
             </div>
 
-        </main>
+        <div class="text-center my-4">
+            <button class="btn btn-sm btn-outline-danger" onclick="resetInventoryAndOrders()">
+                Reiniciar Inventario y Pedidos (Sólo si es necesario)
+            </button>
+        </div>
+    </main>
 
     <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -127,14 +132,6 @@
                             
                             <form id="orderForm">
                                 <input type="hidden" id="modalProductId" name="productId">
-
-                                <div class="mb-3" id="colorSelectorGroup" style="display:none;">
-                                    <label for="colorSelect" class="form-label">Color:</label>
-                                    <select class="form-select" id="colorSelect" name="color">
-                                        <option value="negro" selected>Negro</option>
-                                        <option value="blanco">Blanco</option>
-                                    </select>
-                                </div>
 
                                 <div class="mb-3">
                                     <label for="sizeSelect" class="form-label">Talla:</label>
@@ -241,7 +238,6 @@
 
         // Tallas disponibles para todos los modelos
         const DEFAULT_GLOBAL_SIZES = ['S', 'M', 'L', 'XL'];
-        const COLOR_PRODUCTS = ['PROD_043', 'PROD_044'];
 
         // =======================================================
         // FUNCIÓN DE INVENTARIO INICIAL
@@ -256,7 +252,7 @@
             // 🚨 BASE URL DE GITHUB RAW. REEMPLAZA LOS DATOS.
             const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/TuUsuario/TuRepositorio/main/img/';
             
-            // Stock inicial alto para cada talla/color
+            // Stock inicial alto para cada talla
             let initialStock = 50; 
             
             for (let i = 1; i <= 44; i++) {
@@ -264,485 +260,91 @@
                 let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
                 let productName = `Playera Modelo No. ${i}`;
                 let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
-                let availableColors = ['default']; // Para la mayoría de productos
-
+                
                 // --- AJUSTE DE DATOS Y ENLACES DE IMAGEN POR MODELO ---
-                // ... (mantenemos la lógica de nombres simplificada por concisión)
-                if (i === 1) { productName = 'XIME-1'; 
-                              productDescription = 'Playera Modelo 1: Lánzate a la aventura.'; } 
-                else if (i === 5) { productName = 'BRUNO MARS'; 
-                                   productDescription = 'Diseño inspirado en el gran Bruno Mars.'; } 
-                else if (i === 43) { 
-                    productName = 'Playera Modelo 43 (Multicolor)';
-                    availableColors = ['negro', 'blanco']; // Colores para 43
-                }
-                else if (i === 44) { 
-                    productName = 'Playera Modelo 44 (Multicolor)';
-                    availableColors = ['negro', 'blanco']; // Colores para 44
+                if (i === 1) { productName = 'XIME-1'; productDescription = 'Playera Modelo 1: Lánzate a la aventura.'; } 
+                else if (i === 2) { productName = 'XIME-2'; } 
+                else if (i === 3) { productName = 'XIME-3'; } 
+                else if (i === 4) { productName = 'XIME-4'; } 
+                else if (i === 5) { productName = 'BRUNO MARS'; productDescription = 'Diseño inspirado en el gran Bruno Mars.'; } 
+                else if (i === 6) { productName = 'PLAYERA 6'; } 
+                else if (i === 7) { productName = 'PLAYERA 7'; } 
+                else if (i === 8) { productName = 'PLAYERA 8'; } 
+                else if (i === 9) { productName = 'PLAYERA 9'; } 
+                else if (i === 10) { productName = 'PLAYERA 10'; } 
+                else if (i === 11) { productName = 'PLAYERA 11'; } 
+                else if (i === 12) { productName = 'PLAYERA 12'; } 
+                else if (i === 13) { productName = 'PLAYERA 13'; } 
+                else if (i === 14) { productName = 'PLAYERA 14'; } 
+                else if (i === 15) { productName = 'PLAYERA 15'; } 
+                else if (i === 16) { productName = 'PLAYERA 16'; } 
+                else if (i === 17) { productName = 'PLAYERA 17'; } 
+                else if (i === 18) { productName = 'PLAYERA 18'; } 
+                else if (i === 19) { productName = 'PLAYERA 19'; } 
+                else if (i === 20) { productName = 'PLAYERA 20'; } 
+                else if (i === 21) { productName = 'PLAYERA 21'; } 
+                else if (i === 22) { productName = 'PLAYERA 22'; } 
+                else if (i === 23) { productName = 'PLAYERA 23'; } 
+                else if (i === 24) { productName = 'PLAYERA 24'; } 
+                else if (i === 25) { productName = 'PLAYERA 25'; } 
+                else if (i === 26) { productName = 'PLAYERA 26'; } 
+                else if (i === 27) { productName = 'PLAYERA 27'; } 
+                else if (i === 28) { productName = 'PLAYERA 28'; } 
+                else if (i === 29) { productName = 'PLAYERA 29'; } 
+                else if (i === 30) { productName = 'PLAYERA 30'; } 
+                else if (i === 31) { productName = 'PLAYERA 31'; } 
+                else if (i === 32) { productName = 'PLAYERA 32'; } 
+                else if (i === 33) { productName = 'PLAYERA 33'; } 
+                else if (i === 34) { productName = 'PLAYERA 34'; } 
+                else if (i === 35) { productName = 'PLAYERA 35'; } 
+                else if (i === 36) { productName = 'PLAYERA 36'; } 
+                else if (i === 37) { productName = 'PLAYERA 37'; } 
+                else if (i === 38) { productName = 'PLAYERA 38'; } 
+                else if (i === 39) { productName = 'PLAYERA 39'; } 
+                else if (i === 40) { productName = 'PLAYERA 40'; } 
+                else if (i === 41) { productName = 'PLAYERA 41'; } 
+                else if (i === 42) { productName = 'PLAYERA 42'; } 
+                else if (i === 43) { productName = 'PLAYERA 43'; } 
+                else if (i === 44) { productName = 'PLAYERA 44'; }
+                
+                // --- ENLACES DE IMAGEN ---
+                const frontImg = `${GITHUB_BASE_URL}xime${i}_frente.jpg`; 
+                const backImg = `${GITHUB_BASE_URL}xime${i}_espalda.jpg`; 
+                let sideImg = `${GITHUB_BASE_URL}xime${i}_lateral.jpg`; 
+                
+                if (sideImg.includes('undefined') || sideImg.includes('lateral')) {
+                    sideImg = GENERIC_SIDE_IMAGE;
                 }
                 
-                // --- DEFINICIÓN DE IMÁGENES Y CREACIÓN DE INVENTARIO ---
-                let mainImg, frontImg, backImg, sideImg;
+                const mainImg = frontImg; 
 
-                for (const color of availableColors) {
-                    const colorSuffix = color === 'default' ? '' : `_${color}`;
-
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/xime1.png'; 
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png'; 
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
-
-                    if (sideImg.includes('undefined') || sideImg.includes('lateral')) {
-                        sideImg = GENERIC_SIDE_IMAGE;
-                    }
-                    
-                    // --- INVENTARIO INICIAL (Key: ID_TALLA_COLOR) ---
-                    for (const size of modelSizes) {
-                        const inventoryKey = `${id}_${size}_${color}`;
-                        productInventory[inventoryKey] = initialStock;
-                    }
-
-                    // Guardar imágenes en el objeto de producto solo si es el color por defecto (o el primero)
-                    // Para 43/44, guardamos las imágenes por color en un objeto para el lookup posterior
-                    if (color === 'default' || (i >= 43 && color === availableColors[0])) {
-                        mainImg = frontImg;
-                    }
-
-                    if (i >= 43) {
-                        const colorName = color.charAt(0).toUpperCase() + color.slice(1);
-                        if (!productData.find(p => p.id === id)) {
-                             // Si es un producto con variantes de color, inicializamos el array de colores
-                             productData.push({
-                                id: id,
-                                name: productName,
-                                description: productDescription,
-                                price: PRODUCT_PRICE,
-                                sizes: modelSizes,
-                                colors: availableColors,
-                                images: {} // Objeto para guardar imágenes por color
-                            });
-                        }
-                        
-                        const productObj = productData.find(p => p.id === id);
-                        productObj.images[color] = { front: frontImg, back: backImg, side: sideImg, main: frontImg };
-
-                    } else if (color === 'default') {
-                        // Creación para productos sin variantes de color
-                        productData.push({
-                            id: id,
-                            name: productName,
-                            description: productDescription,
-                            price: PRODUCT_PRICE,
-                            sizes: modelSizes,
-                            mainImg: mainImg,
-                            frontImg: frontImg,
-                            backImg: backImg,
-                            sideImg: sideImg,
-                            colors: ['default'] 
-                        });
-                    }
+                // --- INVENTARIO INICIAL ---
+                for (const size of modelSizes) {
+                    productInventory[`${id}_${size}`] = initialStock;
                 }
-            }
-        }
-
-        // =======================================================
-        // LÓGICA DE STOCKS Y LOOKUP DE IMÁGENES
-        // =======================================================
-
-        function getStock(productId, size, color) {
-            const key = `${productId}_${size}_${color}`;
-            return productInventory[key] || 0; 
-        }
-
-        function getImagesForProduct(productId, color) {
-            const product = productData.find(p => p.id === productId);
-            if (!product) return {};
-
-            if (COLOR_PRODUCTS.includes(productId) && product.images && product.images[color]) {
-                return product.images[color];
-            }
-            
-            // Si no tiene colores o el color no existe, devuelve las imágenes predeterminadas
-            return {
-                front: product.frontImg,
-                back: product.backImg,
-                side: product.sideImg,
-                main: product.mainImg
-            };
-        }
-
-        // =======================================================
-        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO (No cambia)
-        // =======================================================
-
-        function renderProductCards() {
-            const list = document.getElementById('product-list');
-            list.innerHTML = ''; 
-
-            productData.forEach(product => {
-                // Cálculo de stock máximo sobre todas las tallas y colores
-                let maxStock = 0;
-                const colors = product.colors || ['default'];
-                product.sizes.forEach(size => {
-                    colors.forEach(color => {
-                        maxStock = Math.max(maxStock, getStock(product.id, size, color));
-                    });
-                });
                 
-                const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
-                const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
+                // --- CREACIÓN DEL OBJETO PRODUCTO ---
+                const product = {
+                    id: id,
+                    name: productName,
+                    description: productDescription,
+                    price: PRODUCT_PRICE,
+                    sizes: modelSizes,
+                    mainImg: mainImg,
+                    frontImg: frontImg,
+                    backImg: backImg,
+                    sideImg: sideImg,
+                    variants: {},
+                };
 
-                // Usamos mainImg solo para la tarjeta (aunque para 43/44 será el primer color)
-                const mainImgSrc = COLOR_PRODUCTS.includes(product.id) ? product.images[product.colors[0]].main : product.mainImg;
-
-                const card = `
-                    <div class="col-6 col-md-4 col-lg-3">
-                        <div class="card product-card h-100">
-                            <span class="stock-badge ${statusClass}">${status}</span> 
-                            <img src="${mainImgSrc}" class="card-img-top p-2" alt="${product.name}">
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">${product.name}</h5>
-                                <p class="card-text text-success fw-bold">$${product.price.toFixed(2)}</p>
-                                <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}">
-                                    Ver / Pedir
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                list.innerHTML += card;
-            });
-        }
-        
-        // =======================================================
-        // LÓGICA DE MODAL DE DETALLE (Con selector de color)
-        // =======================================================
-
-        function openModalDetail(productId) {
-            const product = productData.find(p => p.id === productId);
-            if (!product) return;
-            
-            const colorSelectorGroup = document.getElementById('colorSelectorGroup');
-            const colorSelect = document.getElementById('colorSelect');
-            
-            // 1. Mostrar/Ocultar Selector de Color
-            if (COLOR_PRODUCTS.includes(productId)) {
-                colorSelectorGroup.style.display = 'block';
-                colorSelect.innerHTML = product.colors.map(c => 
-                    `<option value="${c}">${c.charAt(0).toUpperCase() + c.slice(1)}</option>`
-                ).join('');
-            } else {
-                colorSelectorGroup.style.display = 'none';
-                colorSelect.value = 'default';
-            }
-
-            document.getElementById('modalProductId').value = productId;
-            document.getElementById('modalProductName').textContent = product.name;
-            document.getElementById('modalProductDescription').textContent = product.description;
-            document.getElementById('modalProductPrice').textContent = `$${product.price.toFixed(2)}`;
-
-            // Renderizar Tallas
-            const sizeSelect = document.getElementById('sizeSelect');
-            sizeSelect.innerHTML = '';
-            product.sizes.forEach(size => {
-                const option = document.createElement('option');
-                option.value = size;
-                option.textContent = size;
-                sizeSelect.appendChild(option);
-            });
-            
-            document.getElementById('quantityInput').value = 1;
-
-            const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
-            modal.show();
-            
-            // Asignar listeners (o reasignarlos)
-            sizeSelect.onchange = updateTotalAndCheckStock;
-            colorSelect.onchange = updateTotalAndCheckStock;
-            
-            updateTotalAndCheckStock(); 
-        }
-        
-        // Esta función se encarga de cambiar las imágenes del carrusel.
-        function renderCarousel(productId, selectedColor) {
-            const images = getImagesForProduct(productId, selectedColor);
-
-            const indicators = document.getElementById('carouselIndicators');
-            const inner = document.getElementById('carouselInner');
-            indicators.innerHTML = '';
-            inner.innerHTML = '';
-
-            const imageList = [
-                { url: images.front, alt: `Frente (${selectedColor})` },
-                { url: images.back, alt: `Espalda (${selectedColor})` },
-                { url: images.side, alt: `Lateral (${selectedColor})` }
-            ];
-
-            imageList.forEach((img, index) => {
-                indicators.innerHTML += `
-                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" 
-                        class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" 
-                        aria-label="Slide ${index + 1}">
-                    </button>
-                `;
-                
-                inner.innerHTML += `
-                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                        <img src="${img.url}" class="d-block w-100" alt="${img.alt}">
-                    </div>
-                `;
-            });
-        }
-
-        function updateTotalAndCheckStock() {
-            const productId = document.getElementById('modalProductId').value;
-            const size = document.getElementById('sizeSelect').value;
-            const color = document.getElementById('colorSelect').value || 'default'; // Obtiene el color o 'default'
-            
-            const quantityInput = document.getElementById('quantityInput');
-            let quantity = parseInt(quantityInput.value);
-            
-            const stock = getStock(productId, size, color); // Usa el color en la consulta de stock
-            const addButton = document.getElementById('addToOrderButton');
-
-            if (quantity < 1 || isNaN(quantity)) {
-                quantityInput.value = 1;
-                quantity = 1;
-            }
-            
-            // Renderiza el carrusel con las imágenes del color seleccionado
-            renderCarousel(productId, color); 
-
-            if (stock > 0) {
-                addButton.disabled = false;
-                addButton.textContent = `Añadir ${quantity} a Pedido`;
-            } else {
-                addButton.disabled = true;
-                addButton.textContent = 'Añadir al Pedido (Agotado)';
-            }
-            
-            if (quantity > stock && stock > 0) {
-                quantityInput.value = stock;
-                addButton.textContent = `Añadir ${stock} a Pedido`;
-            }
-
-            // Actualiza el indicador de stock (oculto)
-            document.getElementById('stockIndicator').textContent = `Stock: ${stock}`;
-        }
-
-        document.getElementById('orderForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const productId = document.getElementById('modalProductId').value;
-            const product = productData.find(p => p.id === productId);
-            const size = document.getElementById('sizeSelect').value;
-            const color = document.getElementById('colorSelect').value || 'default'; // Obtiene el color
-            const quantity = parseInt(document.getElementById('quantityInput').value);
-
-            if (!product || quantity <= 0) return;
-
-            const stock = getStock(productId, size, color);
-
-            if (quantity > stock) {
-                alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size} y color ${color.toUpperCase()}. Por favor, reduce la cantidad.`);
-                return;
-            }
-
-            // La clave de un item en el pedido ahora incluye el color
-            const orderKey = `${productId}_${size}_${color}`;
-
-            const existingItemIndex = currentOrder.findIndex(item => 
-                item.orderKey === orderKey
-            );
-
-            if (existingItemIndex !== -1) {
-                currentOrder[existingItemIndex].quantity += quantity;
-            } else {
-                currentOrder.push({
-                    orderKey: orderKey, // Nueva clave para la identificación única
-                    productId: productId,
-                    name: product.name,
-                    size: size,
-                    color: color, // Nuevo campo de color
-                    quantity: quantity,
-                    price: product.price
-                });
-            }
-
-            const detailModal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
-            detailModal.hide();
-            openOrdersModal(); 
-        });
-
-        // =======================================================
-        // LÓGICA DE MODAL DE PEDIDOS
-        // =======================================================
-
-        function openOrdersModal() {
-            renderOrdersList();
-            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
-            modal.show();
-        }
-
-        function renderOrdersList() {
-            const list = document.getElementById('currentOrdersList');
-            const emptyMessage = document.getElementById('emptyOrdersMessage');
-            
-            list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => item.remove());
-            
-            if (currentOrder.length === 0) {
-                emptyMessage.style.display = 'block';
-                document.getElementById('finalizeOrderButton').disabled = true;
-                updateOrdersCounter(0);
-                updateModalUI(false);
-                updateOrdersTotal(); 
-                return;
-            }
-
-            emptyMessage.style.display = 'none';
-
-            currentOrder.forEach((item, index) => {
-                const totalPrice = item.quantity * item.price;
-                
-                // Muestra el color solo si no es 'default'
-                const colorDisplay = item.color !== 'default' ? ` (${item.color.toUpperCase()})` : '';
-
-                const listItem = document.createElement('li');
-                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-                listItem.innerHTML = `
-                    <div>
-                        <span class="fw-bold">${item.name}</span> (${item.size})${colorDisplay} x ${item.quantity}
-                        <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="fw-bold text-primary me-3">$${totalPrice.toFixed(2)}</span>
-                        <button class="btn btn-sm btn-outline-danger" onclick="removeItemFromOrder(${index})">
-                            &times;
-                        </button>
-                    </div>
-                `;
-                list.insertBefore(listItem, emptyMessage);
-            });
-            
-            updateOrdersCounter(currentOrder.length);
-            updateModalUI(true);
-            updateOrdersTotal(); 
-        }
-
-        function removeItemFromOrder(index) {
-            currentOrder.splice(index, 1);
-            renderOrdersList();
-        }
-
-        function updateOrdersTotal() {
-            const totalElement = document.getElementById('ordersTotal');
-            const halfPaymentElement = document.getElementById('halfPaymentAmount');
-            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
-            
-            const subtotal = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            
-            const halfAmount = subtotal / 2;
-            halfPaymentElement.textContent = `$${halfAmount.toFixed(2)}`;
-
-            if (halfPaymentCheck.checked) {
-                totalElement.textContent = `$${halfAmount.toFixed(2)}`;
-            } else {
-                totalElement.textContent = `$${subtotal.toFixed(2)}`;
-            }
-        }
-        
-        function updateOrdersCounter(count) {
-            document.getElementById('ordersCounter').textContent = count;
-        }
-
-        function updateModalUI(hasItems) {
-            const finalizeButton = document.getElementById('finalizeOrderButton');
-            const clientDataForm = document.getElementById('clientDataForm');
-            const paymentDetailsSection = document.getElementById('paymentDetailsSection');
-            
-            if (hasItems) {
-                finalizeButton.disabled = false;
-                clientDataForm.style.display = 'block';
-                paymentDetailsSection.style.display = 'block';
-            } else {
-                finalizeButton.disabled = true;
-                clientDataForm.style.display = 'none';
-                paymentDetailsSection.style.display = 'none';
+                productData.push(product);
             }
         }
 
         // =======================================================
-        // LÓGICA DE ENVÍO POR WHATSAPP (Añadido el color)
+        // FUNCIONES DE ALMACENAMIENTO (STORAGE)
         // =======================================================
 
-        function sendOrderToWhatsapp() {
-            if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
-                alert("Por favor, añade productos al pedido y completa tus datos de envío.");
-                return;
-            }
-
-            const clientName = document.getElementById('clientName').value;
-            const clientAddress = document.getElementById('clientAddress').value;
-            const clientPhone = document.getElementById('clientPhone').value;
-            const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
-            
-            const total = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const amountToPay = isHalfPayment ? total / 2 : total;
-
-            let orderText = `*PEDIDO #${orderIdCounter + 1} - RPLAY*\n\n`;
-            orderText += `*Total a Pagar:* $${amountToPay.toFixed(2)} (${isHalfPayment ? 'Anticipo 50%' : 'Pago Completo'})\n`;
-            orderText += `*Productos:*\n`;
-            
-            currentOrder.forEach((item, index) => {
-                const colorDisplay = item.color !== 'default' ? ` (${item.color.toUpperCase()})` : '';
-                orderText += `${index + 1}. ${item.name} (${item.size})${colorDisplay} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
-            });
-
-            orderText += `\n*Datos del Cliente:*\n`;
-            orderText += `Nombre: ${clientName}\n`;
-            orderText += `Teléfono: ${clientPhone}\n`;
-            orderText += `Dirección: ${clientAddress}\n`;
-            orderText += `\n*IMPORTANTE:* Adjunta aquí tu comprobante de pago o transferencia para confirmar tu pedido.`;
-
-            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
-
-            // 1. Crear el historial de pedidos
-            orderIdCounter++;
-            PENDING_ORDERS.push({
-                id: orderIdCounter,
-                items: JSON.parse(JSON.stringify(currentOrder)), 
-                client: { name: clientName, address: clientAddress, phone: clientPhone },
-                total: total,
-                amountPaid: amountToPay,
-                date: new Date().toLocaleString()
-            });
-
-            // 2. APLICAR EL DESCUENTO DEL STOCK (Usando la nueva clave con color)
-            currentOrder.forEach(item => {
-                const key = item.orderKey; // orderKey ya tiene el formato ID_TALLA_COLOR
-                if (productInventory[key] >= item.quantity) {
-                    productInventory[key] -= item.quantity;
-                } else {
-                    productInventory[key] = 0; 
-                }
-            });
-
-            // 3. Limpiar el pedido actual y guardar todo
-            currentOrder = [];
-            saveInventoryStorage();
-            saveOrdersStorage();
-            renderProductCards();
-            
-            // 4. Cerrar el modal y redirigir a WhatsApp
-            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
-            ordersModal.hide();
-            
-            window.open(whatsappURL, '_blank');
-        }
-
-        // =======================================================
-        // OTRAS FUNCIONES (Acceso por Comando)
-        // =======================================================
-        
         function saveInventoryStorage() {
             localStorage.setItem('productInventory', JSON.stringify(productInventory));
         }
@@ -771,9 +373,355 @@
             }
         }
 
-        // FUNCIÓN ACCESIBLE SOLO POR CONSOLA (COMANDO)
-        window.resetInventoryAndOrders = function() {
-            if (!confirm("⛔ ADMINISTRADOR: ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
+        // =======================================================
+        // LÓGICA DE STOCKS
+        // =======================================================
+
+        function getStock(productId, size) {
+            const key = `${productId}_${size}`;
+            return productInventory[key] || 0; 
+        }
+
+        // =======================================================
+        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO
+        // =======================================================
+
+        function renderProductCards() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = ''; 
+
+            productData.forEach(product => {
+                const maxStock = product.sizes.reduce((max, size) => Math.max(max, getStock(product.id, size)), 0);
+                const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
+                const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
+
+                const card = `
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card product-card h-100">
+                            <span class="stock-badge ${statusClass}">${status}</span> 
+                            <img src="${product.mainImg}" class="card-img-top p-2" alt="${product.name}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">${product.name}</h5>
+                                <p class="card-text text-success fw-bold">$${product.price.toFixed(2)}</p>
+                                <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}">
+                                    Ver / Pedir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                list.innerHTML += card;
+            });
+        }
+        
+        // =======================================================
+        // LÓGICA DE MODAL DE DETALLE
+        // =======================================================
+
+        function openModalDetail(productId) {
+            const product = productData.find(p => p.id === productId);
+            if (!product) return;
+
+            document.getElementById('modalProductId').value = productId;
+            document.getElementById('modalProductName').textContent = product.name;
+            document.getElementById('modalProductDescription').textContent = product.description;
+            document.getElementById('modalProductPrice').textContent = `$${product.price.toFixed(2)}`;
+
+            // Renderizar Carrusel
+            renderCarousel(product);
+
+            // Renderizar Tallas
+            const sizeSelect = document.getElementById('sizeSelect');
+            sizeSelect.innerHTML = '';
+            product.sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+            
+            document.getElementById('quantityInput').value = 1;
+
+            const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+            modal.show();
+            
+            updateTotalAndCheckStock(); 
+            
+            sizeSelect.onchange = updateTotalAndCheckStock;
+        }
+
+        function renderCarousel(product) {
+            const indicators = document.getElementById('carouselIndicators');
+            const inner = document.getElementById('carouselInner');
+            indicators.innerHTML = '';
+            inner.innerHTML = '';
+
+            const images = [
+                { url: product.frontImg, alt: `${product.name} Frente` },
+                { url: product.backImg, alt: `${product.name} Espalda` },
+                { url: product.sideImg, alt: `${product.name} Lateral` }
+            ];
+
+            images.forEach((img, index) => {
+                indicators.innerHTML += `
+                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" 
+                        class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" 
+                        aria-label="Slide ${index + 1}">
+                    </button>
+                `;
+                
+                inner.innerHTML += `
+                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                        <img src="${img.url}" class="d-block w-100" alt="${img.alt}">
+                    </div>
+                `;
+            });
+        }
+
+        function updateTotalAndCheckStock() {
+            const productId = document.getElementById('modalProductId').value;
+            const size = document.getElementById('sizeSelect').value;
+            const quantityInput = document.getElementById('quantityInput');
+            let quantity = parseInt(quantityInput.value);
+            const stock = getStock(productId, size);
+            const addButton = document.getElementById('addToOrderButton');
+
+            if (quantity < 1 || isNaN(quantity)) {
+                quantityInput.value = 1;
+                quantity = 1;
+            }
+
+            if (stock > 0) {
+                addButton.disabled = false;
+                addButton.textContent = `Añadir ${quantity} a Pedido`;
+            } else {
+                addButton.disabled = true;
+                addButton.textContent = 'Añadir al Pedido (Agotado)';
+            }
+            
+            if (quantity > stock && stock > 0) {
+                quantityInput.value = stock;
+                addButton.textContent = `Añadir ${stock} a Pedido`;
+            }
+
+            // Llamada necesaria en el modal de detalle para actualizar el botón de añadir si se ajusta la cantidad
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const productId = document.getElementById('modalProductId').value;
+            const product = productData.find(p => p.id === productId);
+            const size = document.getElementById('sizeSelect').value;
+            const quantity = parseInt(document.getElementById('quantityInput').value);
+
+            if (!product || quantity <= 0) return;
+
+            const stock = getStock(productId, size);
+
+            if (quantity > stock) {
+                alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size}. Por favor, reduce la cantidad.`);
+                return;
+            }
+
+            const existingItemIndex = currentOrder.findIndex(item => 
+                item.productId === productId && item.size === size
+            );
+
+            if (existingItemIndex !== -1) {
+                currentOrder[existingItemIndex].quantity += quantity;
+            } else {
+                currentOrder.push({
+                    productId: productId,
+                    name: product.name,
+                    size: size,
+                    quantity: quantity,
+                    price: product.price
+                });
+            }
+
+            const detailModal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
+            detailModal.hide();
+            // Abrir el modal de pedidos para ver lo seleccionado
+            openOrdersModal(); 
+        });
+
+        // =======================================================
+        // LÓGICA DE MODAL DE PEDIDOS (FIX DE CÁLCULO)
+        // =======================================================
+
+        function openOrdersModal() {
+            renderOrdersList();
+            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
+            modal.show();
+        }
+
+        function renderOrdersList() {
+            const list = document.getElementById('currentOrdersList');
+            const emptyMessage = document.getElementById('emptyOrdersMessage');
+            
+            // Limpiar la lista de productos
+            list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => item.remove());
+            
+            if (currentOrder.length === 0) {
+                emptyMessage.style.display = 'block';
+                document.getElementById('finalizeOrderButton').disabled = true;
+                updateOrdersCounter(0);
+                updateModalUI(false);
+                updateOrdersTotal(); // Importante para resetear el total a $0.00
+                return;
+            }
+
+            emptyMessage.style.display = 'none';
+            let totalItems = 0;
+
+            currentOrder.forEach((item, index) => {
+                const totalPrice = item.quantity * item.price;
+                totalItems += item.quantity;
+
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                listItem.innerHTML = `
+                    <div>
+                        <span class="fw-bold">${item.name}</span> (${item.size}) x ${item.quantity}
+                        <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold text-primary me-3">$${totalPrice.toFixed(2)}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeItemFromOrder(${index})">
+                            &times;
+                        </button>
+                    </div>
+                `;
+                // Insertar el item antes del mensaje de vacío
+                list.insertBefore(listItem, emptyMessage);
+            });
+            
+            updateOrdersCounter(currentOrder.length);
+            updateModalUI(true);
+            updateOrdersTotal(); // <-- Se llama aquí para garantizar que el total es correcto
+        }
+
+        function removeItemFromOrder(index) {
+            currentOrder.splice(index, 1);
+            renderOrdersList();
+        }
+
+        // FUNCIÓN CLAVE PARA CALCULAR EL TOTAL
+        function updateOrdersTotal() {
+            const totalElement = document.getElementById('ordersTotal');
+            const halfPaymentElement = document.getElementById('halfPaymentAmount');
+            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
+            
+            // Calcula el subtotal total de todos los productos en el carrito
+            const subtotal = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            
+            const halfAmount = subtotal / 2;
+            halfPaymentElement.textContent = `$${halfAmount.toFixed(2)}`;
+
+            // Actualiza el total a pagar dependiendo de si se eligió el anticipo
+            if (halfPaymentCheck.checked) {
+                totalElement.textContent = `$${halfAmount.toFixed(2)}`;
+            } else {
+                totalElement.textContent = `$${subtotal.toFixed(2)}`;
+            }
+        }
+        
+        function updateOrdersCounter(count) {
+            document.getElementById('ordersCounter').textContent = count;
+        }
+
+        function updateModalUI(hasItems) {
+            const finalizeButton = document.getElementById('finalizeOrderButton');
+            const clientDataForm = document.getElementById('clientDataForm');
+            const paymentDetailsSection = document.getElementById('paymentDetailsSection');
+            
+            if (hasItems) {
+                finalizeButton.disabled = false;
+                clientDataForm.style.display = 'block';
+                paymentDetailsSection.style.display = 'block';
+            } else {
+                finalizeButton.disabled = true;
+                clientDataForm.style.display = 'none';
+                paymentDetailsSection.style.display = 'none';
+            }
+        }
+
+        // =======================================================
+        // LÓGICA DE ENVÍO POR WHATSAPP
+        // =======================================================
+
+        function sendOrderToWhatsapp() {
+            if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
+                alert("Por favor, añade productos al pedido y completa tus datos de envío.");
+                return;
+            }
+
+            const clientName = document.getElementById('clientName').value;
+            const clientAddress = document.getElementById('clientAddress').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
+            
+            const total = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const amountToPay = isHalfPayment ? total / 2 : total;
+
+            let orderText = `*PEDIDO #${orderIdCounter + 1} - RPLAY*\n\n`;
+            orderText += `*Total a Pagar:* $${amountToPay.toFixed(2)} (${isHalfPayment ? 'Anticipo 50%' : 'Pago Completo'})\n`;
+            orderText += `*Productos:*\n`;
+            
+            currentOrder.forEach((item, index) => {
+                orderText += `${index + 1}. ${item.name} (${item.size}) - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+            });
+
+            orderText += `\n*Datos del Cliente:*\n`;
+            orderText += `Nombre: ${clientName}\n`;
+            orderText += `Teléfono: ${clientPhone}\n`;
+            orderText += `Dirección: ${clientAddress}\n`;
+            orderText += `\n*IMPORTANTE:* Adjunta aquí tu comprobante de pago o transferencia para confirmar tu pedido.`;
+
+            // Codificar el texto para la URL de WhatsApp
+            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
+
+            // 1. Crear el historial de pedidos y aumentar el contador
+            orderIdCounter++;
+            PENDING_ORDERS.push({
+                id: orderIdCounter,
+                items: JSON.parse(JSON.stringify(currentOrder)), 
+                client: { name: clientName, address: clientAddress, phone: clientPhone },
+                total: total,
+                amountPaid: amountToPay,
+                date: new Date().toLocaleString()
+            });
+
+            // 2. APLICAR EL DESCUENTO DEL STOCK
+            currentOrder.forEach(item => {
+                const key = `${item.productId}_${item.size}`;
+                if (productInventory[key] >= item.quantity) {
+                    productInventory[key] -= item.quantity;
+                } else {
+                    productInventory[key] = 0; 
+                }
+            });
+
+            // 3. Limpiar el pedido actual y guardar todo
+            currentOrder = [];
+            saveInventoryStorage();
+            saveOrdersStorage();
+            renderProductCards();
+            
+            // 4. Cerrar el modal y redirigir a WhatsApp
+            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+            ordersModal.hide();
+            
+            window.open(whatsappURL, '_blank');
+        }
+
+        // =======================================================
+        // OTRAS FUNCIONES
+        // =======================================================
+        
+        function resetInventoryAndOrders() {
+            if (!confirm("¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
             generateInitialInventory();
             saveInventoryStorage();
@@ -788,8 +736,7 @@
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             if(ordersModal) ordersModal.hide();
             
-            console.log("✅ INVENTARIO REINICIADO. Ejecuta 'generateInitialInventory()' para ver los datos de stock iniciales.");
-            alert("Inventario y órdenes reiniciados con éxito. ¡RECARGA LA PÁGINA (F5) para asegurar una carga limpia!");
+            alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5) para asegurar una carga limpia!");
         }
 
         // =======================================================
@@ -808,15 +755,17 @@
                 }
             });
             
+            // Listener para actualizar el botón del modal de detalle
             const quantityInput = document.getElementById('quantityInput');
             if (quantityInput) {
                 quantityInput.addEventListener('change', updateTotalAndCheckStock);
                 quantityInput.addEventListener('input', updateTotalAndCheckStock);
             }
             
+            // Listener para actualizar el monto a pagar al marcar/desmarcar "Pagar la Mitad"
             const halfPaymentCheck = document.getElementById('halfPaymentCheck');
             if (halfPaymentCheck) {
-                halfPaymentCheck.addEventListener('change', updateOrdersTotal); 
+                halfPaymentCheck.addEventListener('change', updateOrdersTotal); // <-- LLAMADA CRÍTICA
             }
 
             // Llamada a la inicialización de datos
@@ -827,5 +776,3 @@
 
     </script>
 </body>
-</html>
-
