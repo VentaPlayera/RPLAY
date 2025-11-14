@@ -219,7 +219,7 @@
         const FIXED_PRICE = 250.00; 
         const DEFAULT_STOCK_PER_SIZE = 1;
         const DEFAULT_GLOBAL_SIZES = ["S", "M", "L", "XL"]; 
-        // Eliminada la variable BASE_URL para evitar errores de red.
+        // Nota: L se usa como G (grande) en el código.
 
         // Estructuras de datos
         const productInventory = {}; 
@@ -321,7 +321,8 @@
                 orderIdCounter = 0;
                 renderProductCards();
                 renderOrdersList();
-                alert("Inventario y órdenes reiniciados con éxito.");
+                alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5)!");
+                // Se sugiere recargar para asegurar que la caché local no interfiera.
             }
         }
         
@@ -472,18 +473,22 @@
             });
         }
 
-        // --- 5. DATOS DE INVENTARIO (44 Playeras con PLACEHOLDERS de imágenes) ---
+        // --- 5. DATOS DE INVENTARIO (44 Playeras con Tallas CORREGIDAS y URLs RESTAURADAS) ---
 
         function generateInitialInventory() {
             // Limpiar datos anteriores para regenerar
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
 
-            // --- Nuevas funciones de PLACEHOLDER para evitar el error de red (ERR_NAME_NOT_RESOLVED) ---
-            const PLACEHOLDER_FRONT = (name) => `https://via.placeholder.com/300x450/4B0082/FFFFFF?text=Frente+${name.replace(/ /g, '+')}`;
-            const PLACEHOLDER_BACK = (name) => `https://via.placeholder.com/300x450/5D3FD3/FFFFFF?text=Espalda+${name.replace(/ /g, '+')}`;
-            const PLACEHOLDER_SIDE = `https://via.placeholder.com/100x100/A0A0A0/FFFFFF?text=Color`;
-            // -----------------------------------------------------------------------------------------
+            // --- Funciones de RESTAURACIÓN DE IMAGENES (URLs con nombres 'Xime') ---
+            // !!! ADVERTENCIA CRÍTICA: Debes cambiar esta BASE_URL por el ENLACE REAL
+            // donde subiste las imágenes (ej: tu GitHub Pages O un host de imágenes como Imgur).
+            const BASE_URL = 'https://TU_ENLACE_CORREGIDO_AQUI/img/'; // <-- SUSTITUYE ESTE ENLACE
+            
+            // Función genérica para URLs de productos 1 a 42 (usa el formato XimeN_vista.jpg)
+            const IMAGE_URL = (number, view) => `${BASE_URL}Xime${number}_${view}.jpg`; 
+            const SIDE_IMAGE_URL = `${BASE_URL}modelo_side.jpg`; // Asume un placeholder lateral genérico
+            // -----------------------------------------------------------------
             
             for (let i = 1; i <= 44; i++) { 
                 const id = `PROD_${String(i).padStart(3, '0')}`;
@@ -492,13 +497,12 @@
                 let productName = `Playera Modelo No. ${i}`; 
                 let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
                 let variants = {}; 
-                let mainImg, frontImg, backImg, sideImg; 
+                let mainImg, frontImg, backImg, sideImg = SIDE_IMAGE_URL; 
                 
-                let customName = productName; // Variable para el nombre en el placeholder
+                let customName = productName; 
 
                 if (i < 43) {
                     // --- ZONA DE DATOS DE PRODUCTOS INDIVIDUALES (1 a 42) ---
-                    // **Todas las rutas originales han sido reemplazadas por PLACEHOLDERS**
                     
                     if (i === 1) { 
                         productName = 'BTS'; 
@@ -523,7 +527,7 @@
                         productDescription = 'Diseño original de ADO en negro. ¡Edición especial!';
                         customName = 'ADO (Negro) #4';
                         initialStockOverrides = {M: 1, L: 1, XL: 2}; 
-                        modelSizes = ["M", "L", "XL"];
+                        modelSizes = ["M", "L", "XL"]; 
                     } else if (i === 5) { 
                         productName = 'BRUNO MARS'; 
                         productDescription = 'Diseño original de BRUNO MARS en negro. ¡Edición especial!';
@@ -540,14 +544,14 @@
                         productName = 'MICHAEL JACKSON'; 
                         productDescription = 'Diseño original de MICHAEL JACKSON en blanco. ¡Edición especial!';
                         customName = 'MICHAEL JACKSON (Blanco) #7';
-                        initialStockOverrides = {S: 1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S: 1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 8) { 
                         productName = 'MICHAEL JACKSON'; 
                         productDescription = 'Diseño original de MICHAEL JACKSON en negro. ¡Edición especial!';
+                        initialStockOverrides = {M: 1, L: 1};
                         customName = 'MICHAEL JACKSON (Negro) #8';
-                        initialStockOverrides = {M: 1, G: 1}; 
-                        modelSizes = ['M', 'G'];
+                        modelSizes = ['M', 'L'];
                     } else if (i === 9) { 
                         productName = 'LATIN MAFIA';
                         productDescription = 'Diseño original de LATIN MAFIA en blanco. ¡Edición especial!'; 
@@ -696,71 +700,71 @@
                         productName = 'TAYLOR SWIFT'; 
                         productDescription = 'Diseño original de TAYLOR SWIFT en blanco. ¡Edición especial!';
                         customName = 'TAYLOR SWIFT (Blanco) #33';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 34) { 
                         productName = 'TAYLOR SWIFT';  
                         productDescription = 'Diseño original de TAYLOR SWIFT en negro. ¡Edición especial!';
                         customName = 'TAYLOR SWIFT (Negro) #34';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 35) { 
                         productName = 'BTS'; 
                         productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
                         customName = 'BTS (Negro) #35';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 36) { 
                         productName = 'BTS'; 
                         productDescription = 'Diseño original de BTS en negro. ¡Edición especial!';
                         customName = 'BTS (Negro) #36';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 37) { 
                         productName = 'NCT DREAM'; 
                         productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
                         customName = 'NCT DREAM #37';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 38) { 
                         productName = 'NCT DREAM'; 
                         productDescription = 'Diseño original de NCT DREAM en negro. ¡Edición especial!';
                         customName = 'NCT DREAM #38';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 39) { 
                         productName = 'HUNTRIX/SJA BOYS'; 
                         productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
                         customName = 'HUNTRIX/SJA BOYS #39';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 40) { 
                         productName = 'HUNTRIX/SJA BOYS';  
                         productDescription = 'Diseño original de HUNTRIX/SJA BOYS en negro. ¡Edición especial!';
                         customName = 'HUNTRIX/SJA BOYS #40';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 41) { 
                         productName = 'HOOZIER'; 
                         productDescription = 'Diseño original de HOOZIER en negro. ¡Edición especial!';
                         customName = 'HOOZIER (Negro) #41';
-                        initialStockOverrides = {S:1, M: 1, G: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        initialStockOverrides = {S:1, M: 1, L: 1};
+                        modelSizes = ['S', 'M', 'L'];
                     } else if (i === 42) { 
                         productName = 'HOOZIER';  
                         productDescription = 'Diseño original de HOOZIER en blanco. ¡Edición especial!';
                         customName = 'HOOZIER (Blanco) #42';
                         initialStockOverrides = {S:1, M: 1, L: 1};
-                        modelSizes = ['S', 'M', 'G'];
+                        modelSizes = ['S', 'M', 'L'];
                     }
 
-                    // Establecer placeholders para la variante Default (Playera única)
-                    frontImg = PLACEHOLDER_FRONT(customName);
-                    backImg = PLACEHOLDER_BACK(customName);
-                    sideImg = PLACEHOLDER_SIDE;
+                    // Establecer URLs usando el nombre XimeN
+                    frontImg = IMAGE_URL(i, 'frente');
+                    backImg = IMAGE_URL(i, 'espalda');
                     
                     // 1. Aplicar stock por defecto si no fue sobrescrito
                     let stock = {};
+                    // Usamos las tallas definidas en `modelSizes` y las sobrescribimos con `initialStockOverrides`
                     modelSizes.forEach(s => {
                         stock[s] = initialStockOverrides[s] !== undefined ? initialStockOverrides[s] : DEFAULT_STOCK_PER_SIZE;
                     });
@@ -781,19 +785,19 @@
                     if (i === 43) { 
                         productName = 'BLACKPINK';
                         productDescription = 'Diseño original de Blackpink en negro/blanco. ¡Edición especial!';
-                        modelSizes = ["S", "M", "L", "G"];
+                        modelSizes = ["S", "M", "L", "XL"]; 
                         variants['Negro'] = { 
                             name: 'Playera BLACKPINK (Negro)', 
-                            img_front: PLACEHOLDER_FRONT('BLACKPINK Negro'), 
-                            img_back: PLACEHOLDER_BACK('BLACKPINK Negro'), 
-                            img_side: PLACEHOLDER_SIDE, 
-                            stock: {G: 1 } 
+                            img_front: `${BASE_URL}Xime43_Negro_frente.jpg`, 
+                            img_back: `${BASE_URL}Xime43_Negro_espalda.jpg`, 
+                            img_side: sideImg, 
+                            stock: {L: 1 } 
                         };
                         variants['Blanco'] = { 
                             name: 'Playera BLACKPINK (Blanco)', 
-                            img_front: PLACEHOLDER_FRONT('BLACKPINK Blanco'), 
-                            img_back: PLACEHOLDER_BACK('BLACKPINK Blanco'), 
-                            img_side: PLACEHOLDER_SIDE, 
+                            img_front: `${BASE_URL}Xime43_Blanco_frente.jpg`, 
+                            img_back: `${BASE_URL}Xime43_Blanco_espalda.jpg`, 
+                            img_side: sideImg, 
                             stock: { S: 1, M: 1 } 
                         };
                         mainImg = variants['Blanco'].img_front;
@@ -804,16 +808,16 @@
                         modelSizes = ["S", "M", "L", "XL"];
                         variants['Negro'] = { 
                             name: 'Playera K-POP (Negro)', 
-                            img_front: PLACEHOLDER_FRONT('K-POP Negro'), 
-                            img_back: PLACEHOLDER_BACK('K-POP Negro'), 
-                            img_side: PLACEHOLDER_SIDE, 
-                            stock: { G: 1 } 
+                            img_front: `${BASE_URL}Xime44_Negro_frente.jpg`, 
+                            img_back: `${BASE_URL}Xime44_Negro_espalda.jpg`, 
+                            img_side: sideImg, 
+                            stock: { L: 1 } 
                         };
                         variants['Blanco'] = { 
                             name: 'Playera K-POP (Blanco)', 
-                            img_front: PLACEHOLDER_FRONT('K-POP Blanco'), 
-                            img_back: PLACEHOLDER_BACK('K-POP Blanco'), 
-                            img_side: PLACEHOLDER_SIDE, 
+                            img_front: `${BASE_URL}Xime44_Blanco_frente.jpg`, 
+                            img_back: `${BASE_URL}Xime44_Blanco_espalda.jpg`, 
+                            img_side: sideImg, 
                             stock: { S: 1, M: 1 } 
                         };
                         mainImg = variants['Negro'].img_front;
@@ -834,7 +838,7 @@
                     description: productDescription,
                     price: FIXED_PRICE,
                     mainImg: mainImg,
-                    sizes: modelSizes,
+                    sizes: modelSizes, // Esta lista es la que determina qué tallas se inicializarán
                     variants: variants,
                     hasColors: Object.keys(variants).length > 1
                 });
@@ -862,7 +866,7 @@
             // Usar el stock ACTUAL (del productInventory) para mostrar disponibilidad.
             const currentStockForColor = productInventory[product.id][selectedColor] || {}; 
             
-            // --- MODIFICACIÓN CLAVE: Filtrar solo tallas con stock disponible ---
+            // --- MODIFICACIÓN CLAVE: Filtrar solo tallas con stock disponible (usando las definidas en el inventario) ---
             const sizesWithStock = Object.keys(currentStockForColor)
                                         .filter(size => currentStockForColor[size] > 0)
                                         .sort(); 
