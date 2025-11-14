@@ -262,7 +262,7 @@
 
         // Tallas por defecto para casi todos los modelos
         const DEFAULT_GLOBAL_SIZES = ['S', 'M', 'L', 'XL'];
-        const DEFAULT_COLOR_KEY = 'NEGRO'; // Usar NEGRO como color por defecto en modelos con variación
+        const DEFAULT_COLOR_KEY = 'NEGRO'; 
 
         // =======================================================
         // 2. FUNCIÓN DE INVENTARIO INICIAL (Genera todos los modelos 1 a 44)
@@ -273,6 +273,7 @@
             for (const key in productInventory) { delete productInventory[key]; }
 
             const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
+            // 🚨 Asegúrate de que todas estas imágenes existan en tu GITHUB para que el color dinámico funcione
             const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/'; 
             
             let initialStock = 50; 
@@ -286,7 +287,6 @@
                 
                 let frontImg, backImg, sideImg = GENERIC_SIDE_IMAGE;
                 
-                // Objeto para manejar colores (solo para modelos 43 y 44)
                 let colorVariations = [];
                 let hasColors = false;
 
@@ -312,21 +312,25 @@
                     modelSizes = ['M', 'L']; 
                 } 
                 else if (i === 43) { 
+                    // 🚨 MODELO 43 CON VARIACIÓN DE COLOR
                     productName = 'Playera BLACKPINK';
                     productDescription = 'Diseño oficial de Blackpink, disponible en negro y blanco.';
                     modelSizes = ['S', 'M', 'L', 'XL'];
                     hasColors = true;
                     colorVariations = [
+                        // ASEGÚRATE QUE LAS SIGUIENTES RUTAS EXISTAN:
                         { name: 'Negro', key: 'NEGRO', mainImg: GITHUB_BASE_URL + '43_negro_frente.png', backImg: GITHUB_BASE_URL + '43_negro_espalda.png' },
                         { name: 'Blanco', key: 'BLANCO', mainImg: GITHUB_BASE_URL + '43_blanco_frente.png', backImg: GITHUB_BASE_URL + '43_blanco_espalda.png' }
                     ];
                 }
                 else if (i === 44) { 
+                    // 🚨 MODELO 44 CON VARIACIÓN DE COLOR
                     productName = 'Playera Modelo 44 (Dama)';
                     productDescription = 'Diseño con corte ajustado para dama, disponible en negro y blanco.';
                     modelSizes = ['S', 'M', 'L'];
                     hasColors = true;
                     colorVariations = [
+                        // ASEGÚRATE QUE LAS SIGUIENTES RUTAS EXISTAN:
                         { name: 'Negro', key: 'NEGRO', mainImg: GITHUB_BASE_URL + '44_negro_frente.png', backImg: GITHUB_BASE_URL + '44_negro_espalda.png' },
                         { name: 'Blanco', key: 'BLANCO', mainImg: GITHUB_BASE_URL + '44_blanco_frente.png', backImg: GITHUB_BASE_URL + '44_blanco_espalda.png' }
                     ];
@@ -334,7 +338,6 @@
                 
                 // --- CONVENCIÓN DE NOMBRES POR DEFECTO ---
                 if (!hasColors) {
-                    // Si no se definió una imagen especial, usa la convención numérica:
                     if (!frontImg) {
                         frontImg = `${GITHUB_BASE_URL}xime${i}_frente.png`; 
                         backImg = `${GITHUB_BASE_URL}xime${i}_espalda.png`; 
@@ -369,10 +372,10 @@
                     description: productDescription,
                     price: PRODUCT_PRICE,
                     sizes: modelSizes, 
-                    hasColors: hasColors, // Bandera de color
-                    colors: colorVariations, // Variaciones de color
-                    mainImg: mainImg,
-                    frontImg: frontImg, // Estos son solo los por defecto para la tarjeta
+                    hasColors: hasColors, 
+                    colors: colorVariations, 
+                    mainImg: mainImg, // Imagen de la tarjeta
+                    frontImg: frontImg, 
                     backImg: backImg,
                     sideImg: sideImg,
                 };
@@ -384,8 +387,6 @@
         // =======================================================
         // 3. FUNCIONES DE ALMACENAMIENTO (STORAGE)
         // =======================================================
-        
-        // ... (Funciones de Storage sin cambios, omitidas por brevedad en la explicación, pero incluidas en el código final)
 
         function saveInventoryStorage() {
             localStorage.setItem('productInventory', JSON.stringify(productInventory));
@@ -395,6 +396,10 @@
             const storedInventory = localStorage.getItem('productInventory');
             if (storedInventory) {
                 productInventory = JSON.parse(storedInventory); 
+            } else {
+                // Si no hay inventario guardado, generarlo y guardarlo
+                generateInitialInventory(); 
+                saveInventoryStorage();
             }
         }
         
@@ -420,6 +425,7 @@
         // =======================================================
 
         function getStock(productId, size, colorKey = null) {
+            // La clave de stock incluye color solo si colorKey NO es null
             const key = colorKey ? `${productId}_${colorKey}_${size}` : `${productId}_${size}`;
             return productInventory[key] || 0; 
         }
@@ -435,7 +441,6 @@
             productData.forEach(product => {
                 const maxStock = product.sizes.reduce((max, size) => {
                     if (product.hasColors) {
-                        // Si tiene colores, revisa el stock de cada color para cada talla
                         return product.colors.reduce((c_max, color) => Math.max(c_max, getStock(product.id, size, color.key)), max);
                     } else {
                         return Math.max(max, getStock(product.id, size));
@@ -470,11 +475,20 @@
         
         // Función maestra para actualizar la UI del modal de detalle
         function updateModalDetailsUI(product, colorKey, size) {
-            const currentImages = product.hasColors 
-                ? product.colors.find(c => c.key === colorKey)
-                : { frontImg: product.frontImg, backImg: product.backImg, sideImg: product.sideImg };
+            // Obtiene las imágenes específicas para el color seleccionado (si aplica)
+            let currentImages = { frontImg: product.frontImg, backImg: product.backImg, sideImg: product.sideImg };
 
-            renderCarousel(product, currentImages);
+            if (product.hasColors && colorKey) {
+                const colorInfo = product.colors.find(c => c.key === colorKey);
+                if (colorInfo) {
+                    currentImages.frontImg = colorInfo.mainImg;
+                    currentImages.backImg = colorInfo.backImg;
+                    // Mantener el sideImg genérico o específico del producto si no cambia por color
+                    // currentImages.sideImg = product.sideImg; 
+                }
+            }
+
+            renderCarousel(currentImages);
             updateTotalAndCheckStock(product.id, size, colorKey);
         }
 
@@ -482,13 +496,13 @@
             const product = productData.find(p => p.id === productId);
             if (!product) return;
 
-            // 1. Inicialización de campos ocultos
+            // 1. Inicialización de campos de texto
             document.getElementById('modalProductId').value = productId;
             document.getElementById('modalProductName').textContent = product.name;
             document.getElementById('modalProductDescription').textContent = product.description;
             document.getElementById('modalProductPrice').textContent = `$${product.price.toFixed(2)}`;
             
-            // 2. Tallas (sin cambios)
+            // 2. Tallas
             const sizeSelect = document.getElementById('sizeSelect');
             sizeSelect.innerHTML = '';
             product.sizes.forEach(size => {
@@ -501,18 +515,19 @@
 
             // 3. Colores (NUEVO)
             const colorContainer = document.getElementById('colorSelectorContainer');
-            const defaultColorKey = product.hasColors ? product.colors[0].key : null;
-            
+            let defaultColorKey = null;
+
             if (product.hasColors) {
                 colorContainer.innerHTML = '<label class="form-label">Color:</label><div id="colorSwatches" data-product-id="' + productId + '"></div>';
+                defaultColorKey = product.colors[0].key; 
                 document.getElementById('selectedColorKey').value = defaultColorKey; 
-                renderColorSelector(product);
+                renderColorSelector(product, defaultColorKey);
             } else {
-                colorContainer.innerHTML = '';
-                document.getElementById('selectedColorKey').value = null;
+                colorContainer.innerHTML = ''; // Ocultar si no tiene colores
+                document.getElementById('selectedColorKey').value = null; // Asegurar que es null si no aplica
             }
-
-            // 4. Actualizar toda la UI con los valores iniciales
+            
+            // 4. Valores iniciales
             const initialSize = sizeSelect.value;
             updateModalDetailsUI(product, defaultColorKey, initialSize);
             
@@ -533,12 +548,10 @@
         }
         
         // 🔴 NUEVA FUNCIÓN: RENDERIZA LOS BOTONES DE COLOR
-        function renderColorSelector(product) {
+        function renderColorSelector(product, defaultColorKey) {
             const swatchesContainer = document.getElementById('colorSwatches');
             swatchesContainer.innerHTML = '';
             
-            let defaultColorKey = document.getElementById('selectedColorKey').value;
-
             product.colors.forEach(color => {
                 const swatch = document.createElement('span');
                 swatch.className = 'color-swatch';
@@ -550,8 +563,11 @@
                 }
 
                 swatch.onclick = function() {
-                    // 1. Actualizar el campo oculto
-                    document.getElementById('selectedColorKey').value = color.key;
+                    // 1. Obtener datos y actualizar el campo oculto
+                    const productId = swatchesContainer.getAttribute('data-product-id');
+                    const currentProduct = productData.find(p => p.id === productId);
+                    const newColorKey = color.key;
+                    document.getElementById('selectedColorKey').value = newColorKey;
                     
                     // 2. Desactivar todos y activar el actual
                     swatchesContainer.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
@@ -559,7 +575,7 @@
                     
                     // 3. Actualizar carrusel y stock
                     const size = document.getElementById('sizeSelect').value;
-                    updateModalDetailsUI(product, color.key, size);
+                    updateModalDetailsUI(currentProduct, newColorKey, size);
                 };
                 
                 swatchesContainer.appendChild(swatch);
@@ -567,17 +583,17 @@
         }
         
         // Función para renderizar carrusel con imágenes correctas
-        function renderCarousel(product, images) {
+        function renderCarousel(images) {
             const indicators = document.getElementById('carouselIndicators');
             const inner = document.getElementById('carouselInner');
             indicators.innerHTML = '';
             inner.innerHTML = '';
 
-            // Si el producto tiene imágenes específicas por color, úsalas, si no, usa las genéricas
+            // Utilizamos las imágenes pasadas (que ya fueron resueltas por color si aplica)
             const imageSet = [
-                { url: images.frontImg || product.frontImg, alt: `${product.name} Frente` },
-                { url: images.backImg || product.backImg, alt: `${product.name} Espalda` },
-                { url: product.sideImg, alt: `${product.name} Lateral` }
+                { url: images.frontImg, alt: `Frente` },
+                { url: images.backImg, alt: `Espalda` },
+                { url: images.sideImg, alt: `Lateral` }
             ];
 
             imageSet.forEach((img, index) => {
@@ -594,6 +610,10 @@
                     </div>
                 `;
             });
+            // Reiniciar el carrusel para mostrar la primera imagen (frontal)
+            const carouselElement = document.getElementById('productCarousel');
+            const carousel = bootstrap.Carousel.getInstance(carouselElement) || new bootstrap.Carousel(carouselElement);
+            carousel.to(0);
         }
         
         // Función para actualizar stock (Ahora usa Color)
@@ -601,7 +621,6 @@
             const quantityInput = document.getElementById('quantityInput');
             let quantity = parseInt(quantityInput.value);
             
-            // 🛑 Usa la nueva función getStock que acepta color
             const stock = getStock(productId, size, colorKey);
             const addButton = document.getElementById('addToOrderButton');
 
@@ -639,13 +658,19 @@
 
             if (!product || quantity <= 0 || !size) return;
 
-            // 🛑 Chequeo de Stock con Color
+            // Chequeo de Stock con Color
             const stock = getStock(productId, size, colorKey);
 
             if (quantity > stock) {
                 alert(`Error: Solo quedan ${stock} unidades disponibles en ${colorKey ? colorKey + ' ' : ''} talla ${size}. Por favor, reduce la cantidad.`);
                 return;
             }
+            
+            // Obtener el nombre del color para mostrarlo en el carrito
+            const colorName = colorKey 
+                ? product.colors.find(c => c.key === colorKey)?.name || colorKey
+                : null;
+
 
             const existingItemIndex = currentOrder.findIndex(item => 
                 item.productId === productId && item.size === size && item.colorKey === colorKey
@@ -658,8 +683,8 @@
                     productId: productId,
                     name: product.name,
                     size: size,
-                    colorKey: colorKey, // Guardar la clave de color
-                    colorName: colorKey ? product.colors.find(c => c.key === colorKey)?.name : null, // Guardar el nombre
+                    colorKey: colorKey, 
+                    colorName: colorName, 
                     quantity: quantity,
                     price: product.price
                 });
@@ -754,6 +779,7 @@
             const clientDataForm = document.getElementById('clientDataForm');
             const paymentDetailsSection = document.getElementById('paymentDetailsSection');
             
+            // Si hay items y los datos del cliente son válidos, el botón está habilitado
             if (hasItems) {
                 finalizeButton.disabled = !clientDataForm.checkValidity(); 
                 clientDataForm.style.display = 'block';
@@ -889,9 +915,9 @@
                 halfPaymentCheck.addEventListener('change', updateOrdersTotal);
             }
 
-            // Llamada a la inicialización de datos
+            // Llamada a la inicialización de datos y renderización
             generateInitialInventory();
-            loadInventoryStorage();
+            loadInventoryStorage(); // Cargar inventario guardado o inicial por defecto
             renderProductCards();
         });
 
