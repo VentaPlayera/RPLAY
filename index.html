@@ -29,7 +29,7 @@
             background-color: #e6004b;
             color: white;
         }
-        /* ESTO OCULTA EL BADGE DE STOCK EN LA TARJETA */
+        /* Esto oculta el badge de stock en la tarjeta */
         .stock-badge {
             display: none !important; 
         }
@@ -72,6 +72,29 @@
         }
         .carousel-indicators .active {
             opacity: 1;
+        }
+
+        /* ======================================= */
+        /* ESTILOS NUEVOS PARA COLOR SWATCH */
+        /* ======================================= */
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #ccc;
+            cursor: pointer;
+            display: inline-block;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        /* Asignación de color */
+        .color-swatch[data-color-key="NEGRO"] { background-color: black; }
+        .color-swatch[data-color-key="BLANCO"] { background-color: white; border-color: #666; }
+
+        .color-swatch.active {
+            border-color: #ff3366; /* Color de acento */
+            box-shadow: 0 0 5px #ff3366;
+            transform: scale(1.1);
         }
     </style>
 </head>
@@ -129,6 +152,10 @@
                             
                             <form id="orderForm">
                                 <input type="hidden" id="modalProductId" name="productId">
+                                <input type="hidden" id="selectedColorKey" name="colorKey"> 
+
+                                <div class="mb-3" id="colorSelectorContainer">
+                                    </div>
 
                                 <div class="mb-3">
                                     <label for="sizeSelect" class="form-label">Talla:</label>
@@ -235,6 +262,7 @@
 
         // Tallas por defecto para casi todos los modelos
         const DEFAULT_GLOBAL_SIZES = ['S', 'M', 'L', 'XL'];
+        const DEFAULT_COLOR_KEY = 'NEGRO'; // Usar NEGRO como color por defecto en modelos con variación
 
         // =======================================================
         // 2. FUNCIÓN DE INVENTARIO INICIAL (Genera todos los modelos 1 a 44)
@@ -251,22 +279,25 @@
             
             for (let i = 1; i <= 44; i++) {
                 const id = `PROD_${String(i).padStart(3, '0')}`;
-                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; // Copia por defecto
                 
+                let modelSizes = [...DEFAULT_GLOBAL_SIZES]; 
                 let productName = `Playera Modelo No. ${i}`;
                 let productDescription = `Diseño exclusivo #${i}. ¡Modifica este texto!`;
                 
-                let frontImg, backImg, sideImg;
+                let frontImg, backImg, sideImg = GENERIC_SIDE_IMAGE;
                 
+                // Objeto para manejar colores (solo para modelos 43 y 44)
+                let colorVariations = [];
+                let hasColors = false;
+
                 // --- AJUSTE DE DATOS, ENLACES DE IMAGEN Y TALLAS POR MODELO ---
                 
-                // 🛑 Modelos con imágenes o tallas especiales
                 if (i === 1) { 
                     productName = 'BTS (Blanco)'; 
                     productDescription = 'Diseño original de BTS en blanco. Edición especial.';
-                    frontImg = 'https://ventaplayera.github.io/RPLAY/xime1.png'; 
-                    backImg = 'https://ventaplayera.github.io/RPLAY/Xime2.png'; 
-                    sideImg = 'https://ventaplayera.github.io/RPLAY/blanco.png'; 
+                    frontImg = GITHUB_BASE_URL + 'Xime1.png';
+                    backImg = GITHUB_BASE_URL + 'Xime2.png';
+                    sideImg = GITHUB_BASE_URL + 'blanco.png'; 
                 } 
                 else if (i === 2) { 
                     productName = 'BTS (Negro)'; 
@@ -278,38 +309,57 @@
                 else if (i === 5) { 
                     productName = 'BRUNO MARS'; 
                     productDescription = 'Playera inspirada en Bruno Mars. ¡Stock limitado en tallas!'; 
-                    // TALLAS PERSONALIZADAS
                     modelSizes = ['M', 'L']; 
                 } 
                 else if (i === 43) { 
                     productName = 'Playera BLACKPINK';
-                    productDescription = 'Diseño oficial de Blackpink.';
+                    productDescription = 'Diseño oficial de Blackpink, disponible en negro y blanco.';
+                    modelSizes = ['S', 'M', 'L', 'XL'];
+                    hasColors = true;
+                    colorVariations = [
+                        { name: 'Negro', key: 'NEGRO', mainImg: GITHUB_BASE_URL + '43_negro_frente.png', backImg: GITHUB_BASE_URL + '43_negro_espalda.png' },
+                        { name: 'Blanco', key: 'BLANCO', mainImg: GITHUB_BASE_URL + '43_blanco_frente.png', backImg: GITHUB_BASE_URL + '43_blanco_espalda.png' }
+                    ];
                 }
                 else if (i === 44) { 
-                    productName = 'Playera Modelo 44 (Femenino)';
-                    productDescription = 'Diseño con corte ajustado para dama.';
-                    // Ejemplo de Tallas para Dama
+                    productName = 'Playera Modelo 44 (Dama)';
+                    productDescription = 'Diseño con corte ajustado para dama, disponible en negro y blanco.';
                     modelSizes = ['S', 'M', 'L'];
+                    hasColors = true;
+                    colorVariations = [
+                        { name: 'Negro', key: 'NEGRO', mainImg: GITHUB_BASE_URL + '44_negro_frente.png', backImg: GITHUB_BASE_URL + '44_negro_espalda.png' },
+                        { name: 'Blanco', key: 'BLANCO', mainImg: GITHUB_BASE_URL + '44_blanco_frente.png', backImg: GITHUB_BASE_URL + '44_blanco_espalda.png' }
+                    ];
                 }
-                // Si tienes otros modelos con nombres o tallas especiales, agrégalos aquí.
                 
                 // --- CONVENCIÓN DE NOMBRES POR DEFECTO ---
-                if (!frontImg) {
+                if (!hasColors) {
                     // Si no se definió una imagen especial, usa la convención numérica:
-                    frontImg = `${GITHUB_BASE_URL}xime${i}_frente.png`; 
-                    backImg = `${GITHUB_BASE_URL}xime${i}_espalda.png`; 
-                }
-                
-                if (!sideImg) {
-                    sideImg = GENERIC_SIDE_IMAGE;
+                    if (!frontImg) {
+                        frontImg = `${GITHUB_BASE_URL}xime${i}_frente.png`; 
+                        backImg = `${GITHUB_BASE_URL}xime${i}_espalda.png`; 
+                    }
+                } else {
+                    // Si tiene colores, la imagen principal de la tarjeta es el primer color (Negro)
+                    frontImg = colorVariations.find(c => c.key === DEFAULT_COLOR_KEY)?.mainImg || colorVariations[0].mainImg;
+                    backImg = colorVariations.find(c => c.key === DEFAULT_COLOR_KEY)?.backImg || colorVariations[0].backImg;
                 }
                 
                 const mainImg = frontImg; 
 
                 // --- INVENTARIO INICIAL ---
-                // Usa las tallas definidas para este modelo (modelSizes)
-                for (const size of modelSizes) {
-                    productInventory[`${id}_${size}`] = initialStock;
+                if (hasColors) {
+                    colorVariations.forEach(color => {
+                        for (const size of modelSizes) {
+                            // Key incluye color: PROD_043_NEGRO_S
+                            productInventory[`${id}_${color.key}_${size}`] = initialStock;
+                        }
+                    });
+                } else {
+                    for (const size of modelSizes) {
+                        // Key normal: PROD_001_S
+                        productInventory[`${id}_${size}`] = initialStock;
+                    }
                 }
                 
                 // --- CREACIÓN DEL OBJETO PRODUCTO ---
@@ -318,9 +368,11 @@
                     name: productName,
                     description: productDescription,
                     price: PRODUCT_PRICE,
-                    sizes: modelSizes, // Almacena las tallas específicas
+                    sizes: modelSizes, 
+                    hasColors: hasColors, // Bandera de color
+                    colors: colorVariations, // Variaciones de color
                     mainImg: mainImg,
-                    frontImg: frontImg,
+                    frontImg: frontImg, // Estos son solo los por defecto para la tarjeta
                     backImg: backImg,
                     sideImg: sideImg,
                 };
@@ -332,6 +384,8 @@
         // =======================================================
         // 3. FUNCIONES DE ALMACENAMIENTO (STORAGE)
         // =======================================================
+        
+        // ... (Funciones de Storage sin cambios, omitidas por brevedad en la explicación, pero incluidas en el código final)
 
         function saveInventoryStorage() {
             localStorage.setItem('productInventory', JSON.stringify(productInventory));
@@ -362,11 +416,11 @@
         }
 
         // =======================================================
-        // 4. LÓGICA DE STOCKS
+        // 4. LÓGICA DE STOCKS (Ahora acepta Color)
         // =======================================================
 
-        function getStock(productId, size) {
-            const key = `${productId}_${size}`;
+        function getStock(productId, size, colorKey = null) {
+            const key = colorKey ? `${productId}_${colorKey}_${size}` : `${productId}_${size}`;
             return productInventory[key] || 0; 
         }
 
@@ -379,9 +433,15 @@
             list.innerHTML = ''; 
 
             productData.forEach(product => {
-                // 🛑 AJUSTE CRÍTICO: SE ELIMINA EL LÍMITE DE 5 PRODUCTOS. AHORA SE MUESTRAN TODOS.
-
-                const maxStock = product.sizes.reduce((max, size) => Math.max(max, getStock(product.id, size)), 0);
+                const maxStock = product.sizes.reduce((max, size) => {
+                    if (product.hasColors) {
+                        // Si tiene colores, revisa el stock de cada color para cada talla
+                        return product.colors.reduce((c_max, color) => Math.max(c_max, getStock(product.id, size, color.key)), max);
+                    } else {
+                        return Math.max(max, getStock(product.id, size));
+                    }
+                }, 0);
+                
                 const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
                 const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
 
@@ -407,65 +467,120 @@
         // =======================================================
         // 6. LÓGICA DE MODAL DE DETALLE Y ADD TO ORDER
         // =======================================================
+        
+        // Función maestra para actualizar la UI del modal de detalle
+        function updateModalDetailsUI(product, colorKey, size) {
+            const currentImages = product.hasColors 
+                ? product.colors.find(c => c.key === colorKey)
+                : { frontImg: product.frontImg, backImg: product.backImg, sideImg: product.sideImg };
+
+            renderCarousel(product, currentImages);
+            updateTotalAndCheckStock(product.id, size, colorKey);
+        }
 
         function openModalDetail(productId) {
             const product = productData.find(p => p.id === productId);
             if (!product) return;
 
+            // 1. Inicialización de campos ocultos
             document.getElementById('modalProductId').value = productId;
             document.getElementById('modalProductName').textContent = product.name;
             document.getElementById('modalProductDescription').textContent = product.description;
             document.getElementById('modalProductPrice').textContent = `$${product.price.toFixed(2)}`;
-
-            // Renderizar Carrusel
-            renderCarousel(product);
-
-            // Renderiza SOLO las tallas del producto
+            
+            // 2. Tallas (sin cambios)
             const sizeSelect = document.getElementById('sizeSelect');
             sizeSelect.innerHTML = '';
-            
-            if (product.sizes.length === 0) {
-                 // Si por alguna razón no tiene tallas, deshabilita la selección
+            product.sizes.forEach(size => {
                 const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'Sin tallas disponibles';
-                option.disabled = true;
+                option.value = size;
+                option.textContent = size;
                 sizeSelect.appendChild(option);
-            } else {
-                product.sizes.forEach(size => {
-                    const option = document.createElement('option');
-                    option.value = size;
-                    option.textContent = size;
-                    sizeSelect.appendChild(option);
-                });
-            }
-            
+            });
             document.getElementById('quantityInput').value = 1;
 
+            // 3. Colores (NUEVO)
+            const colorContainer = document.getElementById('colorSelectorContainer');
+            const defaultColorKey = product.hasColors ? product.colors[0].key : null;
+            
+            if (product.hasColors) {
+                colorContainer.innerHTML = '<label class="form-label">Color:</label><div id="colorSwatches" data-product-id="' + productId + '"></div>';
+                document.getElementById('selectedColorKey').value = defaultColorKey; 
+                renderColorSelector(product);
+            } else {
+                colorContainer.innerHTML = '';
+                document.getElementById('selectedColorKey').value = null;
+            }
+
+            // 4. Actualizar toda la UI con los valores iniciales
+            const initialSize = sizeSelect.value;
+            updateModalDetailsUI(product, defaultColorKey, initialSize);
+            
+            // 5. Adjuntar Listeners para actualizar UI
+            sizeSelect.onchange = () => {
+                const newSize = sizeSelect.value;
+                const currentColor = document.getElementById('selectedColorKey').value;
+                updateModalDetailsUI(product, currentColor, newSize);
+            };
+            
+            const quantityInput = document.getElementById('quantityInput');
+            quantityInput.onchange = () => updateTotalAndCheckStock(productId, sizeSelect.value, document.getElementById('selectedColorKey').value);
+            quantityInput.oninput = () => updateTotalAndCheckStock(productId, sizeSelect.value, document.getElementById('selectedColorKey').value);
+
+            // 6. Mostrar Modal
             const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
             modal.show();
-            
-            updateTotalAndCheckStock(); 
-            
-            // Re-adjuntar listeners para actualizar stock al cambiar talla o cantidad
-            sizeSelect.onchange = updateTotalAndCheckStock;
-            document.getElementById('quantityInput').onchange = updateTotalAndCheckStock;
-            document.getElementById('quantityInput').oninput = updateTotalAndCheckStock;
         }
+        
+        // 🔴 NUEVA FUNCIÓN: RENDERIZA LOS BOTONES DE COLOR
+        function renderColorSelector(product) {
+            const swatchesContainer = document.getElementById('colorSwatches');
+            swatchesContainer.innerHTML = '';
+            
+            let defaultColorKey = document.getElementById('selectedColorKey').value;
 
-        function renderCarousel(product) {
+            product.colors.forEach(color => {
+                const swatch = document.createElement('span');
+                swatch.className = 'color-swatch';
+                swatch.title = color.name;
+                swatch.setAttribute('data-color-key', color.key);
+                
+                if (color.key === defaultColorKey) {
+                    swatch.classList.add('active');
+                }
+
+                swatch.onclick = function() {
+                    // 1. Actualizar el campo oculto
+                    document.getElementById('selectedColorKey').value = color.key;
+                    
+                    // 2. Desactivar todos y activar el actual
+                    swatchesContainer.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 3. Actualizar carrusel y stock
+                    const size = document.getElementById('sizeSelect').value;
+                    updateModalDetailsUI(product, color.key, size);
+                };
+                
+                swatchesContainer.appendChild(swatch);
+            });
+        }
+        
+        // Función para renderizar carrusel con imágenes correctas
+        function renderCarousel(product, images) {
             const indicators = document.getElementById('carouselIndicators');
             const inner = document.getElementById('carouselInner');
             indicators.innerHTML = '';
             inner.innerHTML = '';
 
-            const images = [
-                { url: product.frontImg, alt: `${product.name} Frente` },
-                { url: product.backImg, alt: `${product.name} Espalda` },
+            // Si el producto tiene imágenes específicas por color, úsalas, si no, usa las genéricas
+            const imageSet = [
+                { url: images.frontImg || product.frontImg, alt: `${product.name} Frente` },
+                { url: images.backImg || product.backImg, alt: `${product.name} Espalda` },
                 { url: product.sideImg, alt: `${product.name} Lateral` }
             ];
 
-            images.forEach((img, index) => {
+            imageSet.forEach((img, index) => {
                 indicators.innerHTML += `
                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" 
                         class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" 
@@ -480,13 +595,14 @@
                 `;
             });
         }
-
-        function updateTotalAndCheckStock() {
-            const productId = document.getElementById('modalProductId').value;
-            const size = document.getElementById('sizeSelect').value;
+        
+        // Función para actualizar stock (Ahora usa Color)
+        function updateTotalAndCheckStock(productId, size, colorKey = null) {
             const quantityInput = document.getElementById('quantityInput');
             let quantity = parseInt(quantityInput.value);
-            const stock = getStock(productId, size);
+            
+            // 🛑 Usa la nueva función getStock que acepta color
+            const stock = getStock(productId, size, colorKey);
             const addButton = document.getElementById('addToOrderButton');
 
             if (quantity < 1 || isNaN(quantity)) {
@@ -510,26 +626,29 @@
             document.getElementById('stockIndicator').textContent = `Stock: ${stock}`;
         }
 
-        // 🔴 CRÍTICO: MANEJO DEL ENVÍO DEL FORMULARIO 'Añadir al Pedido'
+
+        // 🔴 CRÍTICO: MANEJO DEL ENVÍO DEL FORMULARIO 'Añadir al Pedido' (Ahora con Color)
         document.getElementById('orderForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
             const productId = document.getElementById('modalProductId').value;
             const product = productData.find(p => p.id === productId);
             const size = document.getElementById('sizeSelect').value;
+            const colorKey = document.getElementById('selectedColorKey').value;
             const quantity = parseInt(document.getElementById('quantityInput').value);
 
             if (!product || quantity <= 0 || !size) return;
 
-            const stock = getStock(productId, size);
+            // 🛑 Chequeo de Stock con Color
+            const stock = getStock(productId, size, colorKey);
 
             if (quantity > stock) {
-                alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size}. Por favor, reduce la cantidad.`);
+                alert(`Error: Solo quedan ${stock} unidades disponibles en ${colorKey ? colorKey + ' ' : ''} talla ${size}. Por favor, reduce la cantidad.`);
                 return;
             }
 
             const existingItemIndex = currentOrder.findIndex(item => 
-                item.productId === productId && item.size === size
+                item.productId === productId && item.size === size && item.colorKey === colorKey
             );
 
             if (existingItemIndex !== -1) {
@@ -539,6 +658,8 @@
                     productId: productId,
                     name: product.name,
                     size: size,
+                    colorKey: colorKey, // Guardar la clave de color
+                    colorName: colorKey ? product.colors.find(c => c.key === colorKey)?.name : null, // Guardar el nombre
                     quantity: quantity,
                     price: product.price
                 });
@@ -550,7 +671,7 @@
         });
 
         // =======================================================
-        // 7. LÓGICA DE MODAL DE PEDIDOS (Carrito)
+        // 7. LÓGICA DE MODAL DE PEDIDOS (Carrito) (Ahora con Color)
         // =======================================================
 
         function openOrdersModal() {
@@ -578,12 +699,13 @@
 
             currentOrder.forEach((item, index) => {
                 const totalPrice = item.quantity * item.price;
+                const colorDisplay = item.colorName ? ` (${item.colorName})` : ''; // Mostrar color si existe
 
                 const listItem = document.createElement('li');
                 listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
                 listItem.innerHTML = `
                     <div>
-                        <span class="fw-bold">${item.name}</span> (${item.size}) x ${item.quantity}
+                        <span class="fw-bold">${item.name}</span>${colorDisplay} (${item.size}) x ${item.quantity}
                         <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
                     </div>
                     <div class="d-flex align-items-center">
@@ -644,7 +766,7 @@
         }
 
         // =======================================================
-        // 8. LÓGICA DE ENVÍO POR WHATSAPP (BOTÓN FINAL)
+        // 8. LÓGICA DE ENVÍO POR WHATSAPP (Ahora con Color)
         // =======================================================
 
         function sendOrderToWhatsapp() {
@@ -666,7 +788,8 @@
             orderText += `*Productos:*\n`;
             
             currentOrder.forEach((item, index) => {
-                orderText += `${index + 1}. ${item.name} (${item.size}) - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+                const colorDisplay = item.colorName ? ` (${item.colorName})` : '';
+                orderText += `${index + 1}. ${item.name}${colorDisplay} (${item.size}) - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
             });
 
             orderText += `\n*Datos del Cliente:*\n`;
@@ -688,9 +811,11 @@
                 date: new Date().toLocaleString()
             });
 
-            // 2. APLICAR EL DESCUENTO DEL STOCK
+            // 2. APLICAR EL DESCUENTO DEL STOCK (Ahora usa Color)
             currentOrder.forEach(item => {
-                const key = `${item.productId}_${item.size}`;
+                const colorPart = item.colorKey ? `${item.colorKey}_` : '';
+                const key = `${item.productId}_${colorPart}${item.size}`;
+                
                 if (productInventory[key] >= item.quantity) {
                     productInventory[key] -= item.quantity;
                 } else {
@@ -773,4 +898,3 @@
     </script>
 </body>
 </html>
-
