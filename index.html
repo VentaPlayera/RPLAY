@@ -249,7 +249,7 @@
         // FUNCIÓN DE INVENTARIO INICIAL (CONFIGURACIÓN DE STOCK POR TALLA/COLOR)
         // =======================================================
 
-        function generateInitialInventory() {
+        window.resetInventoryAndOrders = function() {
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
 
@@ -919,6 +919,7 @@
     </script>
 </body>
 </html>
+
 
 
 
