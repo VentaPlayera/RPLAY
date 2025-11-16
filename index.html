@@ -85,7 +85,7 @@
             <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
                 Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
             </button>
-            </div>
+        </div>
     </header>
 
     <main class="container">
@@ -230,7 +230,7 @@
         // --- CONSTANTES DE IMAGEN (REEMPLAZAR CON TUS ENLACES REALES) ---
         const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
         
-        // CORREGIDO: URL BASE a la CARPETA, terminando en /
+        // 🚨 ENLACE CRÍTICO: MANTENER ESTA URL SI TUS IMÁGENES ESTÁN EN LA CARPETA /RPLAY/
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         
         // Placeholder para la imagen lateral genérica (se usará si no defines sideFile)
@@ -247,6 +247,7 @@
         // FUNCIÓN DE INVENTARIO INICIAL (CONFIGURACIÓN DE STOCK POR TALLA/COLOR)
         // =======================================================
 
+        // 🚨 CORRECCIÓN CLAVE: Esta función DEBE llamarse generateInitialInventory.
         function generateInitialInventory() {
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
@@ -261,11 +262,11 @@
                     i: 1, 
                     name: 'BTS', 
                     description: 'Playera Modelo 1',
-                    stock: { 'M': 1, 'L': 1, 'XL': 1},
-                    // CORREGIDO: Solo el nombre base del archivo
-                    frontFile: 'xime1.png',
-                    backFile: 'Xime2.png',
-                    sideFile: 'negro.png',
+                    // Asegúrate que tu archivo se llama exactamente xime1.jpg, xxime1.jpg, Xime2.jpg
+                    stock: { 'M': 1, 'L' :1, 'XL': 1},
+                    frontFile: 'xime1',
+                    backFile: 'xxime1',
+                    sideFile: 'Xime2',
                 },
                 { 
                     i: 2, 
@@ -283,9 +284,9 @@
                     frontFile: 'mar_azul_frente',
                     backFile: 'mar_azul_espalda',
                 },
-                // ... (continúa con tus 44 modelos)
+                // ... (continúa con TUS 44 modelos aquí)
                 
-                // --- MODELOS CON OPCIÓN DE COLOR (DEBEN INCLUIR EL SUFIJO DE COLOR EN EL NOMBRE) ---
+                // --- MODELOS CON OPCIÓN DE COLOR ---
                 { 
                     i: 43, 
                     name: 'XIME-43', 
@@ -336,7 +337,6 @@
                 // ASIGNACIÓN DE NOMBRES DE ARCHIVO
                 const frontFileBase = prod.frontFile || `xime${i}_frente_FALLBACK`;
                 const backFileBase = prod.backFile || `xime${i}_espalda_FALLBACK`;
-                // Si no se especifica sideFile, usa el placeholder para el lateral genérico
                 const sideFileBase = prod.sideFile || GENERIC_SIDE_PLACEHOLDER; 
                 
                 // --- INVENTARIO INICIAL POR ID_TALLA ---
@@ -357,7 +357,7 @@
                     colors: prod.colors || [], 
                     
                     // Almacena solo la URL de la imagen de frente para la tarjeta
-                    mainImg: `${GITHUB_BASE_URL}${frontFileBase}.jpg`, // Usando .jpg por tu configuración previa
+                    mainImg: `${GITHUB_BASE_URL}${frontFileBase}.jpg`,
                     
                     // Guarda las bases de los nombres de archivo
                     frontFileBase: frontFileBase,
@@ -405,11 +405,11 @@
             return "Inventario impreso en la consola.";
         }
         
-        // Función de Reinicio para el Administrador (Ahora accesible globalmente)
+        // 🚨 CORRECCIÓN CLAVE: Esta función solo gestiona el reinicio, y llama a la de inicialización.
         window.resetInventoryAndOrders = function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
-            // 1. Carga el inventario inicial con la nueva estructura
+            // 1. Carga el inventario inicial (llama a la función corregida)
             generateInitialInventory(); 
             // 2. Guarda ese nuevo inventario en la memoria local (storage)
             saveInventoryStorage();
@@ -440,7 +440,6 @@
             const storedInventory = localStorage.getItem('productInventory');
             if (storedInventory) {
                 const loadedInventory = JSON.parse(storedInventory); 
-                // La diferencia es que solo cargamos datos para las tallas que existen en el nuevo inventario base
                 for (const key in loadedInventory) {
                     if (productInventory.hasOwnProperty(key)) {
                         productInventory[key] = loadedInventory[key];
@@ -452,7 +451,8 @@
         function saveOrdersStorage() {
             localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
             localStorage.setItem('orderIdCounter', orderIdCounter);
-            document.getElementById('ordersCounter').textContent = currentOrder.length;
+            // Actualiza el contador de pedidos con el número de items en el carrito actual
+            document.getElementById('ordersCounter').textContent = currentOrder.length; 
         }
 
         function loadOrdersStorage() {
@@ -790,6 +790,7 @@
         document.getElementById('halfPaymentCheck').addEventListener('change', updateOrdersTotal); 
 
         function updateOrdersCounter(count) {
+            // Se actualiza el contador de pedidos en el botón
             document.getElementById('ordersCounter').textContent = currentOrder.length; 
         }
 
@@ -892,7 +893,9 @@
             
             loadOrdersStorage();
             
+            // 🚨 CORRECCIÓN CLAVE: Se llama a la función de inicialización de modelos
             generateInitialInventory();
+            // Se carga el stock guardado (si existe) sobre la configuración inicial
             loadInventoryStorage(); 
 
             document.getElementById('product-list').addEventListener('click', (e) => {
@@ -915,6 +918,3 @@
     </script>
 </body>
 </html>
-
-
-
