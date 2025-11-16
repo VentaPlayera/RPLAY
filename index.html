@@ -85,7 +85,7 @@
             <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
                 Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
             </button>
-        </div>
+            </div>
     </header>
 
     <main class="container">
@@ -230,10 +230,8 @@
         // --- CONSTANTES DE IMAGEN (REEMPLAZAR CON TUS ENLACES REALES) ---
         const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
         
-        // 🚨 ENLACE CRÍTICO: DEBES CAMBIAR LA URL DENTRO DE LAS COMILLAS POR TU RUTA REAL DE IMÁGENES
-        // FORMATO REQUERIDO: https://raw.githubusercontent.com/[TuUsuario]/[TuRepositorio]/main/[TuCarpeta]/
+        // CORREGIDO: URL BASE a la CARPETA, terminando en /
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
-        // <--- ¡CAMBIA ESTA URL DE EJEMPLO!
         
         // Placeholder para la imagen lateral genérica (se usará si no defines sideFile)
         const GENERIC_SIDE_PLACEHOLDER = 'generic_side_image_placeholder';
@@ -249,7 +247,7 @@
         // FUNCIÓN DE INVENTARIO INICIAL (CONFIGURACIÓN DE STOCK POR TALLA/COLOR)
         // =======================================================
 
-        window.resetInventoryAndOrders = function() {
+        function generateInitialInventory() {
             productData.length = 0; 
             for (const key in productInventory) { delete productInventory[key]; }
 
@@ -263,8 +261,8 @@
                     i: 1, 
                     name: 'BTS', 
                     description: 'Playera Modelo 1',
-                    stock: { 'M': 1, 'L' :1, 'XL': 1},
-                    // 🚨 REEMPLAZA ESTOS NOMBRES CON TUS NOMBRES REALES 🚨
+                    stock: { 'M': 1, 'L': 1, 'XL': 1},
+                    // CORREGIDO: Solo el nombre base del archivo
                     frontFile: 'xime1',
                     backFile: 'xxime1',
                     sideFile: 'Xime2',
@@ -274,7 +272,6 @@
                     name: 'XIME-2', 
                     description: 'Playera Modelo 2: Diseño retro con alas.', 
                     stock: { 'L': 5, 'XL': 5 },
-                    // Puedes omitir sideFile si quieres la imagen genérica
                     frontFile: 'alas_vintage_frente',
                     backFile: 'alas_vintage_espalda',
                 },
@@ -295,7 +292,6 @@
                     description: 'Modelo 43 con opción de color.', 
                     stock: { 'M': 10, 'L': 10 }, 
                     colors: ['Blanco', 'Negro'],
-                    // El código añadirá '_blanco' o '_negro' automáticamente al final del nombre
                     frontFile: 'flor_43_frente', 
                     backFile: 'flor_43_espalda',
                 },
@@ -361,7 +357,7 @@
                     colors: prod.colors || [], 
                     
                     // Almacena solo la URL de la imagen de frente para la tarjeta
-                    mainImg: `${GITHUB_BASE_URL}${frontFileBase}.jpg`,
+                    mainImg: `${GITHUB_BASE_URL}${frontFileBase}.jpg`, // Usando .jpg por tu configuración previa
                     
                     // Guarda las bases de los nombres de archivo
                     frontFileBase: frontFileBase,
@@ -409,11 +405,11 @@
             return "Inventario impreso en la consola.";
         }
         
-        // Función de Reinicio para el Administrador (se llama desde la consola)
+        // Función de Reinicio para el Administrador (Ahora accesible globalmente)
         window.resetInventoryAndOrders = function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
-            // 1. Carga el inventario inicial con la nueva estructura de 2 tallas
+            // 1. Carga el inventario inicial con la nueva estructura
             generateInitialInventory(); 
             // 2. Guarda ese nuevo inventario en la memoria local (storage)
             saveInventoryStorage();
@@ -919,7 +915,3 @@
     </script>
 </body>
 </html>
-
-
-
-
