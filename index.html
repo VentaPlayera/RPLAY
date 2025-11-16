@@ -227,10 +227,11 @@
         const MINIMUM_TO_SHIP = 1;   
         const WHATSAPP_NUMBER = '529991480151'; 
         
-        // --- CONSTANTES DE IMAGEN (REEMPLAZAR CON TUS ENLACES REALES) ---
+        // --- CONSTANTES DE IMAGEN ---
+        const IMAGE_EXTENSION = '.png'; // 🚨 CAMBIO CLAVE: Usamos .png según tus archivos subidos
         const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
         
-        // 🚨 ENLACE CRÍTICO: MANTENER ESTA URL SI TUS IMÁGENES ESTÁN EN LA CARPETA /RPLAY/
+        // 🚨 ENLACE CRÍTICO: DEBES VERIFICAR QUE ESTA URL ES TU RUTA REAL DE IMÁGENES EN GITHUB PAGES
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         
         // Placeholder para la imagen lateral genérica (se usará si no defines sideFile)
@@ -253,52 +254,54 @@
             for (const key in productInventory) { delete productInventory[key]; }
 
             // --- STOCK BASE PARA MODELOS NO DEFINIDOS (MÁXIMO 2 TALLAS) ---
-            const defaultStock = { 'M': 1, 'L': 1 }; 
+            const defaultStock = { 'M': 5, 'L': 5 }; 
             
-            // 🚨🚨 AHORA DEBES ESPECIFICAR EL NOMBRE EXACTO DEL ARCHIVO (sin la extensión .jpg) 🚨🚨
+            // 🚨🚨 LISTA DE MODELOS INTEGRADA BASADA EN TUS ARCHIVOS SUBIDOS (.png) 🚨🚨
             const initialProducts = [
-                // EJEMPLO CON NOMBRES DE ARCHIVO PERSONALIZADOS (MÁXIMO 2 TALLAS CON STOCK)
-                { 
-                    i: 1, 
-                    name: 'BTS', 
-                    description: 'Playera Modelo 1',
-                    // Asegúrate que tu archivo se llama exactamente xime1.jpg, xxime1.jpg, Xime2.jpg
-                    stock: { 'M': 1, 'L' :1, 'XL': 1},
-                    frontFile: 'xime1.png',
-                    backFile: 'Xime1.png',
-                    sideFile: 'Xime2.png',
-                },
-                { 
-                    i: 2, 
-                    name: 'XIME-2', 
-                    description: 'Playera Modelo 2: Diseño retro con alas.', 
-                    stock: { 'L': 5, 'XL': 5 },
-                    frontFile: 'alas_vintage_frente',
-                    backFile: 'alas_vintage_espalda',
-                },
-                { 
-                    i: 3, 
-                    name: 'XIME-3', 
-                    description: 'Playera Modelo 3: La vida es mejor en el mar.', 
-                    stock: { 'M': 30, 'L': 15 },
-                    frontFile: 'mar_azul_frente',
-                    backFile: 'mar_azul_espalda',
-                },
-                // ... (continúa con TUS 44 modelos aquí)
+                // Modelos que ya tenías definidos
+                { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'xxime1', sideFile: 'Xime2' },
+                { i: 2, name: 'XIME-2', description: 'Playera Modelo 2: Diseño retro con alas.', stock: { 'L': 5, 'XL': 5 }, frontFile: 'alas_vintage_frente', backFile: 'alas_vintage_espalda' },
+                { i: 3, name: 'XIME-3', description: 'Playera Modelo 3: La vida es mejor en el mar.', stock: { 'M': 30, 'L': 15 }, frontFile: 'mar_azul_frente', backFile: 'mar_azul_espalda' },
                 
+                // Modelos basados en tus archivos subidos: Abi1.png, Abi2.png, etc.
+                { i: 4, name: 'ABI', description: 'Modelo Abi: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Abi1', backFile: 'Abi2', sideFile: 'Abi3' },
+                { i: 5, name: 'ADRI', description: 'Modelo Adri: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Adri1', backFile: 'Adri2', sideFile: 'Adri3' },
+                { i: 6, name: 'ALE', description: 'Modelo Ale: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Ale1', backFile: 'Ale2', sideFile: 'Ale3' },
+                { i: 7, name: 'ALLI', description: 'Modelo Alli: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Alli1', backFile: 'Alli2', sideFile: 'Alli3' },
+                { i: 8, name: 'ARO', description: 'Modelo Aro: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Aro1', backFile: 'Aro2', sideFile: 'Aro3' },
+                { i: 9, name: 'BERE', description: 'Modelo Bere: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'Bere3' },
+                { i: 10, name: 'BRA', description: 'Modelo Bra: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Bra1', backFile: 'Bra2', sideFile: 'Bra3' },
+                { i: 11, name: 'CARO', description: 'Modelo Caro: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'Caro3' },
+                { i: 12, name: 'DALI', description: 'Modelo Dali: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Dali1', backFile: 'Dali2', sideFile: 'Dali3' },
+                { i: 13, name: 'DAN', description: 'Modelo Dan: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Dan1', backFile: 'Dan2', sideFile: 'Dan3' },
+                { i: 14, name: 'DANI', description: 'Modelo Dani: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Dani1', backFile: 'Dani2', sideFile: 'Dani3' },
+                { i: 15, name: 'DIDI', description: 'Modelo Didi: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Didi1', backFile: 'Didi2', sideFile: 'Didi3' },
+                { i: 16, name: 'GERA', description: 'Modelo Gera: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Gera1', backFile: 'Gera2', sideFile: 'Gera3' },
+                { i: 17, name: 'KATY', description: 'Modelo Katy: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Katy1', backFile: 'Katy2', sideFile: 'Katy3' },
+                { i: 18, name: 'KEILA', description: 'Modelo Keila: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Keila1', backFile: 'Keila2', sideFile: 'Keila3' },
+                { i: 19, name: 'KENJI', description: 'Modelo Kenji: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Kenji1', backFile: 'Kenji2', sideFile: 'Kenji3' },
+                { i: 20, name: 'LES', description: 'Modelo Les: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Les1', backFile: 'Les2', sideFile: 'Les3' },
+                { i: 21, name: 'LUCY', description: 'Modelo Lucy: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Lucy1', backFile: 'Lucy2', sideFile: 'Lucy3' },
+                { i: 22, name: 'MIRI', description: 'Modelo Miri: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Miri1', backFile: 'Miri2', sideFile: 'Miri3' },
+                { i: 23, name: 'RAUL', description: 'Modelo Raul: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Raul1', backFile: 'Raul2', sideFile: 'Raul3' },
+                { i: 24, name: 'VALE', description: 'Modelo Vale: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Vale1', backFile: 'Vale2', sideFile: 'Vale3' },
+                { i: 25, name: 'YOSE', description: 'Modelo Yose: Frente y Espalda', stock: { 'M': 5, 'L': 5 }, frontFile: 'Yose1', backFile: 'Yose2', sideFile: 'Yose3' },
+
+
                 // --- MODELOS CON OPCIÓN DE COLOR ---
                 { 
                     i: 43, 
-                    name: 'XIME-43', 
+                    name: 'COLOR-43', 
                     description: 'Modelo 43 con opción de color.', 
                     stock: { 'M': 10, 'L': 10 }, 
                     colors: ['Blanco', 'Negro'],
+                    // El código añadirá '_blanco' o '_negro' automáticamente al final del nombre
                     frontFile: 'flor_43_frente', 
                     backFile: 'flor_43_espalda',
                 },
                 { 
                     i: 44, 
-                    name: 'XIME-44', 
+                    name: 'COLOR-44', 
                     description: 'Modelo 44 con opción de color.', 
                     stock: { 'M': 10, 'L': 10 }, 
                     colors: ['Blanco', 'Negro'],
@@ -357,7 +360,7 @@
                     colors: prod.colors || [], 
                     
                     // Almacena solo la URL de la imagen de frente para la tarjeta
-                    mainImg: `${GITHUB_BASE_URL}${frontFileBase}.jpg`,
+                    mainImg: `${GITHUB_BASE_URL}${frontFileBase}${IMAGE_EXTENSION}`,
                     
                     // Guarda las bases de los nombres de archivo
                     frontFileBase: frontFileBase,
@@ -405,11 +408,11 @@
             return "Inventario impreso en la consola.";
         }
         
-        // 🚨 CORRECCIÓN CLAVE: Esta función solo gestiona el reinicio, y llama a la de inicialización.
+        // Función de Reinicio para el Administrador (se llama desde la consola)
         window.resetInventoryAndOrders = function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
-            // 1. Carga el inventario inicial (llama a la función corregida)
+            // 1. Carga el inventario inicial con la nueva estructura de 2 tallas
             generateInitialInventory(); 
             // 2. Guarda ese nuevo inventario en la memoria local (storage)
             saveInventoryStorage();
@@ -440,6 +443,7 @@
             const storedInventory = localStorage.getItem('productInventory');
             if (storedInventory) {
                 const loadedInventory = JSON.parse(storedInventory); 
+                // La diferencia es que solo cargamos datos para las tallas que existen en el nuevo inventario base
                 for (const key in loadedInventory) {
                     if (productInventory.hasOwnProperty(key)) {
                         productInventory[key] = loadedInventory[key];
@@ -451,8 +455,7 @@
         function saveOrdersStorage() {
             localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
             localStorage.setItem('orderIdCounter', orderIdCounter);
-            // Actualiza el contador de pedidos con el número de items en el carrito actual
-            document.getElementById('ordersCounter').textContent = currentOrder.length; 
+            document.getElementById('ordersCounter').textContent = currentOrder.length;
         }
 
         function loadOrdersStorage() {
@@ -615,8 +618,8 @@
                 if (item.fileBase === GENERIC_SIDE_PLACEHOLDER) {
                     imgUrl = GENERIC_SIDE_IMAGE;
                 } else {
-                    // Combina GITHUB_BASE_URL + Nombre de Archivo Base + Sufijo de Color (si aplica) + .jpg
-                    imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${colorSuffix}.jpg`;
+                    // Combina GITHUB_BASE_URL + Nombre de Archivo Base + Sufijo de Color (si aplica) + .png
+                    imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${colorSuffix}${IMAGE_EXTENSION}`;
                 }
 
                 indicators.innerHTML += `
@@ -790,7 +793,6 @@
         document.getElementById('halfPaymentCheck').addEventListener('change', updateOrdersTotal); 
 
         function updateOrdersCounter(count) {
-            // Se actualiza el contador de pedidos en el botón
             document.getElementById('ordersCounter').textContent = currentOrder.length; 
         }
 
@@ -893,9 +895,7 @@
             
             loadOrdersStorage();
             
-            // 🚨 CORRECCIÓN CLAVE: Se llama a la función de inicialización de modelos
             generateInitialInventory();
-            // Se carga el stock guardado (si existe) sobre la configuración inicial
             loadInventoryStorage(); 
 
             document.getElementById('product-list').addEventListener('click', (e) => {
@@ -918,5 +918,3 @@
     </script>
 </body>
 </html>
-
-
