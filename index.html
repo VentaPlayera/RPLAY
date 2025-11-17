@@ -309,32 +309,36 @@
                     i: 42, 
                     name: 'BLACKPINK', 
                     description: 'Modelo 42 con opción de color. (Aro1 a Aro4)', 
-                    colors: ['Blanco', 'Negro'],
+                    colors: ['Negro', 'Blanco'],
                     isColorProduct: true,
                     stockByColor: { 
-                        'Blanco': { 'S': 1, 'M': 1 },
                         'Negro': { 'L': 1 }
+                        'Blanco': { 'S': 1, 'M': 1 },
+                        
                     },
                     colorMap: { 
                         // 🚨 USAMOS LOS NOMBRES EXACTOS SIN SUFIJOS DE COLOR
-                        'Blanco': { front: 'Aro1', back: 'Aro2', side: GENERIC_SIDE_IMAGE_BASE }, 
-                        'Negro': { front: 'Aro3', back: 'Aro4', side: GENERIC_SIDE_IMAGE_BASE } 
+                        'Negro': { front: 'Aro3', back: 'Aro4', side: 'negro2' } 
+                        'Blanco': { front: 'Aro1', back: 'Aro2', side: 'blanco2' }, 
+                        
                     }
                 },
                 { 
                     i: 43, 
                     name: 'BLACKPINK', 
                     description: 'Modelo 43 con opción de color. (Aro5 a Aro8)', 
-                    colors: ['Blanco', 'Negro'],
+                    colors: ['Negro', 'Blanco'],
                     isColorProduct: true,
                     stockByColor: { 
-                        'Blanco': { 'S': 1, 'M': 1 }, 
                         'Negro': { 'L': 1 }
+                        'Blanco': { 'S': 1, 'M': 1 }, 
+                        
                     },
                     colorMap: { 
                         // 🚨 USAMOS LOS NOMBRES EXACTOS SIN SUFIJOS DE COLOR
-                        'Blanco': { front: 'Aro5', back: 'Aro6', side: GENERIC_SIDE_IMAGE_BASE }, 
-                        'Negro': { front: 'Aro7', back: 'Aro8', side: GENERIC_SIDE_IMAGE_BASE }
+                        'Negro': { front: 'Aro7', back: 'Aro8', side: 'negro2' }
+                        'Blanco': { front: 'Aro5', back: 'Aro6', side: 'blanco2'}, 
+                        
                     }
                 },
             ];
@@ -1059,3 +1063,4 @@
     </script>
 </body>
 </html>
+
