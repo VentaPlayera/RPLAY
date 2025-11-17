@@ -12,11 +12,22 @@
         .product-card { border: 1px solid #ccc; padding: 15px; width: 300px; }
         .product-card img { max-width: 100%; height: auto; }
         .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 1000px; }
         .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
         .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
         .cart-item { border-bottom: 1px dashed #eee; padding: 10px 0; }
-        .stock-option { margin-right: 10px; }
+        .stock-option { margin-right: 10px; padding: 5px 10px; border: 1px solid #ccc; cursor: pointer; }
+        .stock-option.active { background-color: #007bff; color: white; }
+        
+        /* Estilos para el modal del producto */
+        #modal-product-view { display: flex; gap: 20px; }
+        #modal-images { flex: 1; display: flex; flex-direction: column; gap: 10px;}
+        #modal-images img { max-width: 100%; height: auto; border: 1px solid #eee;}
+        #modal-details { flex: 1;}
+        .image-toggle-buttons button { margin-right: 5px; padding: 8px; cursor: pointer;}
+        #color-buttons button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ccc; margin: 5px; cursor: pointer;}
+        .size-chart table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        .size-chart th, .size-chart td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
@@ -45,8 +56,30 @@
     <div id="product-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="window.closeProductModal()">&times;</span>
-            <div id="modal-content-details">
+            <div id="modal-product-view">
+                <div id="modal-images">
+                    <img id="main-product-image" src="" alt="Producto">
+                    <div class="image-toggle-buttons">
+                        <button onclick="window.changeModalImage('front')">Frente</button>
+                        <button onclick="window.changeModalImage('back')">Espalda</button>
+                    </div>
+                    <div class="size-chart" id="size-chart-container">
+                        </div>
                 </div>
+
+                <div id="modal-details">
+                    <div id="modal-content-details">
+                        </div>
+
+                    <div id="product-options">
+                        </div>
+
+                    <label for="quantity">Cantidad:</label>
+                    <input type="number" id="quantity" value="1" min="1" max="100" style="width: 60px; margin-bottom: 20px;"> 
+
+                    <button id="add-to-cart-button" onclick="" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; cursor: pointer;">Añadir al Carrito</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -76,6 +109,7 @@
         // =================================================================================
 
         window.inventory = []; // El inventario se almacena globalmente
+        window.currentProductInModal = null; // Para rastrear el producto actual
 
         window.loadProductsFromFirebase = async function() {
             try {
@@ -159,8 +193,10 @@
                 await Promise.all(transactionPromises);
 
                 whatsappMessage += `\nTotal a pagar: $${document.getElementById('cart-total').textContent}`;
+                // 🚨 Reemplaza "TUNUMEROAQUI" con tu número de WhatsApp
+                const whatsappNumber = "TUNUMEROAQUI"; 
                 const encodedMessage = encodeURIComponent(whatsappMessage);
-                window.open(`https://wa.me/TUNUMEROAQUI?text=${encodedMessage}`, '_blank');
+                window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
 
                 window.clearCart(); // Limpia el carrito
                 alert("Pedido realizado y stock actualizado en la nube. ¡Revisa WhatsApp!");
@@ -176,7 +212,7 @@
 
 
     <script>
-        // Funciones auxiliares para el carrito
+        // Funciones auxiliares
         function saveCart(cart) {
             localStorage.setItem('cart', JSON.stringify(cart));
             window.updateCartDisplay();
@@ -234,12 +270,12 @@
 
 
         // =================================================================================
-        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS (CORRECCIÓN CAPITALIZACIÓN APLICADA)
+        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS (TARJETAS)
         // =================================================================================
 
         window.renderProducts = function() {
             const container = document.getElementById('products-container');
-            container.innerHTML = ''; // Limpia el contenedor
+            container.innerHTML = ''; 
 
             if (!window.inventory || window.inventory.length === 0) {
                 container.innerHTML = '<h2>No se encontraron productos disponibles.</h2>';
@@ -250,20 +286,18 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
 
-                // 1. Obtener el nombre base del archivo de Firebase
+                // Obtener el nombre base del archivo de Firebase
                 const rawImageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
                 
                 let imageFile = rawImageFile;
 
-                // 2. Aplicar la lógica de mayúsculas/minúsculas específica:
-                // Si el nombre no es 'xime1' (en minúsculas), capitalizar la primera letra.
+                // Aplicar la lógica de capitalización específica
                 if (rawImageFile && rawImageFile.toLowerCase() !== 'xime1') {
-                    // Capitalizar la primera letra (Miri1, Didi3, etc.)
+                    // Capitalizar la primera letra si no es 'xime1'
                     imageFile = rawImageFile.charAt(0).toUpperCase() + rawImageFile.slice(1);
                 } 
-                // Si es 'xime1', permanece 'xime1'.
 
-                // 🚨 RUTA RAÍZ Y EXTENSIÓN .png CONFIRMADA
+                // RUTA RAÍZ Y EXTENSIÓN .png
                 card.innerHTML = `
                     <h3>${product.name}</h3>
                     <img src="${imageFile}.png" alt="${product.name}" /> 
@@ -276,86 +310,195 @@
         }
 
         // =================================================================================
-        // LÓGICA DE MODAL DE PRODUCTO Y AGREGAR AL CARRITO
+        // LÓGICA DE MODAL DE PRODUCTO (IMAGENES, COLORES Y TABLA)
         // =================================================================================
+
+        function getFileName(product, view, color = null) {
+            const rawFileName = product.isColorProduct && color
+                ? product.colorMap[color][view]
+                : product[`${view}FileBase`];
+
+            if (!rawFileName) return null;
+
+            let fileName = rawFileName;
+            // Aplicar la lógica de capitalización específica
+            if (fileName && fileName.toLowerCase() !== 'xime1') {
+                fileName = fileName.charAt(0).toUpperCase() + fileName.slice(1);
+            } 
+            return `${fileName}.png`; // Se mantiene .png y ruta raíz
+        }
+
+        window.changeModalImage = function(view) {
+            const product = window.currentProductInModal;
+            if (!product) return;
+
+            const selectedColor = product.isColorProduct ? document.querySelector('#color-options .active').dataset.color : null;
+            const fileName = getFileName(product, view, selectedColor);
+
+            if (fileName) {
+                document.getElementById('main-product-image').src = fileName;
+            }
+        }
+
+        window.changeColorAndSize = function(product, newColor) {
+            // Actualizar botones de color (quitar 'active' de todos y ponerlo en el nuevo)
+            document.querySelectorAll('#color-options button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`button[data-color="${newColor}"]`).classList.add('active');
+
+            // Actualizar imagen principal a la vista frontal del nuevo color
+            const fileName = getFileName(product, 'front', newColor);
+            document.getElementById('main-product-image').src = fileName;
+
+            // Generar y actualizar opciones de talla y stock para el nuevo color
+            const sizeOptionsContainer = document.getElementById('size-options');
+            sizeOptionsContainer.innerHTML = generateSizeOptionsHTML(product, newColor);
+
+            // Actualizar botón de añadir al carrito
+            document.getElementById('add-to-cart-button').onclick = () => window.addToCart(product.id, newColor);
+        }
 
         window.showProductModal = function(productId) {
             const product = window.inventory.find(p => p.id === productId);
             if (!product) return;
+            window.currentProductInModal = product;
 
-            const detailsContainer = document.getElementById('modal-content-details');
-            detailsContainer.innerHTML = `
+            const detailsHTML = `
                 <h2>${product.name}</h2>
                 <p>${product.description}</p>
                 <p>Precio: <strong>$${product.price.toFixed(2)}</strong></p>
-                
-                <div id="product-options">
-                    ${product.isColorProduct ? `
-                        <label for="color-select">Color:</label>
-                        <select id="color-select">
-                            ${product.colors.map(color => `<option value="${color}">${color}</option>`).join('')}
-                        </select>
-                    ` : '<p>Color: Único</p>'}
-
-                    <div id="size-options">
-                        ${generateSizeOptionsHTML(product, product.isColorProduct ? product.colors[0] : null)}
-                    </div>
-                </div>
-
-                <label for="quantity">Cantidad:</label>
-                <input type="number" id="quantity" value="1" min="1" max="100"> 
-
-                <button onclick="window.addToCart('${product.id}')">Añadir al Carrito</button>
             `;
+            document.getElementById('modal-content-details').innerHTML = detailsHTML;
 
-            // Agregar evento para actualizar las tallas cuando cambia el color (solo para productos de color)
+            const optionsContainer = document.getElementById('product-options');
+            optionsContainer.innerHTML = '';
+            
+            let initialColor = null;
+
             if (product.isColorProduct) {
-                document.getElementById('color-select').addEventListener('change', (e) => {
-                    const selectedColor = e.target.value;
-                    const sizeOptionsContainer = document.getElementById('size-options');
-                    sizeOptionsContainer.innerHTML = generateSizeOptionsHTML(product, selectedColor);
+                // 1. Mostrar botones de colores
+                let colorButtonsHTML = '<p>Color:</p><div id="color-options">';
+                initialColor = product.colors[0]; // Seleccionar el primer color por defecto
+                
+                product.colors.forEach(colorName => {
+                    const colorCode = product.colorMap[colorName].hex;
+                    const isActive = colorName === initialColor ? 'active' : '';
+                    colorButtonsHTML += `
+                        <button 
+                            data-color="${colorName}" 
+                            style="background-color: ${colorCode}; border-color: ${colorCode};"
+                            class="${isActive}"
+                            onclick="window.changeColorAndSize(window.currentProductInModal, '${colorName}')"
+                            title="${colorName}"
+                        ></button>
+                    `;
                 });
+                colorButtonsHTML += '</div>';
+                optionsContainer.innerHTML += colorButtonsHTML;
+
+            } else {
+                // Producto de color único
+                optionsContainer.innerHTML += '<p>Color: Único</p>';
+                initialColor = null;
             }
+
+            // 2. Contenedor de tallas
+            optionsContainer.innerHTML += '<div id="size-options"></div>';
+
+
+            // 3. Inicializar imagen principal y tallas
+            if (product.isColorProduct) {
+                // Para productos con color: inicializa imagen y tallas con el primer color.
+                window.changeColorAndSize(product, initialColor);
+            } else {
+                // Para productos sin color: inicializa tallas y setea la imagen frontal por defecto.
+                document.getElementById('size-options').innerHTML = generateSizeOptionsHTML(product, null);
+                const fileName = getFileName(product, 'front', null);
+                document.getElementById('main-product-image').src = fileName;
+
+                // Actualizar botón de añadir al carrito
+                document.getElementById('add-to-cart-button').onclick = () => window.addToCart(product.id, 'N/A');
+            }
+            
+            // 4. Mostrar tabla de tallas
+            if (product.sizeChartHTML) {
+                document.getElementById('size-chart-container').innerHTML = `
+                    <h4>Tabla de Tallas</h4>
+                    ${product.sizeChartHTML}
+                `;
+            } else {
+                 document.getElementById('size-chart-container').innerHTML = '';
+            }
+            
 
             document.getElementById('product-modal').style.display = "block";
         }
 
+
         function generateSizeOptionsHTML(product, selectedColor) {
             let stockMap = product.stock;
+            let title = 'Tallas disponibles:';
+            let activeColor = selectedColor || 'N/A';
+            let productCodeForTitle = product.productCode || 'N/A';
 
             if (product.isColorProduct && selectedColor) {
                 stockMap = product.stockByColor?.[selectedColor] || {};
+                title = `Tallas disponibles para ${selectedColor}:`;
+                productCodeForTitle = product.colorMap[selectedColor]?.productCode || product.productCode || 'N/A';
             }
             
-            const sizes = Object.keys(stockMap).filter(size => stockMap[size] > 0);
+            const sizes = Object.keys(stockMap).sort((a, b) => {
+                // Ordenar tallas comunes (XS, S, M, L, XL, etc.) si es posible
+                const order = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+                return order.indexOf(a) - order.indexOf(b);
+            }).filter(size => stockMap[size] > 0);
+
+            let html = `<p>Código Producto: <strong>${productCodeForTitle}</strong></p>
+                        <p>${title}</p>
+                        <div id="size-buttons-container">`;
 
             if (sizes.length === 0) {
-                return '<p>No hay stock disponible para las tallas en este color.</p>';
+                html += '<p>No hay stock disponible para esta selección.</p>';
+                return html + '</div>';
             }
+            
+            let firstSize = sizes[0];
 
-            return `
-                <label>Talla:</label>
-                <div>
-                    ${sizes.map(size => `
-                        <button class="stock-option" 
-                                onclick="document.querySelector('#selected-size').value='${size}'">
-                            ${size} (${stockMap[size]})
-                        </button>
-                    `).join('')}
-                    <input type="hidden" id="selected-size" value="${sizes[0]}">
-                </div>
-                <p>Talla seleccionada: <span id="display-size">${sizes[0]}</span></p>
-            `;
+            sizes.forEach(size => {
+                const isActive = size === firstSize ? 'active' : '';
+                html += `
+                    <button class="stock-option ${isActive}" 
+                            data-size="${size}"
+                            onclick="window.selectSize('${size}')">
+                        ${size} (${stockMap[size]})
+                    </button>
+                `;
+            });
+            
+            html += `</div>
+                     <input type="hidden" id="selected-size" value="${firstSize}">
+                     <p style="margin-top: 10px;">Talla seleccionada: <strong id="display-size">${firstSize}</strong></p>`;
+            
+            return html;
+        }
+
+        window.selectSize = function(size) {
+            document.getElementById('selected-size').value = size;
+            document.getElementById('display-size').textContent = size;
+            
+            // Opcional: Actualizar el estado 'active' de los botones
+            document.querySelectorAll('#size-buttons-container button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`button[data-size="${size}"]`).classList.add('active');
         }
 
 
-        window.addToCart = function(productId) {
+        window.addToCart = function(productId, color) {
             const product = window.inventory.find(p => p.id === productId);
             if (!product) return;
 
             const quantity = parseInt(document.getElementById('quantity').value);
             const size = document.getElementById('selected-size')?.value;
-            const color = product.isColorProduct ? document.getElementById('color-select').value : 'N/A';
+            
+            const finalColor = color === 'N/A' ? 'Único' : color;
             
             if (!size || quantity <= 0) {
                 alert("Por favor, selecciona una talla y una cantidad válida.");
@@ -364,7 +507,7 @@
 
             let availableStock = 0;
             if (product.isColorProduct) {
-                availableStock = product.stockByColor?.[color]?.[size] || 0;
+                availableStock = product.stockByColor?.[finalColor]?.[size] || 0;
             } else {
                 availableStock = product.stock?.[size] || 0;
             }
@@ -375,12 +518,11 @@
             }
 
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const cartItemId = `${productId}-${color}-${size}`;
+            const cartItemId = `${productId}-${finalColor}-${size}`;
 
             const existingItemIndex = cart.findIndex(item => item.cartItemId === cartItemId);
 
             if (existingItemIndex > -1) {
-                // Si ya existe, actualiza la cantidad
                 const newQuantity = cart[existingItemIndex].quantity + quantity;
                 if (newQuantity > availableStock) {
                     alert(`No puedes agregar más. Stock máximo: ${availableStock}`);
@@ -388,14 +530,13 @@
                 }
                 cart[existingItemIndex].quantity = newQuantity;
             } else {
-                // Si no existe, agrégalo
                 cart.push({
                     cartItemId: cartItemId,
                     id: productId,
                     name: product.name,
                     price: product.price,
                     size: size,
-                    color: color,
+                    color: finalColor,
                     isColorProduct: product.isColorProduct,
                     quantity: quantity
                 });
@@ -403,7 +544,7 @@
 
             saveCart(cart);
             window.closeProductModal();
-            alert(`¡${quantity} unidad(es) de ${product.name} añadida(s) al carrito!`);
+            alert(`¡${quantity} unidad(es) de ${product.name} (${finalColor}) añadida(s) al carrito!`);
         }
 
         // Inicializar el carrito al cargar la página
