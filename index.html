@@ -290,7 +290,7 @@
                 { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
                 { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
                 { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
-                { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy1', backFile: 'Katy2', sideFile: 'negro' },
+                { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1', backFile: 'Gon2', sideFile: 'negro' },
                 { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
                 { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
                 { i: 33, name: 'TAYLOR SWIFT', description: 'Playera Modelo 33', stock: { 'S': 1, 'M': 1, 'L':1 },frontFile: 'Bere3', backFile: 'Bere4', sideFile: 'negro2' },
@@ -586,7 +586,7 @@
                     });
                 }
                 
-                // 🚨 LÓGICA DEL INDICADOR "AGOTADO" EN TARJETA
+                // LÓGICA DEL INDICADOR "AGOTADO" EN TARJETA
                 const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
                 const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
 
@@ -614,7 +614,7 @@
         // LÓGICA DE MODAL DE DETALLE
         // =======================================================
         
-        // 🚨 FUNCIÓN MEJORADA PARA ACTUALIZAR TALLAS BASADO EN COLOR (SIN LA PALABRA STOCK)
+        // FUNCIÓN MEJORADA PARA ACTUALIZAR TALLAS BASADO EN COLOR (SIN LA PALABRA STOCK)
         function updateSizesForSelectedColor(product, selectedColor) {
             const sizeSelect = document.getElementById('sizeSelect');
             sizeSelect.innerHTML = '';
@@ -632,7 +632,7 @@
                 if (stock > 0) {
                     const option = document.createElement('option');
                     option.value = size;
-                    // CORRECCIÓN: Solo mostrar la talla, sin la palabra "Stock"
+                    // CORRECCIÓN ANTERIOR: Solo mostrar la talla, sin la palabra "Stock"
                     option.textContent = `${size}`; 
                     sizeSelect.appendChild(option);
 
@@ -982,8 +982,11 @@
             orderText += `*Productos:*\n`;
             
             currentOrder.forEach((item, index) => {
+                // 🚨 CORRECCIÓN APLICADA AQUÍ: Extraer y mostrar el número del modelo (ej. PROD_042 -> #42)
+                const modelNumber = item.productId.split('_')[1].replace(/^0+/, ''); 
                 const colorText = item.color ? ` (${item.color})` : '';
-                orderText += `${index + 1}. ${item.name} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+                
+                orderText += `${index + 1}. *Modelo #${modelNumber}* - ${item.name} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
             });
 
             orderText += `\n*Datos del Cliente:*\n`;
@@ -1005,8 +1008,7 @@
                 date: new Date().toLocaleString()
             });
 
-            // 2. APLICAR EL DESCUENTO DEL STOCK (por ID, Color y Talla)
-            // 🚨 ESTA ES LA LÍNEA CRÍTICA QUE DESCUENTA EL STOCK AL ENVIAR EL PEDIDO
+            // 2. APLICAR EL DESCUENTO DEL STOCK
             currentOrder.forEach(item => {
                 let key;
                 if (item.color) {
@@ -1067,4 +1069,3 @@
     </script>
 </body>
 </html>
-
