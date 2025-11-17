@@ -13,6 +13,7 @@
             border: 1px solid #ddd;
             transition: transform 0.2s;
             margin-bottom: 20px;
+            position: relative;
         }
         .product-card:hover {
             transform: translateY(-5px);
@@ -26,130 +27,108 @@
             background-color: #e6004b;
             color: white;
         }
-        /* ESTO OCULTA EL BADGE DE STOCK EN LA TARJETA Y EN EL MODAL DE DETALLE */
-        .stock-badge, #stockIndicator {
-            display: none !important; 
-        }
         .carousel-item img {
             max-height: 500px;
             object-fit: contain;
         }
-        /* Estilo para el botón de WhatsApp fijo */
-        .whatsapp-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #25d366;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 60px;
-            font-size: 30px;
-            z-index: 1000;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: background-color 0.3s;
+        .stock-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            opacity: 0.9;
         }
-        .whatsapp-button:hover {
-            background-color: #128c7e;
+        #ordersCounter {
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: #ff3366; /* Color para el contador */
         }
-        .whatsapp-button i {
-            display: inline-block;
-            transform: translateY(10%);
-        }
-        /* Estilos para el carrusel de imágenes */
-        .carousel-indicators [data-bs-target] {
-            background-color: #ff3366;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            opacity: 0.5;
-        }
-        .carousel-indicators .active {
-            opacity: 1;
+        .product-card .card-img-top {
+            height: 300px;
+            object-fit: cover;
         }
     </style>
 </head>
 <body>
 
-    <a href="https://wa.me/529991480151" target="_blank" class="whatsapp-button" title="Haz tu pedido por WhatsApp">
-        &#x2705; 
-    </a>
-
-    <header class="p-3 mb-4 bg-white shadow-sm">
-        <div class="container d-flex justify-content-between align-items-center">
-            <img id="logo-image" style="max-width: 150px; height: auto;" alt="RPLAY Logo">
-            <h1 class="h3 text-primary d-none d-md-block">RPLAY</h1>
-            <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
-                Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
+    <header class="bg-white shadow-sm mb-4">
+        <div class="container d-flex justify-content-between align-items-center py-3">
+            <h1 class="h3 mb-0">
+                <img id="logo-image" src="" alt="RPLAY Logo" style="height: 40px; margin-right: 10px;">
+                RPLAY Store
+            </h1>
+            <button class="btn btn-outline-secondary position-relative" data-bs-toggle="modal" data-bs-target="#ordersModal" onclick="openOrdersModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <span id="ordersCounter" class="ms-2">0</span>
             </button>
         </div>
     </header>
 
     <main class="container">
+        <h2 class="mb-4 text-center">Catálogo de Playeras</h2>
         <div class="row" id="product-list">
-             <h2 class="text-center">Cargando inventario local...</h2>
+            <div class="col-12 text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando inventario en tiempo real...</p>
+            </div>
         </div>
-
     </main>
 
     <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="productDetailModalLabel">Detalles del Producto</h5>
+                    <h5 class="modal-title" id="productDetailModalLabel">Detalle de Producto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <input type="hidden" id="modalProductId">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6">
                             <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-indicators" id="carouselIndicators">
-                                    </div>
-                                <div class="carousel-inner" id="carouselInner">
-                                    </div>
+                                <div class="carousel-indicators" id="carouselIndicators"></div>
+                                <div class="carousel-inner" id="carouselInner"></div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
+                                    <span class="visually-hidden">Anterior</span>
                                 </button>
                                 <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
                                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
+                                    <span class="visually-hidden">Siguiente</span>
                                 </button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <span id="stockIndicator" class="badge rounded-pill bg-warning text-dark d-none">Stock: </span>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <h2 id="modalProductName" class="text-primary"></h2>
+                            <h2 id="modalProductName"></h2>
                             <p id="modalProductDescription" class="text-muted"></p>
-                            
-                            <h3 id="modalProductPrice" class="my-3 text-success"></h3>
-                            
-                            <form id="orderForm">
-                                <input type="hidden" id="modalProductId" name="productId">
+                            <h3 class="text-success fw-bold" id="modalProductPrice"></h3>
 
-                                <div class="mb-3" id="colorSelectContainer" style="display:none;">
+                            <form id="orderForm">
+                                <div class="mb-3" id="colorSelectContainer" style="display: none;">
                                     <label for="colorSelect" class="form-label">Color:</label>
-                                    <select class="form-select" id="colorSelect" name="color">
-                                        </select>
+                                    <select class="form-select" id="colorSelect" required></select>
                                 </div>
+                                
                                 <div class="mb-3">
                                     <label for="sizeSelect" class="form-label">Talla:</label>
-                                    <select class="form-select" id="sizeSelect" name="size" required>
-                                        </select>
+                                    <select class="form-select" id="sizeSelect" required></select>
                                 </div>
-
+                                
                                 <div class="mb-3">
                                     <label for="quantityInput" class="form-label">Cantidad:</label>
-                                    <input type="number" class="form-control" id="quantityInput" name="quantity" value="1" min="1" required>
+                                    <input type="number" class="form-control" id="quantityInput" value="1" min="1" required>
                                 </div>
 
-                                <div class="mb-3">
-                                    <span id="stockIndicator" class="badge"></span>
-                                </div>
-
-                                <button type="submit" class="btn btn-buy w-100" id="addToOrderButton">Añadir al Pedido</button>
+                                <button type="submit" class="btn btn-buy btn-lg w-100 mt-3" id="addToOrderButton" disabled>
+                                    Añadir 1 a Pedido
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -159,68 +138,83 @@
     </div>
 
     <div class="modal fade" id="ordersModal" tabindex="-1" aria-labelledby="ordersModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="ordersModalLabel">Mi Pedido</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ordersModalLabel">Tu Pedido Actual</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <ul class="list-group mb-4" id="currentOrdersList">
-                        <li class="list-group-item text-center text-muted" id="emptyOrdersMessage" style="display: none;">Tu pedido está vacío.</li>
-                    </ul>
-
-                    <h4 class="mb-3">Total a Pagar: <span id="ordersTotal" class="text-success">$0.00</span></h4>
-                    
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck">
-                        <label class="form-check-label" for="halfPaymentCheck">
-                            Pagar el 50% de anticipo (<span id="halfPaymentAmount">$0.00</span>)
-                        </label>
-                    </div>
-
-                    <hr>
-
-                    <form id="clientDataForm" class="mt-4">
-                        <h5 class="text-primary">Datos para Envío y Contacto</h5>
-                        <div class="mb-3">
-                            <label for="clientName" class="form-label">Nombre Completo:</label>
-                            <input type="text" class="form-control" id="clientName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="clientAddress" class="form-label">Dirección de Correo</label>
-                            <textarea class="form-control" id="clientAddress" rows="2" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="clientPhone" class="form-label">Teléfono (WhatsApp):</label>
-                            <input type="tel" class="form-control" id="clientPhone" required>
-                        </div>
-                    </form>
+                        <li class="list-group-item text-center text-muted" id="emptyOrdersMessage" style="display: none;">
+                            Tu pedido está vacío.
+                        </li>
+                        </ul>
 
                     <div id="paymentDetailsSection" style="display: none;">
-                        <hr>
-                        <h5 class="text-primary">Datos de Transferencia Bancaria</h5>
-                        <p class="mb-1"><strong>Banco:</strong>BBVA</p>
-                        <p class="mb-1"><strong>Número de Cuenta:</strong> 4152314029419622</p>
-                        <p class="mb-1"><strong>Beneficiario:</strong> RPLAY</p>
-                        
-                        <p class="mt-3 text-muted">Una vez hecha la transferencia o depósito, presiona "Enviar Pedido por WhatsApp" y adjunta tu comprobante.</p>
+                        <h6 class="mt-4">Detalles de Pago</h6>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck">
+                            <label class="form-check-label" for="halfPaymentCheck">
+                                Pagar 50% de Anticipo (<span id="halfPaymentAmount">$0.00</span>)
+                            </label>
+                        </div>
+                        <h4 class="text-end">Total a Pagar: <span class="text-success" id="ordersTotal">$0.00</span></h4>
                     </div>
+                    
 
+                    <form id="clientDataForm" style="display: none;" class="mt-4">
+                        <h6>Datos de Envío</h6>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="clientName" placeholder="Tu Nombre Completo" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="tel" class="form-control" id="clientPhone" placeholder="Tu Teléfono (WhatsApp)" required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="clientAddress" placeholder="Dirección completa de envío (calle, número, colonia, CP)" required></textarea>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
-                    <button type="button" class="btn btn-buy" id="finalizeOrderButton" disabled onclick="sendOrderToWhatsapp()">
-                        Enviar Pedido por WhatsApp
+                    <button type="button" class="btn btn-buy" id="finalizeOrderButton" onclick="sendOrderToWhatsapp()" disabled>
+                        Finalizar Pedido y Enviar a WhatsApp
                     </button>
                 </div>
             </div>
-            </div>
         </div>
     </div>
-    
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        // =======================================================
+        // CONFIGURACIÓN DE FIREBASE 🚨 REEMPLAZA ESTAS CLAVES CON LAS TUYAS
+        // =======================================================
+        const firebaseConfig = {
+            // Claves obtenidas del snippet de tu archivo
+            apiKey: "AIzaSyCtgsjjbNiS0lv5aLDb8nkpN_9-4sXIJvE",
+            authDomain: "rplay-f04dc.firebaseapp.com",
+            projectId: "rplay-f04dc",
+            storageBucket: "rplay-f04dc.firebasestorage.app",
+            messagingSenderId: "787828282738",
+            appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
+            measurementId: "G-XEKR4KEDMR"
+        };
+        
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        // Inicializar Database
+        const db = getDatabase(app); 
+        const inventoryRef = ref(db, 'inventario'); // <-- NODO CLAVE EN FIREBASE
+
         // =======================================================
         // DECLARACIÓN DE VARIABLES GLOBALES Y CONSTANTES
         // =======================================================
@@ -228,20 +222,17 @@
         const MINIMUM_TO_SHIP = 1;   
         const WHATSAPP_NUMBER = '529991480151'; 
         
-        // 🚨 V9.2: Extensión por defecto es minúscula. Solo 'Gon' usa .PNG (cambio solicitado por el usuario)
         const DEFAULT_EXTENSION = '.png'; 
-        const UPPERCASE_EXTENSION = '.PNG'; // Para Gon
-        // 🚨 ENLACE CRÍTICO: RUTA REAL DE IMÁGENES EN GITHUB PAGES
+        const UPPERCASE_EXTENSION = '.PNG'; 
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         
-        // 🚨 V9.1 CORRECCIÓN: 'xime1' debe estar en la lista para forzar minúsculas
-        const MUST_BE_LOWERCASE = ['xime1', 'negro', 'blanco', 'negro2', 'blanco2', 'medidas', 'logo', 'arena']; 
+        const MUST_BE_LOWERCASE = ['xime1', 'negro', 'blanco', 'negro2', 'blanco2', 'medidas', 'logo', 'arena', 'fallback_default']; 
         
         const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
         const GENERIC_SIDE_PLACEHOLDER = 'generic_side_image_placeholder';
 
         let productData = []; 
-        let productInventory = {}; 
+        let productInventory = {}; // Mantiene el stock actual de Firebase
         let currentOrder = []; 
 
         let orderIdCounter = 0;
@@ -259,757 +250,251 @@
             const lowerBaseName = baseName.toLowerCase();
             
             if (MUST_BE_LOWERCASE.includes(lowerBaseName)) {
-                // Si es una excepción (logo, medidas, xime1, negro, etc.), forzar minúsculas
                 baseName = lowerBaseName; 
             } else {
-                // Si NO es una excepción (Abi1, Gon3, etc.), forzar mayúscula inicial
                 if (baseName.length > 0) {
                     baseName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
                 }
             }
             
-            // 🚨 V9.2 Lógica de la extensión: solo 'Gon' usa .PNG
             let extension = DEFAULT_EXTENSION;
             if (lowerBaseName.startsWith('gon')) {
                  extension = UPPERCASE_EXTENSION;
             }
             
-            // Retorna el nombre base correctamente capitalizado y la extensión correcta
             return { name: baseName, ext: extension };
         }
 
         function getImageUrl(fileBase) {
-            // Manejar bases vacías o placeholders con imagen de respaldo
             if (!fileBase || fileBase === GENERIC_SIDE_PLACEHOLDER) {
                 const fallback = formatFileName('fallback_default');
                 return `${GITHUB_BASE_URL}${fallback.name}${fallback.ext}`;
             }
 
-            // Tratamiento de la imagen de medidas
             if (fileBase === GENERIC_SIDE_IMAGE_BASE) {
                 const measures = formatFileName(GENERIC_SIDE_IMAGE_BASE);
                 return `${GITHUB_BASE_URL}${measures.name}${measures.ext}`;
             }
             
             const fileInfo = formatFileName(fileBase);
-            // Genera la URL (Ej: /RPLAY/Gon1.PNG o /RPLAY/xime1.png)
             return `${GITHUB_BASE_URL}${fileInfo.name}${fileInfo.ext}`; 
         }
 
         // =======================================================
-        // DEFINICIÓN DE PRODUCTOS ORIGINALES (USADA PARA INICIALIZAR Y EXPORTAR)
-        // 🚨 ESTA ESTRUCTURA DEBE MANTENERSE ACTUALIZADA CON TUS MODELOS ORIGINALES 🚨
+        // DEFINICIÓN DE PRODUCTOS (SOLO METADATOS Y TALLAS POSIBLES)
         // =======================================================
         const ORIGINAL_PRODUCTS_DEFINITION = [
-            // Modelos estándar (estructura simple)
-           [
-    {
-        "i": 1,
-        "name": "BTS",
-        "description": "Playera Modelo 1",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "xime1",
-        "backFile": "Xime2",
-        "sideFile": "blanco"
-    },
-    {
-        "i": 2,
-        "name": "BTS",
-        "description": "Playera Modelo 2",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Xime3",
-        "backFile": "Xime4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 3,
-        "name": "MICHAEL JACKSON",
-        "description": "Playera Modelo 3",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Abi1",
-        "backFile": "Abi2",
-        "sideFile": "blanco"
-    },
-    {
-        "i": 4,
-        "name": "MICHAEL JACKSON",
-        "description": "Playera Modelo 4",
-        "stock": {
-            "L": 1
-        },
-        "frontFile": "Abi3",
-        "backFile": "Abi4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 5,
-        "name": "ADO",
-        "description": "Playera Modelo 5",
-        "stock": {
-            "XL": 1
-        },
-        "frontFile": "Lucy1",
-        "backFile": "Lucy2",
-        "sideFile": "blanco"
-    },
-    {
-        "i": 6,
-        "name": "ADO",
-        "description": "Playera Modelo 6",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 2
-        },
-        "frontFile": "Lucy3",
-        "backFile": "Lucy4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 7,
-        "name": "BRUNO MARS",
-        "description": "Playera Modelo 7",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Raul1",
-        "backFile": "Raul2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 8,
-        "name": "BRUNO MARS",
-        "description": "Playera Modelo 8",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Raul3",
-        "backFile": "Raul4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 9,
-        "name": "LATIN MAFIA",
-        "description": "Playera Modelo 9",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Dani1",
-        "backFile": "Dani2",
-        "sideFile": "blanco"
-    },
-    {
-        "i": 10,
-        "name": "LATIN MAFIA",
-        "description": "Playera Modelo 10",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Dani3",
-        "backFile": "Dani4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 11,
-        "name": "AESPA",
-        "description": "Playera Modelo 11",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Dali1",
-        "backFile": "Dali2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 12,
-        "name": "AESPA",
-        "description": "Playera Modelo 12",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Dali3",
-        "backFile": "Dali4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 13,
-        "name": "BILLIE EILISH",
-        "description": "Playera Modelo 13",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Yose1",
-        "backFile": "Yose2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 14,
-        "name": "BILLIE EILISH",
-        "description": "Playera Modelo 14",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Yose3",
-        "backFile": "Yose4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 15,
-        "name": "LANA DEL REY",
-        "description": "Playera Modelo 15",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Keila1",
-        "backFile": "Keila2",
-        "sideFile": "blanco"
-    },
-    {
-        "i": 16,
-        "name": "LANA DEL REY",
-        "description": "Playera Modelo 16",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Keila3",
-        "backFile": "Keila4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 17,
-        "name": "MY CHEMICAL ROMANCE",
-        "description": "Playera Modelo 17",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Kenji1",
-        "backFile": "Kenji2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 18,
-        "name": "MY CHEMICAL ROMANCE",
-        "description": "Playera Modelo 18",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Kenji3",
-        "backFile": "Kenji4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 19,
-        "name": "TWENTY ONE PILOTS",
-        "description": "Playera Modelo 19",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Alli1",
-        "backFile": "Alli2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 20,
-        "name": "TWENTY ONE PILOTS",
-        "description": "Playera Modelo 20",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Alli3",
-        "backFile": "Alli4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 21,
-        "name": "SELENA QUINTANILLA",
-        "description": "Playera Modelo 21",
-        "stock": {
-            "XL": 1
-        },
-        "frontFile": "Ale1",
-        "backFile": "Ale2",
-        "sideFile": "arena"
-    },
-    {
-        "i": 22,
-        "name": "OLIVIA RODRIGO",
-        "description": "Playera Modelo 22",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Miri1",
-        "backFile": "Miri2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 23,
-        "name": "OLIVIA RODRIGO",
-        "description": "Playera Modelo 23",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Miri3",
-        "backFile": "Miri4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 24,
-        "name": "BAD BUNNY",
-        "description": "Playera Modelo 24",
-        "stock": {
-            "M": 1,
-            "XL": 1
-        },
-        "frontFile": "Didi1",
-        "backFile": "Didi2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 25,
-        "name": "BAD BUNNY",
-        "description": "Playera Modelo 25",
-        "stock": {
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Didi3",
-        "backFile": "Didi4",
-        "sideFile": "arena"
-    },
-    {
-        "i": 26,
-        "name": "Taylor SWIFT",
-        "description": "Playera Modelo 26",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Vale1",
-        "backFile": "Vale2",
-        "sideFile": "arena"
-    },
-    {
-        "i": 27,
-        "name": "TAYLOR SWIFT",
-        "description": "Playera Modelo 27",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Vale3",
-        "backFile": "Vale4",
-        "sideFile": "negro"
-    },
-    {
-        "i": 28,
-        "name": "HUMBE",
-        "description": "Playera Modelo 28",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Caro1",
-        "backFile": "Caro2",
-        "sideFile": "arena"
-    },
-    {
-        "i": 29,
-        "name": "HUMBE",
-        "description": "Playera Modelo 29",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Caro3",
-        "backFile": "Caro4",
-        "sideFile": "arena"
-    },
-    {
-        "i": 30,
-        "name": "KATY PERRY",
-        "description": "Playera Modelo 30",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Gon1",
-        "backFile": "Gon2",
-        "sideFile": "negro"
-    },
-    {
-        "i": 31,
-        "name": "KATY PERRY",
-        "description": "Playera Modelo 31",
-        "stock": {
-            "M": 1,
-            "L": 1,
-            "XL": 1
-        },
-        "frontFile": "Katy3",
-        "backFile": "Katy4",
-        "sideFile": "blanco"
-    },
-    {
-        "i": 32,
-        "name": "TAYLOR SWIFT",
-        "description": "Playera Modelo 32",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Bere1",
-        "backFile": "Bere2",
-        "sideFile": "blanco2"
-    },
-    {
-        "i": 33,
-        "name": "TAYLOR SWIFT",
-        "description": "Playera Modelo 33",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Bere3",
-        "backFile": "Bere4",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 34,
-        "name": "BTS",
-        "description": "Playera Modelo 34",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Dan1",
-        "backFile": "Dan2",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 35,
-        "name": "BTS",
-        "description": "Playera Modelo 35",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Dan3",
-        "backFile": "Dan4",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 36,
-        "name": "NCT DREAM",
-        "description": "Playera Modelo 36",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Gera1",
-        "backFile": "Gera2",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 37,
-        "name": "NCT DREAM",
-        "description": "Playera Modelo 37",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Gera3",
-        "backFile": "Gera4",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 38,
-        "name": "HUNTRIX/SAJA BOYS",
-        "description": "Playera Modelo 38",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Bra1",
-        "backFile": "Bra2",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 39,
-        "name": "HUNTRIX/SAJA BOYS",
-        "description": "Playera Modelo 39",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Bra3",
-        "backFile": "Bra4",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 40,
-        "name": "HOZIER",
-        "description": "Playera Modelo 40",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Adri1",
-        "backFile": "Adri2",
-        "sideFile": "negro2"
-    },
-    {
-        "i": 41,
-        "name": "HOZIER",
-        "description": "Playera Modelo 41",
-        "stock": {
-            "S": 1,
-            "M": 1,
-            "L": 1
-        },
-        "frontFile": "Adri3",
-        "backFile": "Adri4",
-        "sideFile": "blanco2"
-    },
-    {
-        "i": 42,
-        "name": "BLACKPINK",
-        "description": "Modelo 42 con opción de color",
-        "colors": [
-            "Negro",
-            "Blanco"
-        ],
-        "isColorProduct": true,
-        "stockByColor": {
-            "Blanco": {
-                "S": 1,
-                "M": 1
-            },
-            "Negro": {
-                "L": 1
-            }
-        },
-        "colorMap": {
-            "Negro": {
-                "front": "Aro1",
-                "back": "Aro2",
-                "side": "negro2"
-            },
-            "Blanco": {
-                "front": "Aro3",
-                "back": "Aro4",
-                "side": "blanco2"
-            }
-        }
-    },
-    {
-        "i": 43,
-        "name": "BLACKPINK",
-        "description": "Modelo 43 con opción de color",
-        "colors": [
-            "Negro",
-            "Blanco"
-        ],
-        "isColorProduct": true,
-        "stockByColor": {
-            "Blanco": {
-                "S": 1,
-                "M": 1
-            },
-            "Negro": {
-                "L": 1
-            }
-        },
-        "colorMap": {
-            "Negro": {
-                "front": "Aro5",
-                "back": "Aro6",
-                "side": "negro2"
-            },
-            "Blanco": {
-                "front": "Aro7",
-                "back": "Aro8",
-                "side": "blanco2"
-            }
-        }
-    }
-
-        // =======================================================
-        // FUNCIÓN DE INVENTARIO INICIAL (CONFIGURACIÓN DE STOCK POR TALLA/COLOR)
-        // =======================================================
-
-        function generateInitialInventory() {
-            // Limpiar datos globales antes de regenerar
-            productData.length = 0; 
-            for (const key in productInventory) { delete productInventory[key]; }
-
-            const defaultStock = { 'M': 1, 'L': 1 }; 
-            const initialProducts = ORIGINAL_PRODUCTS_DEFINITION;
-            
-            // Rellenar hasta el modelo 43 con stock por defecto si no están definidos
-            const MAX_MODELS = 43;
-            const existingIndices = initialProducts.map(p => p.i);
-            
-            for (let i = 1; i <= MAX_MODELS; i++) {
-                if (!existingIndices.includes(i)) {
-                    initialProducts.push({
-                        i: i,
-                        name: `Playera Modelo No. ${i} (Faltan Imágenes)`,
-                        description: `Diseño exclusivo #${i}. ¡Modifica este texto!`,
-                        stock: defaultStock,
-                        frontFile: `DEFAULT_${i}_frente`, 
-                        backFile: `DEFAULT_${i}_espalda`,
-                        sideFile: GENERIC_SIDE_PLACEHOLDER
-                    });
+            { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'Xime2', sideFile: 'blanco' },
+            { i: 2, name: 'BTS', description: 'Playera Modelo 2', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'Xime3', backFile: 'Xime4', sideFile: 'negro' },
+            { i: 3, name: 'MICHAEL JACKSON', description: 'Playera Modelo 3', stock:{ 'S':1, 'M':1, 'L': 1 },  frontFile: 'Abi1', backFile: 'Abi2', sideFile: 'blanco' },
+            { i: 4, name: 'MICHAEL JACKSON', description: 'Playera Modelo 4', stock: {'L': 1 }, frontFile: 'Abi3', backFile: 'Abi4', sideFile: 'negro' },
+            { i: 5, name: 'ADO', description: 'Playera Modelo 5', stock: {'XL': 1 }, frontFile: 'Lucy1', backFile: 'Lucy2', sideFile: 'blanco' },
+            { i: 6, name: 'ADO', description: 'Playera Modelo 6', stock: { 'M': 1, 'L': 1, 'XL':2 }, frontFile: 'Lucy3', backFile: 'Lucy4', sideFile: 'negro' },
+            { i: 7, name: 'BRUNO MARS', description: 'Playera Modelo 7', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Raul1', backFile: 'Raul2', sideFile: 'negro' },
+            { i: 8, name: 'BRUNO MARS', description: 'Playera Modelo 8', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Raul3', backFile: 'Raul4', sideFile: 'negro' },
+            { i: 9, name: 'LATIN MAFIA', description: 'Playera Modelo 9', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dani1', backFile: 'Dani2', sideFile: 'blanco' },
+            { i: 10, name: 'LATIN MAFIA', description: 'Playera Modelo 10', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dani3', backFile: 'Dani4', sideFile: 'negro' },
+            { i: 11, name: 'AESPA', description: 'Playera Modelo 11', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dali1', backFile: 'Dali2', sideFile: 'negro' },
+            { i: 12, name: 'AESPA', description: 'Playera Modelo 12', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dali3', backFile: 'Dali4', sideFile: 'negro' },
+            { i: 13, name: 'BILLIE EILISH', description: 'Playera Modelo 13', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Yose1', backFile: 'Yose2', sideFile: 'negro' },
+            { i: 14, name: 'BILLIE EILISH', description: 'Playera Modelo 14', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Yose3', backFile: 'Yose4', sideFile: 'negro' },
+            { i: 15, name: 'LANA DEL REY', description: 'Playera Modelo 15', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Keila1', backFile: 'Keila2', sideFile: 'blanco' },
+            { i: 16, name: 'LANA DEL REY', description: 'Playera Modelo 16', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Keila3', backFile: 'Keila4', sideFile: 'negro' },
+            { i: 17, name: 'MY CHEMICAL ROMANCE', description: 'Playera Modelo 17', stock: { 'M': 1, 'L': 1, 'XL':1 },  frontFile: 'Kenji1', backFile: 'Kenji2', sideFile: 'negro' },
+            { i: 18, name: 'MY CHEMICAL ROMANCE', description: 'Playera Modelo 18', stock: { 'M': 1, 'L': 1, 'XL':1 },  frontFile: 'Kenji3', backFile: 'Kenji4', sideFile: 'negro' },
+            { i: 19, name: 'TWENTY ONE PILOTS', description: 'Playera Modelo 19', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Alli1', backFile: 'Alli2', sideFile: 'negro' },
+            { i: 20, name: 'TWENTY ONE PILOTS', description: 'Playera Modelo 20', stock: { 'M': 1, 'L': 1, 'XL':1 },frontFile: 'Alli3', backFile: 'Alli4', sideFile: 'negro' },
+            { i: 21, name: 'SELENA QUINTANILLA', description: 'Playera Modelo 21', stock: { 'XL':1 }, frontFile: 'Ale1', backFile: 'Ale2', sideFile: 'arena' },
+            { i: 22, name: 'OLIVIA RODRIGO', description: 'Playera Modelo 22', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Miri1', backFile: 'Miri2', sideFile: 'negro' },
+            { i: 23, name: 'OLIVIA RODRIGO', description: 'Playera Modelo 23', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Miri3', backFile: 'Miri4', sideFile: 'negro' },
+            { i: 24, name: 'BAD BUNNY', description: 'Playera Modelo 24', stock: { 'M': 1, 'XL':1 }, frontFile: 'Didi1', backFile: 'Didi2', sideFile: 'negro' },
+            { i: 25, name: 'BAD BUNNY', description: 'Playera Modelo 25', stock: { 'L': 1, 'XL':1 }, frontFile: 'Didi3', backFile: 'Didi4', sideFile: 'arena' },
+            { i: 26, name: 'Taylor SWIFT', description: 'Playera Modelo 26', stock:{ 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale1', backFile: 'Vale2', sideFile: 'arena' },
+            { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
+            { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
+            { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
+            { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1', backFile: 'Gon2', sideFile: 'negro' },
+            { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
+            { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
+            { i: 33, name: 'TAYLOR SWIFT', description: 'Playera Modelo 33', stock: { 'S': 1, 'M': 1, 'L':1 },frontFile: 'Bere3', backFile: 'Bere4', sideFile: 'negro2' },
+            { i: 34, name: 'BTS', description: 'Playera Modelo 34', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Dan1', backFile: 'Dan2', sideFile: 'negro2' },
+            { i: 35, name: 'BTS', description: 'Playera Modelo 35', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Dan3', backFile: 'Dan4', sideFile: 'negro2' },
+            { i: 36, name: 'NCT DREAM', description: 'Playera Modelo 36', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Gera1', backFile: 'Gera2', sideFile: 'negro2' },
+            { i: 37, name: 'NCT DREAM', description: 'Playera Modelo 37', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Gera3', backFile: 'Gera4', sideFile: 'negro2' },
+            { i: 38, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 38', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bra1', backFile: 'Bra2', sideFile: 'negro2' },
+            { i: 39, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 39', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bra3', backFile: 'Bra4', sideFile: 'negro2' },
+            { i: 40, name: 'HOZIER', description: 'Playera Modelo 40', stock:  { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri1', backFile: 'Adri2', sideFile: 'negro2' },
+            { i: 41, name: 'HOZIER', description: 'Playera Modelo 41', stock:  { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri3', backFile: 'Adri4', sideFile: 'blanco2' },
+           
+            // --- MODELOS CON OPCIÓN DE COLOR ---
+            { 
+                i: 42, 
+                name: 'BLACKPINK', 
+                description: 'Modelo 42 con opción de color', 
+                colors: ['Negro', 'Blanco'], 
+                isColorProduct: true,
+                stockByColor: { 
+                    'Blanco': { 'S': 1, 'M': 1 },
+                    'Negro': { 'L': 1 }
+                },
+                colorMap: { 
+                    'Negro': { front: 'Aro1', back: 'Aro2', side: 'negro2' },
+                    'Blanco': { front: 'Aro3', back: 'Aro4', side: 'blanco2' }
                 }
-            }
-            initialProducts.sort((a, b) => a.i - b.i);
+            },
+            { 
+                i: 43, 
+                name: 'BLACKPINK', 
+                description: 'Modelo 43 con opción de color', 
+                colors: [ 'Negro','Blanco'], 
+                isColorProduct: true,
+                stockByColor: { 
+                    'Blanco': { 'S': 1, 'M': 1 },
+                    'Negro': { 'L': 1 }
+                },
+                colorMap: { 
+                    'Negro': { front: 'Aro5', back: 'Aro6', side: 'negro2' },
+                    'Blanco': { front: 'Aro7', back: 'Aro8', side: 'blanco2'}
+                }
+            },
+        ];
 
 
-            // --- LÓGICA DE PROCESAMIENTO ---
-            initialProducts.forEach(prod => {
-                const i = prod.i;
-                const id = `PROD_${String(i).padStart(3, '0')}`;
+        // =======================================================
+        // FUNCIONES DE CARGA Y PROCESAMIENTO (AHORA ASÍNCRONO CON FIREBASE)
+        // =======================================================
 
-                let modelSizes = [];
-                let mainImg = '';
+        async function loadInventoryFromFirebase() {
+            try {
+                // 1. Obtener los valores de stock en tiempo real
+                const snapshot = await get(child(ref(db), 'inventario'));
+                if (snapshot.exists()) {
+                    productInventory = snapshot.val();
+                } else {
+                    console.warn("No se encontraron datos de inventario en Firebase. Usando valores por defecto (ESTO NO DEBERÍA PASAR).");
+                    // Intenta inicializar el inventario si no existe (solo para el primer uso)
+                    if (confirm("¿Deseas inicializar el inventario en Firebase con los datos del HTML? (Solo para la primera carga)")) {
+                         await initializeFirebaseInventory();
+                    }
+                }
+
+                // 2. Procesar los metadatos de los productos
+                productData.length = 0; 
+                const initialProducts = ORIGINAL_PRODUCTS_DEFINITION;
+                const MAX_MODELS = 43;
+                const existingIndices = initialProducts.map(p => p.i);
                 
-                if (prod.isColorProduct && prod.stockByColor) {
-                    // --- PROCESAR PRODUCTOS CON COLOR (NUEVA ESTRUCTURA) ---
-                    const availableColors = Object.keys(prod.stockByColor);
+                // Rellenar si faltan modelos hasta el 43
+                for (let i = 1; i <= MAX_MODELS; i++) {
+                    if (!existingIndices.includes(i)) {
+                        initialProducts.push({
+                            i: i,
+                            name: `Playera Modelo No. ${i} (Faltan Imágenes)`,
+                            description: `Diseño exclusivo #${i}. ¡Modifica este texto!`,
+                            stock: { 'M': 1, 'L': 1 }, 
+                            frontFile: `DEFAULT_${i}_frente`, 
+                            backFile: `DEFAULT_${i}_espalda`,
+                            sideFile: GENERIC_SIDE_PLACEHOLDER
+                        });
+                    }
+                }
+                initialProducts.sort((a, b) => a.i - b.i);
+
+
+                // 3. Mapear los datos del producto (sin stock)
+                initialProducts.forEach(prod => {
+                    const i = prod.i;
+                    const id = `PROD_${String(i).padStart(3, '0')}`;
+                    let modelSizes = [];
+                    let mainImg = '';
                     
-                    availableColors.forEach(color => {
-                        const colorStock = prod.stockByColor[color];
-                        const colorSizes = Object.keys(colorStock);
-                        
-                        colorSizes.forEach(size => {
-                            const stockAmount = colorStock[size];
-                            if (stockAmount > 0) {
-                                // CLAVE DE INVENTARIO: PROD_042_Blanco_S
-                                const key = `${id}_${color}_${size}`;
-                                productInventory[key] = stockAmount;
-                                
+                    if (prod.isColorProduct && prod.stockByColor) {
+                        const availableColors = Object.keys(prod.stockByColor);
+                        availableColors.forEach(color => {
+                            const colorStock = prod.stockByColor[color];
+                            Object.keys(colorStock).forEach(size => {
                                 if (!modelSizes.includes(size)) {
                                     modelSizes.push(size);
                                 }
-                            }
+                            });
                         });
-                    });
-                    
-                    // Imagen principal de la tarjeta: usa la imagen de frente del primer color
-                    if (prod.colors.length > 0 && prod.colorMap[prod.colors[0]]) {
-                        const fileBase = prod.colorMap[prod.colors[0]].front;
-                        mainImg = getImageUrl(fileBase); 
-                    } else {
-                        mainImg = getImageUrl('fallback_default'); 
-                    }
-                    
-                } else {
-                    // --- PROCESAR PRODUCTOS ESTÁNDAR (ESTRUCTURA ANTIGUA) ---
-                    // Nota: Usamos la propiedad 'stock' para obtener las tallas iniciales
-                    modelSizes = Object.keys(prod.stock).filter(size => prod.stock[size] > 0); 
-                    
-                    modelSizes.forEach(size => {
-                        const stockAmount = prod.stock[size];
-                        if (stockAmount > 0) {
-                           // CLAVE DE INVENTARIO: PROD_001_M
-                           productInventory[`${id}_${size}`] = stockAmount;
+                        
+                        if (prod.colors.length > 0 && prod.colorMap[prod.colors[0]]) {
+                            mainImg = getImageUrl(prod.colorMap[prod.colors[0]].front); 
+                        } else {
+                            mainImg = getImageUrl('fallback_default'); 
                         }
-                    });
-                    
-                    // Imagen principal de la tarjeta: usa la base del frontFile
-                    mainImg = getImageUrl(prod.frontFile);
+                        
+                    } else {
+                        modelSizes = Object.keys(prod.stock);
+                        mainImg = getImageUrl(prod.frontFile);
+                    }
+
+                    const product = {
+                        id: id,
+                        name: prod.name,
+                        description: prod.description,
+                        price: PRODUCT_PRICE,
+                        sizes: modelSizes.sort(), 
+                        colors: prod.colors || [], 
+                        isColorProduct: prod.isColorProduct || false,
+                        colorMap: prod.colorMap || {},
+                        stockByColor: prod.stockByColor || {},
+                        
+                        mainImg: mainImg,
+                        
+                        frontFileBase: prod.frontFile || '',
+                        backFileBase: prod.backFile || '',
+                        sideFileBase: prod.sideFile || GENERIC_SIDE_PLACEHOLDER,
+                    };
+
+                    productData.push(product);
+                });
+
+                console.log(`Inventario y metadatos cargados de Firebase. ${productData.length} productos.`);
+                
+            } catch (error) {
+                console.error("Error al cargar el inventario de Firebase:", error);
+                alert("Hubo un error al conectar con el inventario en tiempo real. Intenta recargar la página.");
+            }
+        }
+        
+        async function initializeFirebaseInventory() {
+            const initialInventory = {};
+            ORIGINAL_PRODUCTS_DEFINITION.forEach(prod => {
+                const id = `PROD_${String(prod.i).padStart(3, '0')}`;
+                if (prod.isColorProduct) {
+                    for (const color in prod.stockByColor) {
+                        for (const size in prod.stockByColor[color]) {
+                            const key = `${id}_${color}_${size}`;
+                            initialInventory[key] = prod.stockByColor[color][size];
+                        }
+                    }
+                } else {
+                    for (const size in prod.stock) {
+                        const key = `${id}_${size}`;
+                        initialInventory[key] = prod.stock[size];
+                    }
                 }
-
-                // --- CREACIÓN DEL OBJETO PRODUCTO ---
-                const product = {
-                    id: id,
-                    name: prod.name,
-                    description: prod.description,
-                    price: PRODUCT_PRICE,
-                    sizes: modelSizes.sort(), 
-                    colors: prod.colors || [], 
-                    isColorProduct: prod.isColorProduct || false,
-                    colorMap: prod.colorMap || {},
-                    stockByColor: prod.stockByColor || {},
-                    
-                    mainImg: mainImg,
-                    
-                    // Guardar bases estándar para renderizar el carrusel
-                    frontFileBase: prod.frontFile || '',
-                    backFileBase: prod.backFile || '',
-                    sideFileBase: prod.sideFile || GENERIC_SIDE_PLACEHOLDER,
-                };
-
-                productData.push(product);
             });
-            console.log(`Inventario cargado: ${productData.length} productos.`);
+
+            try {
+                await set(inventoryRef, initialInventory);
+                productInventory = initialInventory;
+                alert("Inventario inicial creado en Firebase con éxito.");
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                alert("Error al intentar crear el inventario inicial en Firebase.");
+            }
         }
 
+
         // =======================================================
-        // FUNCIÓN DE ADMINISTRACIÓN OCULTA (SOLO COMANDOS)
+        // FUNCIÓN DE ADMINISTRACIÓN OCULTA (PARA REINICIAR O EXPORTAR)
         // =======================================================
         
-        // Genera el código JSON actualizado listo para reemplazar ORIGINAL_PRODUCTS_DEFINITION
-        window.exportInitialProductsArray = function() {
-            loadInventoryStorage(); 
+        window.exportInitialProductsArray = async function() {
+            await loadInventoryFromFirebase();
             
             console.log("\n==============================================");
             console.log("     CÓDIGO DE INVENTARIO ACTUALIZADO (ADMIN)");
@@ -1022,6 +507,7 @@
                 const i = prod.i;
                 const id = `PROD_${String(i).padStart(3, '0')}`; 
                 const newProd = JSON.parse(JSON.stringify(prod));
+                let totalStock = 0;
 
                 if (newProd.isColorProduct) {
                     if (newProd.stockByColor) {
@@ -1030,6 +516,7 @@
                                 const key = `${id}_${color}_${size}`;
                                 const currentStock = productInventory[key] || 0; 
                                 newProd.stockByColor[color][size] = currentStock;
+                                totalStock += currentStock;
                             }
                         }
                     }
@@ -1039,20 +526,8 @@
                             const key = `${id}_${size}`;
                             const currentStock = productInventory[key] || 0;
                             newProd.stock[size] = currentStock;
+                            totalStock += currentStock;
                         }
-                    }
-                }
-                
-                let totalStock = 0;
-                if (newProd.isColorProduct) {
-                     for (const color in newProd.stockByColor) {
-                        for (const size in newProd.stockByColor[color]) {
-                            totalStock += newProd.stockByColor[color][size];
-                        }
-                    }
-                } else {
-                    for (const size in newProd.stock) {
-                        totalStock += newProd.stock[size];
                     }
                 }
                 
@@ -1072,85 +547,41 @@
             return "Código JSON generado en la consola. ¡Cópialo y actualiza GitHub!";
         }
         
-        window.showInventoryReport = function() {
-            // ... (función no modificada, solo para referencia)
-            console.log("\n==============================================");
-            console.log("     REPORTE DE INVENTARIO (ADMIN)");
-            console.log("==============================================");
+        window.resetInventoryAndOrders = async function() {
+            if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario en FIREBASE y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
-            let totalStock = 0;
-            const report = [];
-
-            for (const key in productInventory) {
-                const stock = productInventory[key];
-                if (stock > 0) {
-                    const parts = key.split('_');
-                    const isColor = parts.length === 4;
-                    const id = isColor ? `${parts[0]}_${parts[1]}` : key.substring(0, key.lastIndexOf('_')); 
-                    const color = isColor ? parts[2] : null; 
-                    const size = isColor ? parts[3] : parts[2]; 
-
-                    const product = productData.find(p => p.id === id);
-                    const name = product ? product.name : 'Desconocido';
-
-                    const colorText = color ? ` | Color: ${color}` : '';
-                    
-                    report.push(`Modelo: ${name} | Talla: ${size}${colorText} | Stock: ${stock} unidades`);
-                    totalStock += stock;
-                }
+            try {
+                // Escribir el inventario inicial de vuelta a Firebase
+                await initializeFirebaseInventory();
+                
+                // Reiniciar órdenes locales
+                localStorage.removeItem('pendingOrders');
+                localStorage.removeItem('orderIdCounter');
+                
+                // Reiniciar variables locales
+                PENDING_ORDERS = [];
+                orderIdCounter = 0;
+                currentOrder = [];
+                
+                // Recargar el inventario desde el nuevo estado de Firebase y renderizar
+                await loadInventoryFromFirebase();
+                renderProductCards();
+                
+                const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+                if(ordersModal) ordersModal.hide();
+                
+                alert("Inventario en Firebase y órdenes locales reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5)!");
+                
+            } catch (error) {
+                console.error("Error al reiniciar Firebase:", error);
+                alert("Error al intentar reiniciar el inventario en Firebase.");
             }
-
-
-            if (report.length > 0) {
-                console.log(report.join('\n'));
-                console.log("----------------------------------------------");
-                console.log(`TOTAL DE ARTÍCULOS EN STOCK: ${totalStock}`);
-            } else {
-                console.log("El inventario está vacío.");
-            }
-            console.log("==============================================");
-            return "Inventario impreso en la consola.";
-        }
-        
-        window.resetInventoryAndOrders = function() {
-            if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
-            
-            generateInitialInventory(); 
-            saveInventoryStorage();
-            
-            PENDING_ORDERS = [];
-            orderIdCounter = 0;
-            currentOrder = [];
-            saveOrdersStorage();
-            
-            renderProductCards();
-            
-            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
-            if(ordersModal) ordersModal.hide();
-            
-            alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5) para asegurar una carga limpia!");
         }
 
 
         // =======================================================
-        // FUNCIONES DE ALMACENAMIENTO (STORAGE)
+        // FUNCIONES DE ALMACENAMIENTO (SOLO ÓRDENES LOCALES)
         // =======================================================
-
-        function saveInventoryStorage() {
-            localStorage.setItem('productInventory', JSON.stringify(productInventory));
-        }
-
-        function loadInventoryStorage() {
-            const storedInventory = localStorage.getItem('productInventory');
-            if (storedInventory) {
-                const loadedInventory = JSON.parse(storedInventory); 
-                for (const key in loadedInventory) {
-                    if (productInventory.hasOwnProperty(key)) {
-                        productInventory[key] = loadedInventory[key];
-                    }
-                }
-            }
-        }
         
         function saveOrdersStorage() {
             localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
@@ -1185,7 +616,7 @@
 
 
         // =======================================================
-        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO
+        // RENDERIZACIÓN Y LÓGICA DE MODAL
         // =======================================================
 
         function renderProductCards() {
@@ -1193,7 +624,7 @@
             list.innerHTML = ''; 
 
             if (productData.length === 0) {
-                list.innerHTML = '<h2 class="text-center text-danger">No se encontraron productos en la definición local.</h2>';
+                list.innerHTML = '<h2 class="text-center text-danger">No se pudieron cargar los productos.</h2>';
                 return;
             }
             
@@ -1237,10 +668,6 @@
             });
         }
         
-        // =======================================================
-        // LÓGICA DE MODAL DE DETALLE
-        // =======================================================
-        
         function updateSizesForSelectedColor(product, selectedColor) {
             const sizeSelect = document.getElementById('sizeSelect');
             sizeSelect.innerHTML = '';
@@ -1252,7 +679,6 @@
                 sizesToProcess = Object.keys(product.stockByColor[selectedColor]).sort();
             }
             
-            // Ordenar por S, M, L, XL...
             const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
             sizesToProcess.sort((a, b) => {
                 const aIndex = sizeOrder.indexOf(a.toUpperCase());
@@ -1405,13 +831,13 @@
 
             if (stock > 0) {
                 addButton.disabled = false;
-                addButton.textContent = `Añadir ${quantity} a Pedido`;
                 
                 if (quantity > stock) {
                     quantityInput.value = stock;
                     quantity = stock;
-                    addButton.textContent = `Añadir ${stock} a Pedido`;
                 }
+                
+                addButton.textContent = `Añadir ${quantity} a Pedido`;
                 
             } else {
                 addButton.disabled = true;
@@ -1463,11 +889,7 @@
             detailModal.hide();
             openOrdersModal(); 
         });
-
-        // =======================================================
-        // LÓGICA DE MODAL DE PEDIDOS (CHECKOUT)
-        // =======================================================
-
+        
         function openOrdersModal() {
             renderOrdersList();
             const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
@@ -1475,7 +897,6 @@
         }
 
         function renderOrdersList() {
-            // ... (función no modificada)
             const list = document.getElementById('currentOrdersList');
             const emptyMessage = document.getElementById('emptyOrdersMessage');
             
@@ -1505,7 +926,7 @@
                 listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
                 listItem.innerHTML = `
                     <div>
-                        <span class="fw-bold">${item.name} - ${item.description}</span> (${item.size})${colorText} x ${item.quantity}
+                        <span class="fw-bold">${item.name}</span> (${item.size})${colorText} x ${item.quantity}
                         <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
                     </div>
                     <div class="d-flex align-items-center">
@@ -1523,7 +944,7 @@
             updateOrdersTotal(); 
         }
 
-        function removeItemFromOrder(index) {
+        window.removeItemFromOrder = function(index) {
             currentOrder.splice(index, 1);
             renderOrdersList();
         }
@@ -1574,15 +995,57 @@
         });
 
         // =======================================================
-        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK
+        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK EN FIREBASE
         // =======================================================
 
-        function sendOrderToWhatsapp() {
+        window.sendOrderToWhatsapp = async function() {
             if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
                 alert("Por favor, añade productos al pedido y completa tus datos de envío.");
                 return;
             }
+            
+            // 0. Preparar el lote de actualizaciones para Firebase
+            const updates = {};
+            const productsToUpdate = [];
 
+            currentOrder.forEach(item => {
+                let key;
+                if (item.color) {
+                    key = `${item.productId}_${item.color}_${item.size}`;
+                } else {
+                    key = `${item.productId}_${item.size}`;
+                }
+                
+                if (productInventory[key] !== undefined) {
+                    const newStock = productInventory[key] - item.quantity;
+                    if (newStock >= 0) { 
+                        updates[key] = newStock;
+                        productsToUpdate.push({ key, newStock });
+                    } else {
+                        // En caso de que dos personas pidan al mismo tiempo y se agote.
+                        alert(`Error: El stock de ${item.name} (${item.size}${item.color ? ' ' + item.color : ''}) ya no está disponible. Por favor, revisa tu carrito y vuelve a intentar.`);
+                        return;
+                    }
+                }
+            });
+
+            // 1. Escribir todas las actualizaciones de stock a Firebase
+            if (Object.keys(updates).length > 0) {
+                try {
+                    await set(inventoryRef, { ...productInventory, ...updates }); 
+                    
+                    // 🚨 ACTUALIZACIÓN DE STOCK EXITOSA
+                    productInventory = { ...productInventory, ...updates }; 
+
+                } catch (error) {
+                    alert("Error crítico: No se pudo actualizar el inventario en Firebase. El pedido no se procesará.");
+                    console.error("Firebase SET error:", error);
+                    return; 
+                }
+            }
+
+
+            // 2. Generar mensaje de WhatsApp
             const clientName = document.getElementById('clientName').value;
             const clientAddress = document.getElementById('clientAddress').value;
             const clientPhone = document.getElementById('clientPhone').value;
@@ -1597,7 +1060,7 @@
             
             currentOrder.forEach((item, index) => {
                 const colorText = item.color ? ` (${item.color})` : '';
-                orderText += `${index + 1}. *${item.name}* - ${item.description} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+                orderText += `${index + 1}. *${item.name}* (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
             });
 
             orderText += `\n*Datos del Cliente:*\n`;
@@ -1608,7 +1071,7 @@
 
             const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
 
-            // 1. CREAR HISTORIAL
+            // 3. Guardar orden en historial local
             orderIdCounter++;
             PENDING_ORDERS.push({
                 id: orderIdCounter,
@@ -1619,39 +1082,20 @@
                 date: new Date().toLocaleString()
             });
 
-            // 2. APLICAR EL DESCUENTO DEL STOCK (por ID, Color y Talla)
-            currentOrder.forEach(item => {
-                let key;
-                if (item.color) {
-                    key = `${item.productId}_${item.color}_${item.size}`;
-                } else {
-                    key = `${item.productId}_${item.size}`;
-                }
-
-                if (productInventory[key] !== undefined && productInventory[key] >= item.quantity) {
-                    productInventory[key] -= item.quantity;
-                }
-            });
-
-            // 3. Limpiar el pedido actual y guardar todo
+            // 4. Limpiar el pedido actual y guardar todo
             currentOrder = [];
-            saveInventoryStorage();
-            saveOrdersStorage();
+            saveOrdersStorage(); 
             
-            // 4. Cerrar el modal y redirigir
+            // 5. Cerrar el modal y redirigir
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             ordersModal.hide();
 
-            // 5. Rerenderizar las tarjetas 
+            // 6. Rerenderizar las tarjetas (para reflejar el nuevo stock de Firebase)
             renderProductCards();
             
-            // 🚨 RECORDATORIO MANUAL (ADMIN) 🚨
             console.log("=================================================");
-            console.log("✅ ¡STOCK LOCAL DESCONTADO! PASO CRÍTICO MANUAL:");
-            console.log("Copia el código ejecutando: window.exportInitialProductsArray();");
-            console.log("Y sube el nuevo 'aplay.html' a GitHub.");
+            console.log("✅ ¡STOCK DESCONTADO EN FIREBASE! YA ES PERMANENTE.");
             console.log("=================================================");
-            // 🚨 FIN RECORDATORIO 🚨
             
             window.open(whatsappURL, '_blank');
         }
@@ -1660,9 +1104,8 @@
         // INICIALIZACIÓN
         // =======================================================
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             
-            // 🚨 V9.0: Aplicar corrección de imagen al logo al inicio
             const logoImage = document.getElementById('logo-image');
             if (logoImage) {
                  logoImage.src = getImageUrl('logo');
@@ -1670,9 +1113,9 @@
 
             loadOrdersStorage();
             
-            generateInitialInventory();
-            loadInventoryStorage(); // Cargar descuentos si existen en localStorage
-
+            // Cargar el inventario de forma ASÍNCRONA desde Firebase
+            await loadInventoryFromFirebase();
+            
             document.getElementById('product-list').addEventListener('click', (e) => {
                 const target = e.target.closest('.btn-buy');
                 if (target && !target.disabled) {
@@ -1689,8 +1132,6 @@
             
             renderProductCards();
         });
-
     </script>
 </body>
 </html>
-
