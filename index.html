@@ -47,6 +47,8 @@
             height: 300px;
             object-fit: cover;
         }
+        /* Oculta los indicadores de stock si no son necesarios */
+        /* .stock-badge, #stockIndicator { display: none !important; } */ 
     </style>
 </head>
 <body>
@@ -190,6 +192,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
+        // La corrección clave: Usar 'type="module"' y las rutas CDN para la importación
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
         import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -222,6 +225,7 @@
         const MINIMUM_TO_SHIP = 1;   
         const WHATSAPP_NUMBER = '529991480151'; 
         
+        // Rutas de imágenes (ajusta 'GITHUB_BASE_URL' si cambias de hosting)
         const DEFAULT_EXTENSION = '.png'; 
         const UPPERCASE_EXTENSION = '.PNG'; 
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
@@ -282,6 +286,7 @@
 
         // =======================================================
         // DEFINICIÓN DE PRODUCTOS (SOLO METADATOS Y TALLAS POSIBLES)
+        // ESTE ES EL ARRAY DE DEFINICIÓN ORIGINAL, EL STOCK REAL SE LEE DE FIREBASE
         // =======================================================
         const ORIGINAL_PRODUCTS_DEFINITION = [
             { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'Xime2', sideFile: 'blanco' },
@@ -361,7 +366,7 @@
 
 
         // =======================================================
-        // FUNCIONES DE CARGA Y PROCESAMIENTO (AHORA ASÍNCRONO CON FIREBASE)
+        // FUNCIONES DE CARGA Y PROCESAMIENTO (ASÍNCRONO CON FIREBASE)
         // =======================================================
 
         async function loadInventoryFromFirebase() {
@@ -371,10 +376,12 @@
                 if (snapshot.exists()) {
                     productInventory = snapshot.val();
                 } else {
-                    console.warn("No se encontraron datos de inventario en Firebase. Usando valores por defecto (ESTO NO DEBERÍA PASAR).");
-                    // Intenta inicializar el inventario si no existe (solo para el primer uso)
-                    if (confirm("¿Deseas inicializar el inventario en Firebase con los datos del HTML? (Solo para la primera carga)")) {
+                    console.warn("No se encontraron datos de inventario en Firebase. Intentando inicializar...");
+                    // Intenta inicializar el inventario si no existe 
+                    if (confirm("No se encontró inventario en Firebase. ¿Deseas inicializar la base de datos con los valores por defecto del HTML? (Solo para la primera carga)")) {
                          await initializeFirebaseInventory();
+                    } else {
+                         alert("El inventario no será funcional sin datos de stock. Por favor, reinicia la página y acepta la inicialización o sube los datos manualmente.");
                     }
                 }
 
@@ -490,9 +497,10 @@
 
 
         // =======================================================
-        // FUNCIÓN DE ADMINISTRACIÓN OCULTA (PARA REINICIAR O EXPORTAR)
+        // FUNCIONES DE ADMINISTRACIÓN OCULTA (PARA REINICIAR O EXPORTAR)
         // =======================================================
         
+        // Función para exportar el array ORIGINAL_PRODUCTS_DEFINITION con el stock actual de Firebase
         window.exportInitialProductsArray = async function() {
             await loadInventoryFromFirebase();
             
@@ -514,6 +522,7 @@
                         for (const color in newProd.stockByColor) {
                             for (const size in newProd.stockByColor[color]) {
                                 const key = `${id}_${color}_${size}`;
+                                // Usa el inventario actual de Firebase
                                 const currentStock = productInventory[key] || 0; 
                                 newProd.stockByColor[color][size] = currentStock;
                                 totalStock += currentStock;
@@ -524,6 +533,7 @@
                     if (newProd.stock) {
                         for (const size in newProd.stock) {
                             const key = `${id}_${size}`;
+                            // Usa el inventario actual de Firebase
                             const currentStock = productInventory[key] || 0;
                             newProd.stock[size] = currentStock;
                             totalStock += currentStock;
@@ -547,6 +557,7 @@
             return "Código JSON generado en la consola. ¡Cópialo y actualiza GitHub!";
         }
         
+        // Función para limpiar la base de datos de Firebase y órdenes locales (SOLO ADMINISTRACIÓN)
         window.resetInventoryAndOrders = async function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario en FIREBASE y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
@@ -606,6 +617,7 @@
 
         function getStock(productId, size, color = null) {
             let key;
+            // Genera la clave compuesta para buscar en el objeto productInventory de Firebase
             if (color) {
                 key = `${productId}_${color}_${size}`;
             } else {
@@ -631,6 +643,7 @@
             productData.forEach(product => {
                 let maxStock = 0;
                 
+                // Calcula el stock máximo para el badge de la tarjeta
                 if (product.isColorProduct) {
                     for (const color in product.stockByColor) {
                         const colorStock = product.stockByColor[color];
@@ -687,6 +700,7 @@
             });
             
             sizesToProcess.forEach(size => {
+                // Obtener el stock real de Firebase
                 const stock = getStock(product.id, size, selectedColor);
                 
                 if (stock > 0) {
@@ -747,6 +761,7 @@
                 defaultColor = null; 
             }
             
+            // Inicializar el carrusel y las tallas con el color por defecto
             renderCarousel(product, defaultColor);
             updateSizesForSelectedColor(product, defaultColor);
 
@@ -778,10 +793,10 @@
                 ];
                 
             } else {
-                const colorSuffix = color ? `_${color.toLowerCase()}` : ''; 
+                // Si no es producto con colores o no hay color seleccionado, usa las bases de archivo predeterminadas
                 imageVariants = [
-                    { variant: 'Frente', fileBase: `${product.frontFileBase}${colorSuffix}`, alt: 'Frente' }, 
-                    { variant: 'Espalda', fileBase: `${product.backFileBase}${colorSuffix}`, alt: 'Espalda' },
+                    { variant: 'Frente', fileBase: product.frontFileBase, alt: 'Frente' }, 
+                    { variant: 'Espalda', fileBase: product.backFileBase, alt: 'Espalda' },
                     { variant: 'Lateral', fileBase: product.sideFileBase, alt: 'Lateral' }
                 ];
             }
@@ -821,6 +836,7 @@
             const selectedColor = product && product.isColorProduct ? colorSelect.value : null;
 
             let quantity = parseInt(quantityInput.value);
+            // Obtener stock del servidor Firebase
             const stock = getStock(productId, size, selectedColor); 
             const addButton = document.getElementById('addToOrderButton');
 
@@ -867,6 +883,7 @@
                 return;
             }
 
+            // Lógica para añadir o sumar al pedido local
             const existingItemIndex = currentOrder.findIndex(item => 
                 item.productId === productId && item.size === size && item.color === color
             );
@@ -978,6 +995,7 @@
             const paymentDetailsSection = document.getElementById('paymentDetailsSection');
             
             if (hasItems) {
+                // Verificar validez del formulario de cliente para habilitar el botón
                 finalizeButton.disabled = !document.getElementById('clientDataForm').checkValidity();
                 clientDataForm.style.display = 'block';
                 paymentDetailsSection.style.display = 'block';
@@ -1008,7 +1026,8 @@
             const updates = {};
             const productsToUpdate = [];
 
-            currentOrder.forEach(item => {
+            // 0.1 Verificar y preparar el descuento de stock
+            for (const item of currentOrder) {
                 let key;
                 if (item.color) {
                     key = `${item.productId}_${item.color}_${item.size}`;
@@ -1016,25 +1035,29 @@
                     key = `${item.productId}_${item.size}`;
                 }
                 
-                if (productInventory[key] !== undefined) {
-                    const newStock = productInventory[key] - item.quantity;
-                    if (newStock >= 0) { 
-                        updates[key] = newStock;
-                        productsToUpdate.push({ key, newStock });
-                    } else {
-                        // En caso de que dos personas pidan al mismo tiempo y se agote.
-                        alert(`Error: El stock de ${item.name} (${item.size}${item.color ? ' ' + item.color : ''}) ya no está disponible. Por favor, revisa tu carrito y vuelve a intentar.`);
-                        return;
-                    }
+                const currentStock = productInventory[key] || 0;
+                const newStock = currentStock - item.quantity;
+
+                if (newStock < 0) {
+                    // Si el stock ya no es suficiente (por otra compra simultánea, por ejemplo)
+                    alert(`Error: El stock de ${item.name} (${item.size}${item.color ? ' ' + item.color : ''}) se agotó. Por favor, revisa tu carrito y vuelve a intentar.`);
+                    // Recargar la data de Firebase para reflejar el estado actual
+                    await loadInventoryFromFirebase();
+                    renderProductCards();
+                    return;
                 }
-            });
+                
+                updates[key] = newStock;
+            }
+
 
             // 1. Escribir todas las actualizaciones de stock a Firebase
             if (Object.keys(updates).length > 0) {
                 try {
+                    // Escribe el objeto completo, no solo las actualizaciones
                     await set(inventoryRef, { ...productInventory, ...updates }); 
                     
-                    // 🚨 ACTUALIZACIÓN DE STOCK EXITOSA
+                    // 🚨 ACTUALIZACIÓN DE STOCK EXITOSA: Actualiza la variable local
                     productInventory = { ...productInventory, ...updates }; 
 
                 } catch (error) {
@@ -1093,9 +1116,7 @@
             // 6. Rerenderizar las tarjetas (para reflejar el nuevo stock de Firebase)
             renderProductCards();
             
-            console.log("=================================================");
-            console.log("✅ ¡STOCK DESCONTADO EN FIREBASE! YA ES PERMANENTE.");
-            console.log("=================================================");
+            console.log("✅ ¡STOCK DESCONTADO EN FIREBASE! Procediendo a WhatsApp.");
             
             window.open(whatsappURL, '_blank');
         }
