@@ -231,6 +231,7 @@
         // --- CONSTANTES DE IMAGEN ---
         const IMAGE_EXTENSION = '.png'; 
         const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
+        const SIZE_CHART_FILE = 'tabla_medidas'; // Nombre del archivo de la tabla de medidas (e.g., tabla_medidas.png)
         
         // 🚨 ENLACE CRÍTICO: DEBES VERIFICAR QUE ESTA URL ES TU RUTA REAL DE IMÁGENES EN GITHUB PAGES
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
@@ -309,15 +310,13 @@
                     name: 'BLACKPINK', 
                     description: 'Modelo 42 con opción de color.', 
                     colors: ['Blanco', 'Negro'],
-                    // NUEVA ESTRUCTURA DE STOCK POR COLOR Y TALLA
                     stockByColor: { 
                         'Blanco': { 'S': 2, 'M': 1, 'L': 2 }, 
                         'Negro': { 'S': 1, 'M': 3 } 
                     }, 
-                    // Estos son los nombres base (ej. 'Aro1_blanco.png' y 'Aro1_negro.png' deben existir)
                     frontFile: 'Aro1', 
                     backFile: 'Aro2',
-                    sideFile: COLOR_SIDE_PLACEHOLDER // Usaremos solo el nombre del color (ej. 'blanco.png')
+                    sideFile: COLOR_SIDE_PLACEHOLDER
                 },
                 { 
                     i: 43, 
@@ -627,7 +626,7 @@
             updateTotalAndCheckStock(); 
         }
         
-        // FUNCIÓN CLAVE PARA RENDERIZAR IMÁGENES CON COLOR
+        // FUNCIÓN CLAVE PARA RENDERIZAR IMÁGENES CON COLOR, INCLUYENDO LA TABLA
         function renderCarousel(product, color = null) {
             const indicators = document.getElementById('carouselIndicators');
             const inner = document.getElementById('carouselInner');
@@ -640,12 +639,11 @@
 
             // Mapeamos las bases de nombres de archivo que definiste
             const imageVariants = [
-                // Para productos con color, buscará: Aro1_blanco.png
-                { variant: 'Frente', fileBase: product.frontFileBase, alt: 'Frente' }, 
-                // Para productos con color, buscará: Aro2_blanco.png
-                { variant: 'Espalda', fileBase: product.backFileBase, alt: 'Espalda' },
-                // Para productos con color, buscará: blanco.png
-                { variant: 'Lateral', fileBase: product.sideFileBase, alt: 'Lateral' } 
+                { variant: 'Frente', fileBase: product.frontFileBase, alt: 'Frente', type: 'product' }, 
+                { variant: 'Espalda', fileBase: product.backFileBase, alt: 'Espalda', type: 'product' },
+                { variant: 'Lateral', fileBase: product.sideFileBase, alt: 'Lateral', type: 'side' },
+                // AÑADIDO: Tabla de Medidas (siempre la misma imagen)
+                { variant: 'Tabla de Tallas', fileBase: SIZE_CHART_FILE, alt: 'Tabla de Medidas', type: 'chart' } 
             ];
 
             let index = 0;
@@ -654,17 +652,21 @@
                 let imgUrl;
                 let altText = `${product.name} ${item.alt} ${color ? `(${color})` : ''}`;
 
-                if (item.fileBase === GENERIC_SIDE_PLACEHOLDER) {
+                if (item.type === 'chart') {
+                    // Lógica para la tabla de medidas (siempre la misma imagen)
+                    imgUrl = `${GITHUB_BASE_URL}${SIZE_CHART_FILE}${IMAGE_EXTENSION}`;
+                    altText = item.alt; // Simplificamos el altText para la tabla
+                } else if (item.fileBase === GENERIC_SIDE_PLACEHOLDER) {
                     // Si es el placeholder genérico, usa la URL de Imgur.
                     imgUrl = GENERIC_SIDE_IMAGE;
                 } 
-                // 🚨 CORRECCIÓN CLAVE: Si es un producto de color y estamos en el lateral, usa el nombre del color
+                // Lógica para la imagen lateral según el color
                 else if (item.fileBase === COLOR_SIDE_PLACEHOLDER && color) {
                     // La imagen lateral es el nombre del color (ej: blanco.png, negro.png)
                     imgUrl = `${GITHUB_BASE_URL}${color.toLowerCase()}${IMAGE_EXTENSION}`; 
                 } 
-                // Si es un producto de color y NO es el lateral (es Frente o Espalda)
-                else if (isColorProduct && (item.variant === 'Frente' || item.variant === 'Espalda')) {
+                // Lógica para Frente o Espalda de productos con color
+                else if (isColorProduct && item.type === 'product') {
                     // Usa la base + el sufijo de color (ej. Aro1_blanco.png)
                     imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${colorSuffix}${IMAGE_EXTENSION}`;
                 }
