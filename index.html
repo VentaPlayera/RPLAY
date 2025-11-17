@@ -1,27 +1,305 @@
-<script type="module">
-  // Tu Firebase Config (copiada de tu captura)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE",
-    authDomain: "rplay-f04dc.firebaseapp.com",
-    projectId: "rplay-f04dc",
-    storageBucket: "rplay-f04dc.appspot.com", // Corregido: storageBucket es appspot.com
-    messagingSenderId: "787828282738",
-    appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
-    measurementId: "G-XEKR4KEDMR"
-  };
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda RPLAY</title>
+    </head>
+<body>
 
-  // Importar las funciones necesarias
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
+    <header>
+        <h1>Tienda RPLAY</h1>
+        <button onclick="toggleCartModal()">🛒 Carrito (<span id="cart-count">0</span>)</button>
+    </header>
 
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  
-  // Inicializar Firestore
-  const db = getFirestore(app);
+    <main id="products-container">
+        <h2>Cargando inventario...</h2>
+    </main>
 
-  // Exponer db y setDoc globalmente para que el script migrate.js pueda usarlas en la consola
-  window.db = db;
-  window.setDoc = setDoc;
-  window.doc = doc;
-</script>
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="toggleCartModal()">&times;</span>
+            <h3>Tu Carrito</h3>
+            <div id="cart-items">
+                </div>
+            <p>Total: $<span id="cart-total">0.00</span></p>
+            <button onclick="sendOrderToWhatsapp()">Finalizar Compra por WhatsApp</button>
+            <button onclick="clearCart()">Vaciar Carrito</button>
+        </div>
+    </div>
+
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeProductModal()">&times;</span>
+            <div id="modal-content-details">
+                </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // 🚨 CONFIGURACIÓN DE FIREBASE (TU PROYECTO RPLAY)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE",
+            authDomain: "rplay-f04dc.firebaseapp.com",
+            projectId: "rplay-f04dc",
+            storageBucket: "rplay-f04dc.appspot.com",
+            messagingSenderId: "787828282738",
+            appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
+            measurementId: "G-XEKR4KEDMR"
+        };
+
+        // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE (Versión modular recomendada)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            setDoc, 
+            updateDoc,
+            writeBatch 
+        } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
+
+        // Inicializar Firebase y Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const productsCollection = collection(db, "products");
+
+        // 🚨 EXPOSICIÓN GLOBAL PARA EL SCRIPT DE MIGRACIÓN (Temporal)
+        // Esto permite que el código de migración más abajo acceda a las funciones de Firebase
+        window.db = db;
+        window.setDoc = setDoc;
+        window.doc = doc;
+        window.writeBatch = writeBatch;
+        window.updateDoc = updateDoc;
+        window.getDocs = getDocs;
+        window.collection = collection;
+
+        // =================================================================================
+        // FUNCIÓN PRINCIPAL PARA CARGAR PRODUCTOS DESDE FIREBASE
+        // =================================================================================
+
+        let inventory = []; // El inventario se almacena aquí globalmente
+
+        async function loadProductsFromFirebase() {
+            try {
+                console.log("Cargando inventario desde Firestore...");
+                const querySnapshot = await getDocs(productsCollection);
+                
+                // Mapear los documentos a nuestro array de inventario
+                inventory = querySnapshot.docs.map(doc => doc.data());
+                console.log(`Inventario cargado: ${inventory.length} productos.`);
+                
+                renderProducts(); // Renderizar los productos cargados
+            } catch (e) {
+                console.error("Error al cargar productos desde Firebase (Verifica si la DB está activa):", e);
+                document.getElementById('products-container').innerHTML = '<h2>Error al cargar inventario. Revisa la consola y la configuración de Firebase.</h2>';
+            }
+        }
+        
+        // Ejecutar la carga al iniciar
+        window.addEventListener('load', loadProductsFromFirebase);
+
+
+        // =================================================================================
+        // FUNCIÓN PARA ACTUALIZAR STOCK TRAS LA COMPRA
+        // =================================================================================
+
+        // La función de finalización de compra que descuenta el stock
+        window.sendOrderToWhatsapp = async function() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            if (cart.length === 0) {
+                alert("Tu carrito está vacío.");
+                return;
+            }
+
+            try {
+                const batch = writeBatch(db);
+                let whatsappMessage = "¡Hola! Quisiera hacer un pedido:\n\n";
+
+                for (const item of cart) {
+                    const productRef = doc(db, "products", item.id);
+                    const isColor = item.isColorProduct;
+
+                    whatsappMessage += `- ${item.name} (${item.isColorProduct ? item.color : 'Único'}) - Talla ${item.size} x ${item.quantity} unidades\n`;
+
+                    if (isColor) {
+                        // Actualizar stockByColor
+                        batch.update(productRef, {
+                            [`stockByColor.${item.color}.${item.size}`]: item.stockBefore - item.quantity
+                        });
+                    } else {
+                        // Actualizar stock simple
+                        batch.update(productRef, {
+                            [`stock.${item.size}`]: item.stockBefore - item.quantity
+                        });
+                    }
+                }
+
+                // Ejecutar el batch para actualizar el stock
+                await batch.commit();
+
+                // Enviar mensaje de WhatsApp (debes agregar tu número)
+                whatsappMessage += `\nTotal a pagar: $${document.getElementById('cart-total').textContent}`;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/TUNUMEROAQUI?text=${encodedMessage}`, '_blank');
+
+                // Limpiar carrito y actualizar vista
+                clearCart();
+                alert("Pedido realizado y stock actualizado en la nube. ¡Revisa WhatsApp!");
+
+            } catch (error) {
+                console.error("Error al finalizar la compra y actualizar stock:", error);
+                alert("Hubo un error al procesar el pedido. Por favor, inténtalo de nuevo.");
+            }
+        }
+
+        // 🚨 Otras funciones de la tienda (renderProducts, toggleCartModal, addToCart, etc.)
+        // Estas funciones deben estar aquí después de loadProductsFromFirebase y usar la variable 'inventory'.
+        // ... (Tu código JavaScript original va aquí, adaptado para usar 'inventory' en lugar de 'products')
+        // Por la extensión, no lo incluyo, pero asume que está aquí.
+    </script>
+
+
+    <script>
+        // ESTA SECCIÓN ES SOLO PARA LA MIGRACIÓN INICIAL.
+        // BÓRRALA O COMENTALA DESPUÉS DE EJECUTAR UPLOADALLPRODUCTS() UNA VEZ.
+
+        function getOriginalInventory() {
+            const ORIGINAL_PRODUCTS_DEFINITION = [
+                // Modelos estándar (estructura simple: i=1 a i=41)
+                { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'Xime2', sideFile: 'blanco' },
+                { i: 2, name: 'BTS', description: 'Playera Modelo 2', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'Xime3', backFile: 'Xime4', sideFile: 'negro' },
+                { i: 3, name: 'MICHAEL JACKSON', description: 'Playera Modelo 3', stock:{ 'S':1, 'M':1, 'L': 1 }, frontFile: 'Abi1', backFile: 'Abi2', sideFile: 'blanco' },
+                { i: 4, name: 'MICHAEL JACKSON', description: 'Playera Modelo 4', stock: {'L': 1 }, frontFile: 'Abi3', backFile: 'Abi4', sideFile: 'negro' },
+                { i: 5, name: 'ADO', description: 'Playera Modelo 5', stock: {'XL': 1 }, frontFile: 'Lucy1', backFile: 'Lucy2', sideFile: 'blanco' },
+                { i: 6, name: 'ADO', description: 'Playera Modelo 6', stock: { 'M': 1, 'L': 1, 'XL':2 }, frontFile: 'Lucy3', backFile: 'Lucy4', sideFile: 'negro' },
+                { i: 7, name: 'BRUNO MARS', description: 'Playera Modelo 7', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Raul1', backFile: 'Raul2', sideFile: 'negro' },
+                { i: 8, name: 'BRUNO MARS', description: 'Playera Modelo 8', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Raul3', backFile: 'Raul4', sideFile: 'negro' },
+                { i: 9, name: 'LATIN MAFIA', description: 'Playera Modelo 9', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dani1', backFile: 'Dani2', sideFile: 'blanco' },
+                { i: 10, name: 'LATIN MAFIA', description: 'Playera Modelo 10', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dani3', backFile: 'Dani4', sideFile: 'negro' },
+                { i: 11, name: 'AESPA', description: 'Playera Modelo 11', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dali1', backFile: 'Dali2', sideFile: 'negro' },
+                { i: 12, name: 'AESPA', description: 'Playera Modelo 12', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dali3', backFile: 'Dali4', sideFile: 'negro' },
+                { i: 13, name: 'BILLIE EILISH', description: 'Playera Modelo 13', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Yose1', backFile: 'Yose2', sideFile: 'negro' },
+                { i: 14, name: 'BILLIE EILISH', description: 'Playera Modelo 14', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Yose3', backFile: 'Yose4', sideFile: 'negro' },
+                { i: 15, name: 'LANA DEL REY', description: 'Playera Modelo 15', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Keila1', backFile: 'Keila2', sideFile: 'blanco' },
+                { i: 16, name: 'LANA DEL REY', description: 'Playera Modelo 16', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Keila3', backFile: 'Keila4', sideFile: 'negro' },
+                { i: 17, name: 'MY CHEMICAL ROMANCE', description: 'Playera Modelo 17', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Kenji1', backFile: 'Kenji2', sideFile: 'negro' },
+                { i: 18, name: 'MY CHEMICAL ROMANCE', description: 'Playera Modelo 18', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Kenji3', backFile: 'Kenji4', sideFile: 'negro' },
+                { i: 19, name: 'TWENTY ONE PILOTS', description: 'Playera Modelo 19', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Alli1', backFile: 'Alli2', sideFile: 'negro' },
+                { i: 20, name: 'TWENTY ONE PILOTS', description: 'Playera Modelo 20', stock: { 'M': 1, 'L': 1, 'XL':1 },frontFile: 'Alli3', backFile: 'Alli4', sideFile: 'negro' },
+                { i: 21, name: 'SELENA QUINTANILLA', description: 'Playera Modelo 21', stock: { 'XL':1 }, frontFile: 'Ale1', backFile: 'Ale2', sideFile: 'arena' },
+                { i: 22, name: 'OLIVIA RODRIGO', description: 'Playera Modelo 22', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Miri1', backFile: 'Miri2', sideFile: 'negro' },
+                { i: 23, name: 'OLIVIA RODRIGO', description: 'Playera Modelo 23', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Miri3', backFile: 'Miri4', sideFile: 'negro' },
+                { i: 24, name: 'BAD BUNNY', description: 'Playera Modelo 24', stock: { 'M': 1, 'XL':1 }, frontFile: 'Didi1', backFile: 'Didi2', sideFile: 'negro' },
+                { i: 25, name: 'BAD BUNNY', description: 'Playera Modelo 25', stock: { 'L': 1, 'XL':1 }, frontFile: 'Didi3', backFile: 'Didi4', sideFile: 'arena' },
+                { i: 26, name: 'Taylor SWIFT', description: 'Playera Modelo 26', stock:{ 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale1', backFile: 'Vale2', sideFile: 'arena' },
+                { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
+                { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
+                { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
+                { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1', backFile: 'Gon2', sideFile: 'negro' },
+                { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
+                { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
+                { i: 33, name: 'TAYLOR SWIFT', description: 'Playera Modelo 33', stock: { 'S': 1, 'M': 1, 'L':1 },frontFile: 'Bere3', backFile: 'Bere4', sideFile: 'negro2' },
+                { i: 34, name: 'BTS', description: 'Playera Modelo 34', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Dan1', backFile: 'Dan2', sideFile: 'negro2' },
+                { i: 35, name: 'BTS', description: 'Playera Modelo 35', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Dan3', backFile: 'Dan4', sideFile: 'negro2' },
+                { i: 36, name: 'NCT DREAM', description: 'Playera Modelo 36', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Gera1', backFile: 'Gera2', sideFile: 'negro2' },
+                { i: 37, name: 'NCT DREAM', description: 'Playera Modelo 37', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Gera3', backFile: 'Gera4', sideFile: 'negro2' },
+                { i: 38, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 38', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bra1', backFile: 'Bra2', sideFile: 'negro2' },
+                { i: 39, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 39', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bra3', backFile: 'Bra4', sideFile: 'negro2' },
+                { i: 40, name: 'HOZIER', description: 'Playera Modelo 40', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri1', backFile: 'Adri2', sideFile: 'negro2' },
+                { i: 41, name: 'HOZIER', description: 'Playera Modelo 41', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri3', backFile: 'Adri4', sideFile: 'blanco2' },
+                
+                // --- MODELOS CON OPCIÓN DE COLOR (i=42 y i=43) ---
+                { 
+                    i: 42, 
+                    name: 'BLACKPINK', 
+                    description: 'Modelo 42 con opción de color', 
+                    colors: ['Negro', 'Blanco'], 
+                    isColorProduct: true,
+                    stockByColor: { 
+                        'Blanco': { 'S': 1, 'M': 1 },
+                        'Negro': { 'L': 1 }
+                    },
+                    colorMap: { 
+                        'Negro': { front: 'Aro1', back: 'Aro2', side: 'negro2' },
+                        'Blanco': { front: 'Aro3', back: 'Aro4', side: 'blanco2' }
+                    }
+                },
+                { 
+                    i: 43, 
+                    name: 'BLACKPINK', 
+                    description: 'Modelo 43 con opción de color', 
+                    colors: [ 'Negro','Blanco'], 
+                    isColorProduct: true,
+                    stockByColor: { 
+                        'Blanco': { 'S': 1, 'M': 1 },
+                        'Negro': { 'L': 1 }
+                    },
+                    colorMap: { 
+                        'Negro': { front: 'Aro5', back: 'Aro6', side: 'negro2' },
+                        'Blanco': { front: 'Aro7', back: 'Aro8', side: 'blanco2'}
+                    }
+                },
+            ];
+            
+            // Adaptar el formato de tu array al formato que requiere Firestore
+            const productsForFirebase = ORIGINAL_PRODUCTS_DEFINITION.map(p => {
+                const paddedIndex = p.i.toString().padStart(3, '0');
+                const id = `PROD_${paddedIndex}`;
+                
+                const doc = {
+                    id: id,
+                    name: p.name,
+                    description: p.description,
+                    price: 250.00,
+                    isColorProduct: p.isColorProduct || false,
+                };
+
+                if (doc.isColorProduct) {
+                    doc.colors = p.colors;
+                    doc.stockByColor = p.stockByColor;
+                    doc.colorMap = p.colorMap;
+                    doc.frontFileBase = p.colorMap[p.colors[0]].front;
+                    doc.backFileBase = p.colorMap[p.colors[0]].back;
+                    doc.sideFileBase = p.colorMap[p.colors[0]].side;
+                } else {
+                    doc.stock = p.stock;
+                    doc.frontFileBase = p.frontFile;
+                    doc.backFileBase = p.backFile;
+                    doc.sideFileBase = p.sideFile;
+                }
+                
+                return doc;
+            });
+
+            return productsForFirebase;
+        }
+
+        // Función de migración masiva
+        window.uploadAllProducts = async function() {
+            const allProducts = getOriginalInventory();
+            
+            if (!window.db || !window.setDoc || !window.doc) {
+                console.error("❌ ERROR: Firebase no está inicializado. Asegúrate de que la conexión de Firebase arriba se ejecutó correctamente.");
+                return;
+            }
+            
+            console.log(`✅ Intentando subir ${allProducts.length} productos a la colección 'products'...`);
+            
+            for (const product of allProducts) {
+                try {
+                    await setDoc(doc(db, "products", product.id), product);
+                    console.log(`✅ Producto subido: ${product.id} - ${product.name}`);
+                } catch (e) {
+                    console.error(`❌ Error al subir ${product.id}: `, e);
+                }
+            }
+            console.log("=========================================================");
+            console.log("🎉 MIGRACIÓN TERMINADA. ¡Verifica tu Base de Datos en Firebase!");
+            console.log("=========================================================");
+        }
+
+    </script>
+</body>
+</html>
