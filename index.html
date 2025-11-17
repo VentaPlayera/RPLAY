@@ -137,7 +137,7 @@
     </div>
 
     <script type="module">
-        // 🚨 CONFIGURACIÓN DE FIREBASE (TU PROYECTO RPLAY)
+        // 🚨 CONFIGURACIÓN DE FIREBASE 
         const firebaseConfig = {
             apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE", 
             authDomain: "rplay-f04dc.firebaseapp.com",
@@ -149,13 +149,13 @@
             measurementId: "G-XEKR4KEDMR"
         };
         
-        // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE
+        // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE (Realtime Database)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
         import { getDatabase, ref, get, runTransaction } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
 
         // Inicializar Firebase y Realtime Database
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const db = getDatabase(app); // USANDO RTDB
 
         // =================================================================================
         // FUNCIÓN PRINCIPAL PARA CARGAR PRODUCTOS DESDE REALTIME DATABASE
@@ -167,21 +167,29 @@
         window.loadProductsFromFirebase = async function() {
             try {
                 console.log("Cargando inventario desde Realtime Database...");
-                const snapshot = await get(ref(db, 'products'));
+                // Nota: Asumimos que la ruta de productos es 'products' en RTDB
+                const snapshot = await get(ref(db, 'products')); 
                 
                 if (snapshot.exists()) {
                     const productsObject = snapshot.val();
-                    window.inventory = Object.values(productsObject); 
+                    // Convertir el objeto de productos (con IDs como keys) a un array
+                    window.inventory = Object.keys(productsObject).map(key => ({
+                        id: key,
+                        ...productsObject[key]
+                    }));
                     
                     console.log(`Inventario cargado: ${window.inventory.length} productos.`);
                     window.renderProducts(); // Llama a la función de renderizado
                 } else {
-                    console.log("No hay productos en la base de datos.");
-                    document.getElementById('products-container').innerHTML = '<h2>¡Inventario vacío! Contacta al administrador.</h2>';
+                    console.log("No hay productos en la base de datos de RTDB.");
+                    document.getElementById('products-container').innerHTML = '<h2>¡Inventario vacío! Contacta al administrador o migra los datos.</h2>';
                 }
             } catch (e) {
-                console.error("Error al cargar productos desde Firebase:", e);
+                console.error("Error al cargar productos desde RTDB:", e);
                 document.getElementById('products-container').innerHTML = '<h2>Error al cargar inventario. Revisa la Consola y las Reglas de RTDB.</h2>';
+                // 🚨 ¡REGLAS DE RTDB A REVISAR! 🚨
+                // Debes cambiar tus reglas de RTDB a:
+                // { "rules": { ".read": true, ".write": true } }
             }
         }
         
@@ -190,7 +198,7 @@
 
 
         // =================================================================================
-        // FUNCIÓN PARA ACTUALIZAR STOCK TRAS LA COMPRA (ADAPTADA A REALTIME DB)
+        // FUNCIÓN PARA ACTUALIZAR STOCK TRAS LA COMPRA (ADAPTADA A RTDB)
         // =================================================================================
 
         window.sendOrderToWhatsapp = async function() {
@@ -207,13 +215,14 @@
                 for (const item of cart) {
                     whatsappMessage += `- ${item.name} (${item.isColorProduct ? item.color : 'Único'}) - Talla ${item.size} x ${item.quantity} unidades\n`;
                     
-                    const productPath = `products/${item.id}`;
+                    const productRef = ref(db, `products/${item.id}`);
 
                     // Usar runTransaction para garantizar que el descuento sea atómico (seguro)
-                    const transactionPromise = runTransaction(ref(db, productPath), (currentProduct) => {
+                    const transactionPromise = runTransaction(productRef, (currentProduct) => {
                         if (currentProduct) {
                             let newStock = 0;
                             if (item.isColorProduct) {
+                                // Buscar el stock en la ruta: currentProduct/stockByColor/color/size
                                 const currentStock = currentProduct.stockByColor?.[item.color]?.[item.size] || 0;
                                 newStock = currentStock - item.quantity;
                                 
@@ -225,6 +234,7 @@
                                     return; // Stock insuficiente
                                 }
                             } else {
+                                // Buscar el stock en la ruta: currentProduct/stock/size
                                 const currentStock = currentProduct.stock?.[item.size] || 0;
                                 newStock = currentStock - item.quantity;
                                 
@@ -235,9 +245,9 @@
                                     return; // Stock insuficiente
                                 }
                             }
-                            return currentProduct; // Retorna el nuevo estado para guardar
+                            return currentProduct; // Retorna el nuevo estado para guardar en RTDB
                         }
-                        return currentProduct; // No hacer cambios
+                        return currentProduct; // No hacer cambios si no existe
                     });
                     
                     transactionPromises.push(transactionPromise);
@@ -257,7 +267,7 @@
 
             } catch (error) {
                 console.error("Error al finalizar la compra y actualizar stock:", error);
-                alert("Hubo un error al procesar el pedido. Por favor, inténtalo de nuevo.");
+                alert("Hubo un error al procesar el pedido. Por favor, revisa tu stock y las reglas de RTDB.");
             }
         }
         
@@ -327,12 +337,14 @@
         function formatFileName(rawName) {
             if (!rawName) return null;
             
-            const lowerCaseName = rawName.toLowerCase();
+            // Si el nombre viene con una extensión incorrecta de Firebase, la quitamos.
+            const nameWithoutExt = rawName.split('.')[0]; 
+            const lowerCaseName = nameWithoutExt.toLowerCase();
             let extension = '.png'; // Extensión por defecto
 
             // REGLA 1: EXCEPCIÓN 'xime1' (todo minúsculas)
             if (lowerCaseName === 'xime1') { 
-                return { name: lowerCaseName, ext: extension }; // { name: 'xime1', ext: '.png' }
+                return { name: lowerCaseName, ext: extension }; 
             } 
             
             // REGLA 2: EXCEPCIÓN 'gon1' o 'gon2' (la extensión es .PNG en MAYÚSCULAS)
@@ -341,7 +353,7 @@
             }
             
             // 3. REGLA GENERAL (y Gon): Capitalizar la primera letra.
-            const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+            const formattedName = nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
             
             return { name: formattedName, ext: extension }; 
         }
@@ -582,7 +594,7 @@
         }
 
         // =================================================================================
-        // FUNCIÓN PRINCIPAL DE AGREGAR AL CARRITO (CORRECCIÓN DE STOCK)
+        // FUNCIÓN PRINCIPAL DE AGREGAR AL CARRITO (STOCK CORREGIDO)
         // =================================================================================
         window.addToCart = function(productId, color) {
             const product = window.inventory.find(p => p.id === productId);
@@ -617,7 +629,7 @@
 
             const newQuantityTotal = currentInCart + quantity;
 
-            // **LÓGICA DE STOCK CORREGIDA:** Si la nueva cantidad total excede el stock disponible.
+            // LÓGICA DE STOCK CORREGIDA: Si la nueva cantidad total excede el stock disponible.
             if (newQuantityTotal > availableStock) {
                 const maxToAdd = availableStock - currentInCart;
                 if (maxToAdd > 0) {
