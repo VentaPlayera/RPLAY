@@ -39,16 +39,17 @@
     <script type="module">
         // 🚨 CONFIGURACIÓN DE FIREBASE (TU PROYECTO RPLAY)
         const firebaseConfig = {
-            apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE",
+            apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE", //
             authDomain: "rplay-f04dc.firebaseapp.com",
-            databaseURL: "TU_DATABASE_URL_AQUI", // 🚨 DEBES REEMPLAZAR ESTO con la URL de tu Realtime DB
+            // 🚨 URL CORRECTA DE TU REALTIME DATABASE:
+            databaseURL: "https://rplay-f04dc-default-rtdb.firebaseio.com", 
             projectId: "rplay-f04dc",
             storageBucket: "rplay-f04dc.appspot.com",
             messagingSenderId: "787828282738",
             appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
             measurementId: "G-XEKR4KEDMR"
         };
-        // NOTA: La databaseURL se ve como: "https://rplay-f04dc-default-rtdb.firebaseio.com"
+        
 
         // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
@@ -77,16 +78,15 @@
                 const snapshot = await get(ref(db, 'products'));
                 
                 if (snapshot.exists()) {
-                    // Los datos de RTDB vienen como un objeto con PROD_001, PROD_002, etc.
-                    // Los convertimos a un array para usar en el JS de la tienda.
                     const productsObject = snapshot.val();
+                    // Convertir el objeto de productos a un array
                     inventory = Object.values(productsObject); 
                     
                     console.log(`Inventario cargado: ${inventory.length} productos.`);
-                    // renderProducts(); // Asegúrate de que esta función existe y usa 'inventory'
+                    // renderProducts(); // Llama a tu función para mostrar los productos
                 } else {
                     console.log("No hay productos en la base de datos.");
-                    document.getElementById('products-container').innerHTML = '<h2>No hay inventario. ¿Ejecutaste el script de migración?</h2>';
+                    document.getElementById('products-container').innerHTML = '<h2>No hay inventario. Por favor, ejecuta uploadAllProducts() en la Consola.</h2>';
                 }
             } catch (e) {
                 console.error("Error al cargar productos desde Firebase:", e);
@@ -185,7 +185,6 @@
         // BÓRRALA O COMENTALA DESPUÉS DE EJECUTAR UPLOADALLPRODUCTS() UNA VEZ.
 
         function getOriginalInventory() {
-            // ... (El código de tu inventario de 43 productos es el mismo que antes) ...
             const ORIGINAL_PRODUCTS_DEFINITION = [
                 // Modelos estándar (i=1 a i=41)
                 { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'Xime2', sideFile: 'blanco' },
@@ -263,7 +262,7 @@
                 },
             ];
             
-            // Adaptar el formato de tu array al formato final (mismo que Firestore, pero la estructura de la DB es diferente)
+            // Adaptar el array de productos a la estructura de objeto que requiere Realtime Database
             const productsObject = {};
             ORIGINAL_PRODUCTS_DEFINITION.forEach(p => {
                 const paddedIndex = p.i.toString().padStart(3, '0');
@@ -297,23 +296,25 @@
             return productsObject;
         }
 
-        // Función de migración masiva ADAPTADA A REALTIME DATABASE
+        // Función de migración masiva para Realtime Database
         window.uploadAllProducts = async function() {
             const allProductsObject = getOriginalInventory();
             
             if (!window.db || !window.set || !window.ref) {
-                console.error("❌ ERROR: Realtime Database no está inicializada. Asegúrate de que la URL de la base de datos es correcta.");
+                console.error("❌ ERROR: Realtime Database no está inicializada. Asegúrate de que la URL y la configuración son correctas.");
                 return;
             }
             
             console.log(`✅ Intentando subir ${Object.keys(allProductsObject).length} productos a la colección 'products'...`);
             
             try {
-                // RTDB permite subir todo el objeto en una sola operación
+                // Subir todo el objeto de productos en el path 'products'
                 await set(ref(db, 'products'), allProductsObject);
                 console.log("=========================================================");
                 console.log("🎉 MIGRACIÓN TERMINADA. ¡Verifica tu Realtime Database!");
                 console.log("=========================================================");
+                // Recargar el inventario después de la subida para que se muestre en la tienda
+                loadProductsFromFirebase(); 
             } catch(e) {
                 console.error("❌ Error al subir los productos a Realtime Database: ", e);
             }
