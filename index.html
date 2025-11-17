@@ -228,7 +228,7 @@
         const WHATSAPP_NUMBER = '529991480151'; 
         
         // --- CONSTANTES DE IMAGEN ---
-        const IMAGE_EXTENSION = '.png', '.PNG';
+        const IMAGE_EXTENSION = '.png';
         const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
         const SIZE_CHART_FILE = 'tabla_medidas'; // Nombre del archivo de la tabla de medidas (e.g., tabla_medidas.png)
         
@@ -311,7 +311,7 @@
                     colors: ['Blanco', 'Negro'],
                     inventoryByColor: {
                         'Blanco': { 'S': 1, 'M': 1 },
-                        'Negro': { 'L': 1 },
+                        'Negro': { 'L': 1},
                     },
                     frontFile: 'Aro1', 
                     backFile: 'Aro2',
@@ -325,7 +325,7 @@
                         'Blanco': { 'S': 1, 'M': 1 },
                         'Negro': { 'L': 1 },
                     },
-                    frontFile: 'Aro3', // Corregí esto asumiendo que es Aro3 para el modelo 43
+                    frontFile: 'Aro3', 
                     backFile: 'Aro4',
                 },
             ];
@@ -616,6 +616,7 @@
                 
                 colorSelect.onchange = () => {
                     const selectedColor = colorSelect.value;
+                    // Al cambiar color, re-renderizar carrusel y actualizar stock
                     renderCarousel(product, selectedColor);
                     updateTotalAndCheckStock(); 
                 };
@@ -669,7 +670,7 @@
             
             const isColorProduct = product.colors && product.colors.length > 0;
             // Genera el sufijo de color. Si el producto tiene colores Y se pasó un color, usa _[color en minúsculas].
-            // Por ejemplo, "Blanco" -> "_blanco"
+            // Ej: "Blanco" -> "_blanco"
             const colorSuffix = color && isColorProduct ? `_${color.toLowerCase()}` : ''; 
 
             // Se define el array de imágenes a mostrar (solo 3)
@@ -686,7 +687,7 @@
                 let altText = `${product.name} ${item.alt} ${color ? `(${color})` : ''}`;
 
                 if (item.type === 'chart') {
-                    // La tabla de tallas usa un nombre de archivo fijo y no tiene sufijo de color
+                    // La tabla de tallas usa un nombre de archivo fijo y NO tiene sufijo de color
                     imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${IMAGE_EXTENSION}`;
                     altText = item.alt; 
                 } else {
