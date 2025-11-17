@@ -25,7 +25,22 @@
         #modal-images img { max-width: 100%; height: auto; border: 1px solid #eee;}
         #modal-details { flex: 1;}
         .image-toggle-buttons button { margin-right: 5px; padding: 8px; cursor: pointer;}
-        #color-buttons button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ccc; margin: 5px; cursor: pointer;}
+        
+        /* Estilos para los botones de color */
+        #color-options button { 
+            width: 30px; 
+            height: 30px; 
+            border-radius: 50%; 
+            border: 2px solid transparent; 
+            margin: 5px; 
+            cursor: pointer;
+            box-shadow: 0 0 0 1px #ccc; /* Borde gris sutil */
+        }
+        #color-options button.active {
+            border: 3px solid #000; /* Borde negro para indicar activo */
+            box-shadow: 0 0 0 1px white, 0 0 0 4px #000; /* Efecto de borde más grueso */
+        }
+        
         .size-chart table { border-collapse: collapse; width: 100%; margin-top: 10px; }
         .size-chart th, .size-chart td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     </style>
@@ -108,8 +123,8 @@
         // FUNCIÓN PRINCIPAL PARA CARGAR PRODUCTOS DESDE REALTIME DATABASE
         // =================================================================================
 
-        window.inventory = []; // El inventario se almacena globalmente
-        window.currentProductInModal = null; // Para rastrear el producto actual
+        window.inventory = []; 
+        window.currentProductInModal = null; 
 
         window.loadProductsFromFirebase = async function() {
             try {
@@ -138,7 +153,7 @@
 
         // =================================================================================
         // FUNCIÓN PARA ACTUALIZAR STOCK TRAS LA COMPRA (ADAPTADA A REALTIME DB)
-        // =================================================================================
+        =================================================================================
 
         window.sendOrderToWhatsapp = async function() {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -267,7 +282,25 @@
         window.closeProductModal = function() {
             document.getElementById('product-modal').style.display = "none";
         }
-
+        
+        // =================================================================================
+        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (SOLUCIÓN DEFINITIVA DE IMAGEN)
+        // =================================================================================
+        function formatFileName(rawName) {
+            if (!rawName) return null;
+            
+            // Convertir a minúsculas para la comparación
+            const lowerCaseName = rawName.toLowerCase();
+            
+            // 1. REGLA EXCEPCIONAL 'xime1': Solo xime1 es todo minúsculas.
+            if (lowerCaseName === 'xime1') { 
+                return lowerCaseName; // xime1
+            } 
+            
+            // 2. REGLA GENERAL (cubre a Gon1, Miri1, Didi3, etc.): 
+            // Capitalizar la primera letra.
+            return rawName.charAt(0).toUpperCase() + rawName.slice(1);
+        }
 
         // =================================================================================
         // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS (TARJETAS)
@@ -289,13 +322,8 @@
                 // Obtener el nombre base del archivo de Firebase
                 const rawImageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
                 
-                let imageFile = rawImageFile;
-
-                // Aplicar la lógica de capitalización específica
-                if (rawImageFile && rawImageFile.toLowerCase() !== 'xime1') {
-                    // Capitalizar la primera letra si no es 'xime1'
-                    imageFile = rawImageFile.charAt(0).toUpperCase() + rawImageFile.slice(1);
-                } 
+                // Aplicar el formato de nombre para coincidir con tus archivos locales
+                const imageFile = formatFileName(rawImageFile);
 
                 // RUTA RAÍZ Y EXTENSIÓN .png
                 card.innerHTML = `
@@ -314,17 +342,16 @@
         // =================================================================================
 
         function getFileName(product, view, color = null) {
+            // Obtener el nombre de archivo basado en la vista (front/back) y color
             const rawFileName = product.isColorProduct && color
                 ? product.colorMap[color][view]
                 : product[`${view}FileBase`];
 
             if (!rawFileName) return null;
 
-            let fileName = rawFileName;
-            // Aplicar la lógica de capitalización específica
-            if (fileName && fileName.toLowerCase() !== 'xime1') {
-                fileName = fileName.charAt(0).toUpperCase() + fileName.slice(1);
-            } 
+            // Aplicar la lógica de formato de nombre
+            const fileName = formatFileName(rawFileName);
+            
             return `${fileName}.png`; // Se mantiene .png y ruta raíz
         }
 
@@ -332,7 +359,10 @@
             const product = window.currentProductInModal;
             if (!product) return;
 
-            const selectedColor = product.isColorProduct ? document.querySelector('#color-options .active').dataset.color : null;
+            // Determinar el color activo
+            const activeColorButton = document.querySelector('#color-options .active');
+            const selectedColor = product.isColorProduct && activeColorButton ? activeColorButton.dataset.color : null;
+            
             const fileName = getFileName(product, view, selectedColor);
 
             if (fileName) {
@@ -343,7 +373,10 @@
         window.changeColorAndSize = function(product, newColor) {
             // Actualizar botones de color (quitar 'active' de todos y ponerlo en el nuevo)
             document.querySelectorAll('#color-options button').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`button[data-color="${newColor}"]`).classList.add('active');
+            const newActiveButton = document.querySelector(`button[data-color="${newColor}"]`);
+            if(newActiveButton) {
+                 newActiveButton.classList.add('active');
+            }
 
             // Actualizar imagen principal a la vista frontal del nuevo color
             const fileName = getFileName(product, 'front', newColor);
@@ -380,12 +413,21 @@
                 initialColor = product.colors[0]; // Seleccionar el primer color por defecto
                 
                 product.colors.forEach(colorName => {
-                    const colorCode = product.colorMap[colorName].hex;
+                    // Asegurar que el color exista en colorMap para obtener el HEX
+                    const colorData = product.colorMap[colorName];
+                    if (!colorData || !colorData.hex) {
+                        console.warn(`Advertencia: Falta el código HEX para el color ${colorName} en Firebase.`);
+                        return;
+                    }
+                    
+                    const colorCode = colorData.hex;
                     const isActive = colorName === initialColor ? 'active' : '';
+                    
+                    // Nota: Usamos style.backgroundColor para pintar el círculo
                     colorButtonsHTML += `
                         <button 
                             data-color="${colorName}" 
-                            style="background-color: ${colorCode}; border-color: ${colorCode};"
+                            style="background-color: ${colorCode};"
                             class="${isActive}"
                             onclick="window.changeColorAndSize(window.currentProductInModal, '${colorName}')"
                             title="${colorName}"
@@ -437,7 +479,6 @@
         function generateSizeOptionsHTML(product, selectedColor) {
             let stockMap = product.stock;
             let title = 'Tallas disponibles:';
-            let activeColor = selectedColor || 'N/A';
             let productCodeForTitle = product.productCode || 'N/A';
 
             if (product.isColorProduct && selectedColor) {
@@ -447,7 +488,7 @@
             }
             
             const sizes = Object.keys(stockMap).sort((a, b) => {
-                // Ordenar tallas comunes (XS, S, M, L, XL, etc.) si es posible
+                // Ordenar tallas comunes (XS, S, M, L, XL, etc.)
                 const order = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
                 return order.indexOf(a) - order.indexOf(b);
             }).filter(size => stockMap[size] > 0);
@@ -485,9 +526,12 @@
             document.getElementById('selected-size').value = size;
             document.getElementById('display-size').textContent = size;
             
-            // Opcional: Actualizar el estado 'active' de los botones
+            // Actualizar el estado 'active' de los botones de talla
             document.querySelectorAll('#size-buttons-container button').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`button[data-size="${size}"]`).classList.add('active');
+            const newActiveButton = document.querySelector(`button[data-size="${size}"]`);
+            if(newActiveButton) {
+                newActiveButton.classList.add('active');
+            }
         }
 
 
