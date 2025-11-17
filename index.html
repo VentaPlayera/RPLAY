@@ -228,7 +228,7 @@
         const WHATSAPP_NUMBER = '529991480151'; 
         
         // --- CONSTANTES DE IMAGEN ---
-        const IMAGE_EXTENSION = '.png';
+        const IMAGE_EXTENSION = '.png', '.PNG';
         const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
         const SIZE_CHART_FILE = 'tabla_medidas'; // Nombre del archivo de la tabla de medidas (e.g., tabla_medidas.png)
         
@@ -323,9 +323,9 @@
                     colors: ['Blanco', 'Negro'],
                     inventoryByColor: {
                         'Blanco': { 'S': 1, 'M': 1 },
-                        'Negro': { 'L': 1},
+                        'Negro': { 'L': 1 },
                     },
-                    frontFile: 'Aro2',
+                    frontFile: 'Aro3', // Corregí esto asumiendo que es Aro3 para el modelo 43
                     backFile: 'Aro4',
                 },
             ];
@@ -668,14 +668,14 @@
             inner.innerHTML = '';
             
             const isColorProduct = product.colors && product.colors.length > 0;
-            // El sufijo de color SÓLO se añade si el producto es de color Y se seleccionó un color
-            const colorSuffix = color && isColorProduct ? `_${color.toLowerCase()}` : '';
+            // Genera el sufijo de color. Si el producto tiene colores Y se pasó un color, usa _[color en minúsculas].
+            // Por ejemplo, "Blanco" -> "_blanco"
+            const colorSuffix = color && isColorProduct ? `_${color.toLowerCase()}` : ''; 
 
-            // 🚨 Re-Añadido: Solo 3 imágenes: Frente, Espalda y Tabla de Tallas
+            // Se define el array de imágenes a mostrar (solo 3)
             const imageVariants = [
                 { variant: 'Frente', fileBase: product.frontFileBase, alt: 'Frente', type: 'product' }, 
                 { variant: 'Espalda', fileBase: product.backFileBase, alt: 'Espalda', type: 'product' },
-                // Tercera imagen: Tabla de Tallas (fijo SIZE_CHART_FILE)
                 { variant: 'Tabla de Tallas', fileBase: SIZE_CHART_FILE, alt: 'Tabla de Tallas', type: 'chart' }
             ];
 
@@ -686,11 +686,12 @@
                 let altText = `${product.name} ${item.alt} ${color ? `(${color})` : ''}`;
 
                 if (item.type === 'chart') {
-                    // Genera la URL de la tabla de tallas sin sufijo de color
+                    // La tabla de tallas usa un nombre de archivo fijo y no tiene sufijo de color
                     imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${IMAGE_EXTENSION}`;
                     altText = item.alt; 
                 } else {
-                    // Para Frente y Espalda, aplica el sufijo de color si corresponde
+                    // Para Frente y Espalda, aplica el sufijo de color (si existe)
+                    // Ej: GITHUB_BASE_URL + Aro1 + _blanco + .png = .../Aro1_blanco.png
                     imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${colorSuffix}${IMAGE_EXTENSION}`;
                 }
 
