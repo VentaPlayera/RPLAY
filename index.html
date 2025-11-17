@@ -309,15 +309,17 @@
                     i: 42, 
                     name: 'BLACKPINK', 
                     description: 'Modelo 42 con opción de color.', 
-                    colors: ['Negro', 'Blanco'],
+                    colors: ['Blanco', 'Negro'],
                     stockByColor: { 
-                        'Blanco': { 'S': 1, 'M': 1 }, 
-                        'Negro': { 'L': 1 } 
+                        'Blanco': { 'S': 2, 'M': 1}, 
+                        'Negro': { 'L': 1, } 
                     }, 
                     // ARCHIVOS MAPADOS POR COLOR SEGÚN TU SOLICITUD
                     imageFilesByColor: {
-                        'Blanco': { front: 'Aro1', back: 'Aro2', side: 'blanco2' },
-                        'Negro': { front: 'Aro3', back: 'Aro4', side: 'negro2' }
+                        // Nombres de archivos que indicaste: Aro1 (frente blanco), Aro2 (espalda blanco)
+                        'Blanco': { front: 'Aro1', back: 'Aro2', side: 'blanco2' }, 
+                         // Nombres de archivos que indicaste: Aro3 (frente negro), Aro4 (espalda negro)
+                        'Negro': { front: 'Aro3', back: 'Aro4', side: 'negro2' } 
                     },
                     // Usamos la versión 'Blanco' para la imagen principal de la tarjeta
                     frontFile: 'Aro1', 
@@ -327,8 +329,8 @@
                 { 
                     i: 43, 
                     name: 'BLACKPINK', 
-                    description: 'Modelo 43 con opción de color. (PENDIENTE DE ARCHIVOS)', 
-                    colors: ['Negro', 'Blanco'],
+                    description: 'Modelo 43 con opción de color.', 
+                    colors: ['Blanco', 'Negro'],
                     stockByColor: { 
                         'Blanco': { 'S': 1, 'M': 1 }, 
                         'Negro': { 'L': 1 } 
@@ -677,11 +679,11 @@
                 : null;
                 
             // Definición de variantes: Aquí indicamos qué queremos mostrar
+            // 🚨 SÓLO MOSTRARÁ FRENTE, ESPALDA Y TABLA DE TALLAS (3 IMÁGENES)
             const imageVariants = [
                 { variant: 'Frente', defaultFileBase: product.frontFileBase, type: 'product' }, 
                 { variant: 'Espalda', defaultFileBase: product.backFileBase, type: 'product' },
-                { variant: 'Lateral', defaultFileBase: product.sideFileBase, type: 'side' },
-                // La tabla de tallas SIEMPRE es la cuarta diapositiva
+                // La tabla de tallas SIEMPRE es la tercera diapositiva
                 { variant: 'Tabla de Tallas', defaultFileBase: SIZE_CHART_FILE, type: 'chart' } 
             ];
 
@@ -699,7 +701,7 @@
                     imgUrl = `${GITHUB_BASE_URL}${SIZE_CHART_FILE}${IMAGE_EXTENSION}`;
                     altText = item.variant; 
                 } 
-                // 2. Casos Frente/Espalda/Lateral
+                // 2. Casos Frente/Espalda
                 else {
                     // A. Intentar usar el mapa de archivos por color (Modelos 42, 43...)
                     if (colorFileMap) {
@@ -707,9 +709,8 @@
                             fileBase = colorFileMap.front;
                         } else if (item.variant === 'Espalda') {
                             fileBase = colorFileMap.back;
-                        } else if (item.variant === 'Lateral') {
-                            fileBase = colorFileMap.side;
-                        }
+                        } 
+                        // Nota: El Lateral fue removido.
                     } 
                     // B. Usar el archivo base predeterminado (Modelos 1-41)
                     else {
@@ -1041,7 +1042,3 @@
     </script>
 </body>
 </html>
-
-
-
-
