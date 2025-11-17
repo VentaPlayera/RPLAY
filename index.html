@@ -4,12 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda RPLAY</title>
-    </head>
+    <style>
+        /* Estilos básicos para que el código funcione visualmente */
+        body { font-family: sans-serif; margin: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        #products-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .product-card { border: 1px solid #ccc; padding: 15px; width: 300px; }
+        .product-card img { max-width: 100%; height: auto; }
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; }
+        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
+        .cart-item { border-bottom: 1px dashed #eee; padding: 10px 0; }
+        .stock-option { margin-right: 10px; }
+    </style>
+</head>
 <body>
 
     <header>
         <h1>Tienda RPLAY</h1>
-        <button onclick="toggleCartModal()">🛒 Carrito (<span id="cart-count">0</span>)</button>
+        <button onclick="window.toggleCartModal()">🛒 Carrito (<span id="cart-count">0</span>)</button>
     </header>
 
     <main id="products-container">
@@ -18,19 +32,19 @@
     
     <div id="cart-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="toggleCartModal()">&times;</span>
+            <span class="close-button" onclick="window.toggleCartModal()">&times;</span>
             <h3>Tu Carrito</h3>
             <div id="cart-items">
                 </div>
             <p>Total: $<span id="cart-total">0.00</span></p>
-            <button onclick="sendOrderToWhatsapp()">Finalizar Compra por WhatsApp</button>
-            <button onclick="clearCart()">Vaciar Carrito</button>
+            <button onclick="window.sendOrderToWhatsapp()">Finalizar Compra por WhatsApp</button>
+            <button onclick="window.clearCart()">Vaciar Carrito</button>
         </div>
     </div>
 
     <div id="product-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeProductModal()">&times;</span>
+            <span class="close-button" onclick="window.closeProductModal()">&times;</span>
             <div id="modal-content-details">
                 </div>
         </div>
@@ -41,7 +55,6 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE", 
             authDomain: "rplay-f04dc.firebaseapp.com",
-            // URL DE TU REALTIME DATABASE (CONFIRMADA):
             databaseURL: "https://rplay-f04dc-default-rtdb.firebaseio.com", 
             projectId: "rplay-f04dc",
             storageBucket: "rplay-f04dc.appspot.com",
@@ -62,7 +75,7 @@
         // FUNCIÓN PRINCIPAL PARA CARGAR PRODUCTOS DESDE REALTIME DATABASE
         // =================================================================================
 
-        let inventory = []; // El inventario se almacena aquí globalmente
+        window.inventory = []; // El inventario se almacena globalmente
 
         window.loadProductsFromFirebase = async function() {
             try {
@@ -71,12 +84,10 @@
                 
                 if (snapshot.exists()) {
                     const productsObject = snapshot.val();
-                    inventory = Object.values(productsObject); 
+                    window.inventory = Object.values(productsObject); 
                     
-                    console.log(`Inventario cargado: ${inventory.length} productos.`);
-                    // Llama a tu función para mostrar los productos.
-                    // Si tienes una función llamada renderProducts(), descomenta la línea de abajo:
-                    // renderProducts(); 
+                    console.log(`Inventario cargado: ${window.inventory.length} productos.`);
+                    window.renderProducts(); // Llama a la función de renderizado
                 } else {
                     console.log("No hay productos en la base de datos.");
                     document.getElementById('products-container').innerHTML = '<h2>¡Inventario vacío! Contacta al administrador.</h2>';
@@ -116,7 +127,6 @@
                         if (currentProduct) {
                             let newStock = 0;
                             if (item.isColorProduct) {
-                                // Stock en Realtime DB: stockByColor/Color/Talla
                                 const currentStock = currentProduct.stockByColor?.[item.color]?.[item.size] || 0;
                                 newStock = currentStock - item.quantity;
                                 
@@ -125,11 +135,9 @@
                                     if (!currentProduct.stockByColor[item.color]) currentProduct.stockByColor[item.color] = {};
                                     currentProduct.stockByColor[item.color][item.size] = newStock;
                                 } else {
-                                    // Stock insuficiente
-                                    return; // Cancela la transacción para este producto
+                                    return; // Stock insuficiente
                                 }
                             } else {
-                                // Stock en Realtime DB: stock/Talla
                                 const currentStock = currentProduct.stock?.[item.size] || 0;
                                 newStock = currentStock - item.quantity;
                                 
@@ -137,28 +145,24 @@
                                     if (!currentProduct.stock) currentProduct.stock = {};
                                     currentProduct.stock[item.size] = newStock;
                                 } else {
-                                    // Stock insuficiente
-                                    return; // Cancela la transacción para este producto
+                                    return; // Stock insuficiente
                                 }
                             }
                             return currentProduct; // Retorna el nuevo estado para guardar
                         }
-                        return currentProduct; // No hacer cambios si el producto no existe
+                        return currentProduct; // No hacer cambios
                     });
                     
                     transactionPromises.push(transactionPromise);
                 }
 
-                // Esperar a que todas las transacciones se completen
                 await Promise.all(transactionPromises);
 
-                // Enviar mensaje de WhatsApp (debes agregar tu número)
                 whatsappMessage += `\nTotal a pagar: $${document.getElementById('cart-total').textContent}`;
                 const encodedMessage = encodeURIComponent(whatsappMessage);
                 window.open(`https://wa.me/TUNUMEROAQUI?text=${encodedMessage}`, '_blank');
 
-                // Limpiar carrito y actualizar vista
-                // clearCart(); // Descomenta esta línea si ya tienes la función
+                window.clearCart(); // Limpia el carrito
                 alert("Pedido realizado y stock actualizado en la nube. ¡Revisa WhatsApp!");
                 window.loadProductsFromFirebase(); // Recargar inventario
 
@@ -168,9 +172,232 @@
             }
         }
         
-        // 🚨 (TUS OTRAS FUNCIONES JS DE CARRITO Y MODALES deben ir aquí, si no están en otro archivo)
-        
     </script>
-    
-    </body>
+
+
+    <script>
+        // Funciones auxiliares para el carrito
+        function saveCart(cart) {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            window.updateCartDisplay();
+        }
+
+        window.clearCart = function() {
+            saveCart([]);
+        }
+
+        function calculateTotal(cart) {
+            return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+        }
+
+        window.updateCartDisplay = function() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const cartCountElement = document.getElementById('cart-count');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalElement = document.getElementById('cart-total');
+
+            cartCountElement.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartTotalElement.textContent = calculateTotal(cart);
+            cartItemsContainer.innerHTML = '';
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p>El carrito está vacío.</p>';
+                return;
+            }
+
+            cart.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'cart-item';
+                itemDiv.innerHTML = `
+                    <p>
+                        ${item.name} (${item.isColorProduct ? item.color : 'Único'}) - Talla ${item.size}
+                        x ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                `;
+                cartItemsContainer.appendChild(itemDiv);
+            });
+        }
+
+        window.toggleCartModal = function() {
+            const modal = document.getElementById('cart-modal');
+            if (modal.style.display === "block") {
+                modal.style.display = "none";
+            } else {
+                window.updateCartDisplay();
+                modal.style.display = "block";
+            }
+        }
+        
+        window.closeProductModal = function() {
+            document.getElementById('product-modal').style.display = "none";
+        }
+
+
+        // =================================================================================
+        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS
+        // =================================================================================
+
+        window.renderProducts = function() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = ''; // Limpia el contenedor
+
+            if (!window.inventory || window.inventory.length === 0) {
+                container.innerHTML = '<h2>No se encontraron productos disponibles.</h2>';
+                return;
+            }
+
+            window.inventory.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                // Determinar la imagen a mostrar (usando el frontFileBase por defecto)
+                const imageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
+
+                card.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <img src="assets/images/${imageFile}.jpg" alt="${product.name}" />
+                    <p>${product.description}</p>
+                    <p><strong>$${product.price.toFixed(2)}</strong></p>
+                    <button onclick="window.showProductModal('${product.id}')">Ver / Pedir</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // =================================================================================
+        // LÓGICA DE MODAL DE PRODUCTO Y AGREGAR AL CARRITO
+        // =================================================================================
+
+        window.showProductModal = function(productId) {
+            const product = window.inventory.find(p => p.id === productId);
+            if (!product) return;
+
+            const detailsContainer = document.getElementById('modal-content-details');
+            detailsContainer.innerHTML = `
+                <h2>${product.name}</h2>
+                <p>${product.description}</p>
+                <p>Precio: <strong>$${product.price.toFixed(2)}</strong></p>
+                
+                <div id="product-options">
+                    ${product.isColorProduct ? `
+                        <label for="color-select">Color:</label>
+                        <select id="color-select">
+                            ${product.colors.map(color => `<option value="${color}">${color}</option>`).join('')}
+                        </select>
+                    ` : '<p>Color: Único</p>'}
+
+                    <div id="size-options">
+                        ${generateSizeOptionsHTML(product, product.isColorProduct ? product.colors[0] : null)}
+                    </div>
+                </div>
+
+                <label for="quantity">Cantidad:</label>
+                <input type="number" id="quantity" value="1" min="1" max="100"> 
+
+                <button onclick="window.addToCart('${product.id}')">Añadir al Carrito</button>
+            `;
+
+            // Agregar evento para actualizar las tallas cuando cambia el color (solo para productos de color)
+            if (product.isColorProduct) {
+                document.getElementById('color-select').addEventListener('change', (e) => {
+                    const selectedColor = e.target.value;
+                    const sizeOptionsContainer = document.getElementById('size-options');
+                    sizeOptionsContainer.innerHTML = generateSizeOptionsHTML(product, selectedColor);
+                });
+            }
+
+            document.getElementById('product-modal').style.display = "block";
+        }
+
+        function generateSizeOptionsHTML(product, selectedColor) {
+            let stockMap = product.stock;
+
+            if (product.isColorProduct && selectedColor) {
+                stockMap = product.stockByColor?.[selectedColor] || {};
+            }
+            
+            const sizes = Object.keys(stockMap).filter(size => stockMap[size] > 0);
+
+            if (sizes.length === 0) {
+                return '<p>No hay stock disponible para las tallas en este color.</p>';
+            }
+
+            return `
+                <label>Talla:</label>
+                <div>
+                    ${sizes.map(size => `
+                        <button class="stock-option" 
+                                onclick="document.querySelector('#selected-size').value='${size}'">
+                            ${size} (${stockMap[size]})
+                        </button>
+                    `).join('')}
+                    <input type="hidden" id="selected-size" value="${sizes[0]}">
+                </div>
+                <p>Talla seleccionada: <span id="display-size">${sizes[0]}</span></p>
+            `;
+        }
+
+
+        window.addToCart = function(productId) {
+            const product = window.inventory.find(p => p.id === productId);
+            if (!product) return;
+
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const size = document.getElementById('selected-size')?.value;
+            const color = product.isColorProduct ? document.getElementById('color-select').value : 'N/A';
+            
+            if (!size || quantity <= 0) {
+                alert("Por favor, selecciona una talla y una cantidad válida.");
+                return;
+            }
+
+            let availableStock = 0;
+            if (product.isColorProduct) {
+                availableStock = product.stockByColor?.[color]?.[size] || 0;
+            } else {
+                availableStock = product.stock?.[size] || 0;
+            }
+
+            if (quantity > availableStock) {
+                alert(`Solo hay ${availableStock} unidades de la Talla ${size} disponibles.`);
+                return;
+            }
+
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const cartItemId = `${productId}-${color}-${size}`;
+
+            const existingItemIndex = cart.findIndex(item => item.cartItemId === cartItemId);
+
+            if (existingItemIndex > -1) {
+                // Si ya existe, actualiza la cantidad
+                const newQuantity = cart[existingItemIndex].quantity + quantity;
+                if (newQuantity > availableStock) {
+                    alert(`No puedes agregar más. Stock máximo: ${availableStock}`);
+                    return;
+                }
+                cart[existingItemIndex].quantity = newQuantity;
+            } else {
+                // Si no existe, agrégalo
+                cart.push({
+                    cartItemId: cartItemId,
+                    id: productId,
+                    name: product.name,
+                    price: product.price,
+                    size: size,
+                    color: color,
+                    isColorProduct: product.isColorProduct,
+                    quantity: quantity
+                });
+            }
+
+            saveCart(cart);
+            window.closeProductModal();
+            alert(`¡${quantity} unidad(es) de ${product.name} añadida(s) al carrito!`);
+        }
+
+        // Inicializar el carrito al cargar la página
+        window.addEventListener('load', window.updateCartDisplay);
+
+    </script>
+</body>
 </html>
