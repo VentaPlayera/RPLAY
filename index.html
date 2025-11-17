@@ -7,7 +7,18 @@
     <style>
         /* Base y Estructura */
         body { font-family: sans-serif; margin: 20px; background-color: #f8f8f8; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid #ddd; }
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            padding: 10px 0; 
+            border-bottom: 1px solid #ddd; 
+        }
+        #logo {
+            height: 50px; /* Ajusta el tamaño de tu logo */
+            width: auto;
+        }
         #products-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
         
         /* Tarjetas de Producto */
@@ -22,7 +33,7 @@
         .product-card img { 
             max-width: 100%; 
             height: 300px; /* Tamaño fijo para consistencia */
-            object-fit: cover; /* Asegura que la imagen se ajuste sin distorsionarse */
+            object-fit: cover; 
             margin-bottom: 10px;
         }
         .product-card button {
@@ -45,7 +56,7 @@
         #modal-images { flex: 1; display: flex; flex-direction: column; gap: 15px; }
         #main-product-image { 
             max-width: 100%; 
-            height: 450px; /* Tamaño fijo para el modal */
+            height: 450px; 
             object-fit: contain; 
             border: 1px solid #eee;
         }
@@ -67,11 +78,11 @@
             border: 2px solid transparent; 
             margin: 5px; 
             cursor: pointer;
-            box-shadow: 0 0 0 1px #ff99cc; /* Borde rosa sutil */
+            box-shadow: 0 0 0 1px #ff99cc; 
             transition: all 0.2s;
         }
         #color-options button.active {
-            border: 3px solid #cc0066; /* Borde rosa fuerte para indicar activo */
+            border: 3px solid #cc0066; 
             box-shadow: 0 0 0 2px white, 0 0 0 5px #cc0066; 
         }
 
@@ -81,11 +92,38 @@
         #add-to-cart-button {
             background-color: #cc0066 !important; 
         }
+        
+        /* Estilos del Carrito Detallado */
+        .cart-item-detail {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .cart-item-detail img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+        .cart-item-info {
+            flex-grow: 1;
+        }
+        .cart-item-info strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .cart-item-info span {
+            font-size: 0.9em;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
     <header>
+        <img id="logo" src="logo.png" alt="Logo de RPLAY" onerror="this.onerror=null;this.src=''">
         <h1>Tienda RPLAY</h1>
         <button onclick="window.toggleCartModal()">🛒 Carrito (<span id="cart-count">0</span>)</button>
     </header>
@@ -167,19 +205,17 @@
         window.loadProductsFromFirebase = async function() {
             try {
                 console.log("Cargando inventario desde Realtime Database...");
-                // Nota: Asumimos que la ruta de productos es 'products' en RTDB
                 const snapshot = await get(ref(db, 'products')); 
                 
                 if (snapshot.exists()) {
                     const productsObject = snapshot.val();
-                    // Convertir el objeto de productos (con IDs como keys) a un array
                     window.inventory = Object.keys(productsObject).map(key => ({
                         id: key,
                         ...productsObject[key]
                     }));
                     
                     console.log(`Inventario cargado: ${window.inventory.length} productos.`);
-                    window.renderProducts(); // Llama a la función de renderizado
+                    window.renderProducts();
                 } else {
                     console.log("No hay productos en la base de datos de RTDB.");
                     document.getElementById('products-container').innerHTML = '<h2>¡Inventario vacío! Contacta al administrador o migra los datos.</h2>';
@@ -187,9 +223,6 @@
             } catch (e) {
                 console.error("Error al cargar productos desde RTDB:", e);
                 document.getElementById('products-container').innerHTML = '<h2>Error al cargar inventario. Revisa la Consola y las Reglas de RTDB.</h2>';
-                // 🚨 ¡REGLAS DE RTDB A REVISAR! 🚨
-                // Debes cambiar tus reglas de RTDB a:
-                // { "rules": { ".read": true, ".write": true } }
             }
         }
         
@@ -217,12 +250,10 @@
                     
                     const productRef = ref(db, `products/${item.id}`);
 
-                    // Usar runTransaction para garantizar que el descuento sea atómico (seguro)
                     const transactionPromise = runTransaction(productRef, (currentProduct) => {
                         if (currentProduct) {
                             let newStock = 0;
                             if (item.isColorProduct) {
-                                // Buscar el stock en la ruta: currentProduct/stockByColor/color/size
                                 const currentStock = currentProduct.stockByColor?.[item.color]?.[item.size] || 0;
                                 newStock = currentStock - item.quantity;
                                 
@@ -231,10 +262,9 @@
                                     if (!currentProduct.stockByColor[item.color]) currentProduct.stockByColor[item.color] = {};
                                     currentProduct.stockByColor[item.color][item.size] = newStock;
                                 } else {
-                                    return; // Stock insuficiente
+                                    return; 
                                 }
                             } else {
-                                // Buscar el stock en la ruta: currentProduct/stock/size
                                 const currentStock = currentProduct.stock?.[item.size] || 0;
                                 newStock = currentStock - item.quantity;
                                 
@@ -242,12 +272,12 @@
                                     if (!currentProduct.stock) currentProduct.stock = {};
                                     currentProduct.stock[item.size] = newStock;
                                 } else {
-                                    return; // Stock insuficiente
+                                    return; 
                                 }
                             }
-                            return currentProduct; // Retorna el nuevo estado para guardar en RTDB
+                            return currentProduct; 
                         }
-                        return currentProduct; // No hacer cambios si no existe
+                        return currentProduct;
                     });
                     
                     transactionPromises.push(transactionPromise);
@@ -256,14 +286,13 @@
                 await Promise.all(transactionPromises);
 
                 whatsappMessage += `\nTotal a pagar: $${document.getElementById('cart-total').textContent}`;
-                // 🚨 Reemplaza "TUNUMEROAQUI" con tu número de WhatsApp
                 const whatsappNumber = "TUNUMEROAQUI"; 
                 const encodedMessage = encodeURIComponent(whatsappMessage);
                 window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
 
-                window.clearCart(); // Limpia el carrito
+                window.clearCart(); 
                 alert("Pedido realizado y stock actualizado en la nube. ¡Revisa WhatsApp!");
-                window.loadProductsFromFirebase(); // Recargar inventario
+                window.loadProductsFromFirebase(); 
 
             } catch (error) {
                 console.error("Error al finalizar la compra y actualizar stock:", error);
@@ -289,6 +318,9 @@
             return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
         }
 
+        // =================================================================================
+        // FUNCIÓN CLAVE: MOSTRAR CARRITO (CON TODOS LOS DETALLES)
+        // =================================================================================
         window.updateCartDisplay = function() {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
             const cartCountElement = document.getElementById('cart-count');
@@ -303,15 +335,36 @@
                 cartItemsContainer.innerHTML = '<p>El carrito está vacío.</p>';
                 return;
             }
-
+            
+            // Reconstruir los detalles del carrito con la información completa
             cart.forEach(item => {
+                const productInventory = window.inventory.find(p => p.id === item.id);
+                if (!productInventory) return;
+                
+                // Determinar el nombre del archivo de imagen
+                let rawImageFile = productInventory.frontFileBase;
+                if (item.isColorProduct && productInventory.colorMap && productInventory.colorMap[item.color]) {
+                    rawImageFile = productInventory.colorMap[item.color].front;
+                }
+                const fileInfo = formatFileName(rawImageFile);
+                const imagePath = fileInfo ? `${fileInfo.name}${fileInfo.ext}` : '';
+                
+                // Determinar el código de producto específico (si aplica)
+                let productCode = productInventory.productCode || 'N/A';
+                if (item.isColorProduct && productInventory.colorMap && productInventory.colorMap[item.color]) {
+                    productCode = productInventory.colorMap[item.color].productCode || productInventory.productCode || 'N/A';
+                }
+
                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'cart-item';
+                itemDiv.className = 'cart-item-detail';
                 itemDiv.innerHTML = `
-                    <p>
-                        ${item.name} (${item.isColorProduct ? item.color : 'Único'}) - Talla ${item.size}
-                        x ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}
-                    </p>
+                    <img src="${imagePath}" alt="${item.name} - ${item.color}" />
+                    <div class="cart-item-info">
+                        <strong>${item.name}</strong>
+                        <span>Código: ${productCode}</span>
+                        <span>Color: ${item.color} | Talla: ${item.size}</span>
+                        <span>Cantidad: ${item.quantity} | Subtotal: $${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
                 `;
                 cartItemsContainer.appendChild(itemDiv);
             });
@@ -332,34 +385,30 @@
         }
         
         // =================================================================================
-        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (SOLUCIÓN DEFINITIVA DE IMAGEN)
+        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (IMAGENES)
         // =================================================================================
         function formatFileName(rawName) {
             if (!rawName) return null;
             
-            // Si el nombre viene con una extensión incorrecta de Firebase, la quitamos.
             const nameWithoutExt = rawName.split('.')[0]; 
             const lowerCaseName = nameWithoutExt.toLowerCase();
-            let extension = '.png'; // Extensión por defecto
+            let extension = '.png'; 
 
-            // REGLA 1: EXCEPCIÓN 'xime1' (todo minúsculas)
             if (lowerCaseName === 'xime1') { 
                 return { name: lowerCaseName, ext: extension }; 
             } 
             
-            // REGLA 2: EXCEPCIÓN 'gon1' o 'gon2' (la extensión es .PNG en MAYÚSCULAS)
             if (lowerCaseName.startsWith('gon')) {
-                 extension = '.PNG'; // Cambiar extensión a mayúsculas
+                 extension = '.PNG'; 
             }
             
-            // 3. REGLA GENERAL (y Gon): Capitalizar la primera letra.
             const formattedName = nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
             
             return { name: formattedName, ext: extension }; 
         }
 
         // =================================================================================
-        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS (TARJETAS)
+        // LÓGICA DE RENDERIZADO (NO MODIFICADA, USA formatFileName)
         // =================================================================================
 
         window.renderProducts = function() {
@@ -375,14 +424,11 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
 
-                // Obtener el nombre base del archivo de Firebase
                 const rawImageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
                 
-                // Aplicar el formato de nombre para coincidir con tus archivos locales
                 const fileInfo = formatFileName(rawImageFile);
-                if (!fileInfo) return; // Si no hay nombre de archivo, salta.
+                if (!fileInfo) return; 
 
-                // RUTA RAÍZ Y EXTENSIÓN (CORREGIDA)
                 const imagePath = `${fileInfo.name}${fileInfo.ext}`;
                 
                 card.innerHTML = `
@@ -396,29 +442,22 @@
             });
         }
 
-        // =================================================================================
-        // LÓGICA DE MODAL DE PRODUCTO (IMAGENES, COLORES Y TABLA)
-        // =================================================================================
-
         function getFileName(product, view, color = null) {
-            // Obtener el nombre de archivo basado en la vista (front/back) y color
             const rawFileName = product.isColorProduct && color
                 ? product.colorMap[color][view]
                 : product[`${view}FileBase`];
 
             if (!rawFileName) return null;
 
-            // Aplicar la lógica de formato de nombre
             const fileInfo = formatFileName(rawFileName);
             
-            return `${fileInfo.name}${fileInfo.ext}`; // Retorna el nombre completo con la extensión correcta
+            return `${fileInfo.name}${fileInfo.ext}`;
         }
 
         window.changeModalImage = function(view) {
             const product = window.currentProductInModal;
             if (!product) return;
 
-            // Determinar el color activo
             const activeColorButton = document.querySelector('#color-options .active');
             const selectedColor = product.isColorProduct && activeColorButton ? activeColorButton.dataset.color : null;
             
@@ -430,22 +469,18 @@
         }
 
         window.changeColorAndSize = function(product, newColor) {
-            // Actualizar botones de color (quitar 'active' de todos y ponerlo en el nuevo)
             document.querySelectorAll('#color-options button').forEach(btn => btn.classList.remove('active'));
             const newActiveButton = document.querySelector(`button[data-color="${newColor}"]`);
             if(newActiveButton) {
                  newActiveButton.classList.add('active');
             }
 
-            // Actualizar imagen principal a la vista frontal del nuevo color
             const fileName = getFileName(product, 'front', newColor);
             document.getElementById('main-product-image').src = fileName;
 
-            // Generar y actualizar opciones de talla y stock para el nuevo color
             const sizeOptionsContainer = document.getElementById('size-options');
             sizeOptionsContainer.innerHTML = generateSizeOptionsHTML(product, newColor);
 
-            // Actualizar botón de añadir al carrito
             document.getElementById('add-to-cart-button').onclick = () => window.addToCart(product.id, newColor);
         }
 
@@ -467,9 +502,8 @@
             let initialColor = null;
 
             if (product.isColorProduct) {
-                // 1. Mostrar botones de colores
                 let colorButtonsHTML = '<p>Color:</p><div id="color-options">';
-                initialColor = product.colors[0]; // Seleccionar el primer color por defecto
+                initialColor = product.colors[0]; 
                 
                 product.colors.forEach(colorName => {
                     const colorData = product.colorMap[colorName];
@@ -495,28 +529,21 @@
                 optionsContainer.innerHTML += colorButtonsHTML;
 
             } else {
-                // Producto de color único
                 optionsContainer.innerHTML += '<p>Color: Único</p>';
                 initialColor = null;
             }
 
-            // 2. Contenedor de tallas
             optionsContainer.innerHTML += '<div id="size-options"></div>';
 
-
-            // 3. Inicializar imagen principal y tallas
             if (product.isColorProduct) {
                 window.changeColorAndSize(product, initialColor);
             } else {
                 document.getElementById('size-options').innerHTML = generateSizeOptionsHTML(product, null);
                 const fileName = getFileName(product, 'front', null);
                 document.getElementById('main-product-image').src = fileName;
-
-                // Actualizar botón de añadir al carrito
                 document.getElementById('add-to-cart-button').onclick = () => window.addToCart(product.id, 'N/A');
             }
             
-            // 4. Mostrar tabla de tallas
             if (product.sizeChartHTML) {
                 document.getElementById('size-chart-container').innerHTML = `
                     <h4>Tabla de Tallas</h4>
@@ -526,7 +553,6 @@
                  document.getElementById('size-chart-container').innerHTML = '';
             }
             
-            // Resetear cantidad a 1
             document.getElementById('quantity').value = 1;
 
             document.getElementById('product-modal').style.display = "block";
@@ -545,7 +571,6 @@
             }
             
             const sizes = Object.keys(stockMap).sort((a, b) => {
-                // Ordenar tallas comunes (XS, S, M, L, XL, etc.)
                 const order = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
                 const aIndex = order.indexOf(a.toUpperCase());
                 const bIndex = order.indexOf(b.toUpperCase());
@@ -585,7 +610,6 @@
             document.getElementById('selected-size').value = size;
             document.getElementById('display-size').textContent = size;
             
-            // Actualizar el estado 'active' de los botones de talla
             document.querySelectorAll('#size-buttons-container button').forEach(btn => btn.classList.remove('active'));
             const newActiveButton = document.querySelector(`button[data-size="${size}"]`);
             if(newActiveButton) {
@@ -629,7 +653,6 @@
 
             const newQuantityTotal = currentInCart + quantity;
 
-            // LÓGICA DE STOCK CORREGIDA: Si la nueva cantidad total excede el stock disponible.
             if (newQuantityTotal > availableStock) {
                 const maxToAdd = availableStock - currentInCart;
                 if (maxToAdd > 0) {
@@ -642,10 +665,8 @@
 
 
             if (existingItemIndex > -1) {
-                // Actualiza la cantidad
                 cart[existingItemIndex].quantity = newQuantityTotal;
             } else {
-                // Agrégalo como un nuevo artículo
                 cart.push({
                     cartItemId: cartItemId,
                     id: productId,
