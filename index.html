@@ -276,11 +276,11 @@
         
         const IMAGE_EXTENSION = '.png';
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
-        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; // 🚨 Esto es la imagen de la tabla de medidas
+        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; // Nombre de la imagen de la tabla de medidas
 
         // Variables que serán llenadas con datos de Firebase
-        window.inventory = []; // Almacena todos los productos de Firestore
-        window.currentOrder = JSON.parse(localStorage.getItem('currentOrder') || '[]'); // Pedido actual (carrito)
+        window.inventory = []; 
+        window.currentOrder = JSON.parse(localStorage.getItem('currentOrder') || '[]'); 
         window.currentProductInModal = null; 
         
         // =================================================================================
@@ -297,7 +297,6 @@
                 if (!querySnapshot.empty) {
                     window.inventory = querySnapshot.docs.map(doc => ({
                         id: doc.id,
-                        // Se agrega el precio aquí para que use el precio de Firestore si existe, si no usa la constante
                         price: doc.data().price || PRODUCT_PRICE, 
                         ...doc.data()
                     }));
@@ -315,23 +314,20 @@
         }
         
         // =================================================================================
-        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (CORRIGE MAYÚSCULAS Y ASEGURA EL USO DE .png)
+        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (SOLUCIÓN MAYÚSCULAS/MINÚSCULAS)
         // =================================================================================
         function formatFileName(rawName) {
             if (!rawName) return null;
             
-            // 1. Quitar cualquier extensión existente para tener solo el nombre base
+            // Quitar cualquier extensión existente para tener solo el nombre base
             const nameWithoutExt = rawName.split('.')[0]; 
             
-            // 2. 🚨 CORRECCIÓN CLAVE: Convertimos a minúsculas por defecto.
-            // Esto asegura que 'xime1', 'negro', 'blanco', 'negro2', 'blanco2' funcionen.
+            // 🚨 CONVERSIÓN CLAVE: Convertimos a minúsculas por defecto para evitar errores en el servidor.
             let finalBaseName = nameWithoutExt.toLowerCase(); 
             let finalExtension = IMAGE_EXTENSION; // Default: .png
 
-            // 3. CASO ESPECIAL (GON): Si el nombre empieza con 'gon'
+            // CASO ESPECIAL (GON): Mantener la mayúscula si es necesario, aunque se recomienda minúscula.
             if (finalBaseName.startsWith('gon')) {
-                 // Si los archivos están guardados con mayúscula inicial y extensión mayúscula (Gon1.PNG)
-                 // NOTA: Si los archivos están en minúscula (gon1.png), borra estas dos líneas.
                  finalBaseName = finalBaseName.charAt(0).toUpperCase() + finalBaseName.slice(1);
                  finalExtension = '.PNG'; 
             }
@@ -348,28 +344,26 @@
             const fileInfo = formatFileName(fileBase);
             if (!fileInfo) return `${GITHUB_BASE_URL}fallback_default${IMAGE_EXTENSION}`; 
             
-            // Ruta final generada, por ejemplo:
-            // getImageUrl('xime1') -> https://ventaplayera.github.io/RPLAY/xime1.png
-            // getImageUrl('blanco2') -> https://ventaplayera.github.io/RPLAY/blanco2.png
+            // Genera la ruta con el nombre en minúsculas (ej: /RPLAY/xime1.png)
             return `${GITHUB_BASE_URL}${fileInfo.name}${fileInfo.ext}`;
         }
 
 
         // =======================================================
-        // LÓGICA DE STOCKS (ADAPTADA A FIRESTORE Y ASEGURANDO NÚMERO)
+        // LÓGICA DE STOCKS (ASEGURANDO LA LECTURA COMO NÚMERO)
         // =======================================================
         function getStock(product, size, color = null) {
             if (product.isColorProduct && color) {
                 // FIX: Usamos Number() para asegurar que el stock es un número, resolviendo el problema de 'M': 1.
                 return Number(product.stockByColor?.[color]?.[size]) || 0; 
             } else {
-                // FIX: Usamos Number() para asegurar que el stock es un número, resolviendo el problema de 'M': 1.
+                // FIX: Usamos Number() para asegurar que el stock es un número.
                 return Number(product.stock?.[size]) || 0;
             }
         }
 
         // =======================================================
-        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO (ADAPTADA A FIRESTORE)
+        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO
         // =======================================================
 
         window.renderProductCards = function() {
@@ -384,7 +378,6 @@
             window.inventory.forEach(product => {
                 let maxStock = 0;
                 
-                // Recalcular stock máximo usando la data de Firestore
                 if (product.isColorProduct && product.stockByColor) {
                     for (const color in product.stockByColor) {
                         for (const size in product.stockByColor[color]) {
@@ -400,7 +393,6 @@
                 const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
                 const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
 
-                // Determinar imagen principal
                 let frontFileBase = product.frontFileBase || '';
                 if (product.isColorProduct && product.colors && product.colorMap && product.colorMap[product.colors[0]]) {
                      frontFileBase = product.colorMap[product.colors[0]].front;
@@ -427,15 +419,13 @@
         }
         
         // =======================================================
-        // LÓGICA DE MODAL DE DETALLE (SE MANTIENE IGUAL)
+        // LÓGICA DE MODAL DE DETALLE Y CARRUSEL (INCLUYE TABLA DE MEDIDAS)
         // =======================================================
 
         function getFileBase(product, view, color = null) {
-            // Producto con color y color seleccionado
             if (product.isColorProduct && color && product.colorMap[color]) {
                 return product.colorMap[color][view] || product[`${view}FileBase`];
             }
-            // Producto sin color
             return product[`${view}FileBase`];
         }
 
@@ -500,7 +490,7 @@
             
             const frontFileBase = getFileBase(product, 'front', color);
             const backFileBase = getFileBase(product, 'back', color);
-            // 🚨 GENERIC_SIDE_IMAGE_BASE ES LA IMAGEN DE MEDIDAS (medidas.png)
+            // 🚨 Cargamos la imagen de medidas (medidas.png)
             const sideFileBase = getFileBase(product, 'side', color) || GENERIC_SIDE_IMAGE_BASE; 
             
             const colorText = color ? ` (${color})` : '';
@@ -536,7 +526,6 @@
             
             let stockMap = product.stock || {};
             
-            // Si es producto con color, usar el stockByColor
             if (product.isColorProduct && selectedColor && product.stockByColor) {
                 stockMap = product.stockByColor[selectedColor] || {};
             }
@@ -550,7 +539,6 @@
             });
             
             sizesToProcess.forEach(size => {
-                // CORRECCIÓN DE STOCK: Aseguramos que el stock se interprete como número
                 const stock = Number(stockMap[size]) || 0; 
                 
                 if (stock > 0) {
@@ -590,7 +578,6 @@
                 quantity = 1;
             }
 
-            // Contar la cantidad actual en el carrito para esta combinación
             const cartItemId = `${productId}-${selectedColor || 'N/A'}-${size}`;
             const existingItem = window.currentOrder.find(item => item.cartItemId === cartItemId);
             const currentInCart = existingItem ? existingItem.quantity : 0;
@@ -655,7 +642,6 @@
                     color: finalColor, 
                     quantity: quantity,
                     price: product.price,
-                    // Guardamos la info de la imagen para el carrito detallado
                     isColorProduct: product.isColorProduct,
                     frontFileBase: getFileBase(product, 'front', color)
                 });
@@ -682,7 +668,7 @@
             const list = document.getElementById('currentOrdersList');
             const emptyMessage = document.getElementById('emptyOrdersMessage');
             
-            list.innerHTML = ''; // Limpiar la lista completamente
+            list.innerHTML = ''; 
             list.appendChild(emptyMessage);
             
             if (window.currentOrder.length === 0) {
@@ -703,7 +689,6 @@
                 
                 const product = window.inventory.find(p => p.id === item.productId);
                 
-                // Determinar la imagen a mostrar
                 const frontFileBase = item.frontFileBase || (product ? product.frontFileBase : null);
                 const imageUrl = getImageUrl(frontFileBase);
                 
@@ -759,7 +744,6 @@
         document.getElementById('halfPaymentCheck').addEventListener('change', updateOrdersTotal); 
 
         function updateOrdersCounter(count) {
-            // Mostrar la cantidad total de ITEMS ÚNICOS en el carrito
             document.getElementById('ordersCounter').textContent = count; 
         }
 
@@ -788,7 +772,7 @@
         });
 
         // =======================================================
-        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK (ADAPTADO A FIRESTORE)
+        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK
         // =======================================================
 
         window.sendOrderToWhatsapp = async function() {
@@ -816,7 +800,6 @@
                 const colorText = item.color && item.color !== 'Único' ? ` (${item.color})` : '';
                 orderText += `${index + 1}. *${item.name}* - ${item.description} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
                 
-                // Referencia al documento en Firestore
                 const productRef = doc(firestoreDB, 'products', item.productId);
 
                 const transactionPromise = runTransaction(firestoreDB, async (transaction) => {
@@ -831,22 +814,19 @@
 
                     if (item.isColorProduct) {
                         stockMap = currentProduct.stockByColor?.[item.color] || {};
-                        currentStock = Number(stockMap[item.size]) || 0; // Usamos Number() aquí también
+                        currentStock = Number(stockMap[item.size]) || 0; 
                     } else {
                         stockMap = currentProduct.stock || {};
-                        currentStock = Number(stockMap[item.size]) || 0; // Usamos Number() aquí también
+                        currentStock = Number(stockMap[item.size]) || 0; 
                     }
                     
                     const newStock = currentStock - item.quantity;
                     
                     if (newStock >= 0) {
-                        // Clonar y actualizar el mapa de stock
                         const updatedStockMap = { ...stockMap, [item.size]: newStock };
                         
-                        // Preparar la actualización para la transacción
                         let updateData = {};
                         if (item.isColorProduct) {
-                            // Si es por color, actualizamos el mapa de colores específico
                             updateData = { 
                                 stockByColor: {
                                     ...currentProduct.stockByColor,
@@ -854,14 +834,12 @@
                                 }
                             };
                         } else {
-                            // Si es stock simple, actualizamos el mapa de stock
                             updateData = { stock: updatedStockMap };
                         }
                         
                         transaction.update(productRef, updateData);
                         return currentProduct;
                     } else {
-                        // Error de concurrencia o stock insuficiente
                         throw new Error(`Stock insuficiente para ${item.name} (${item.color}, ${item.size}).`);
                     }
                 });
@@ -870,7 +848,6 @@
             }
 
             try {
-                // Esperar a que todas las transacciones de stock se completen con éxito
                 await Promise.all(transactionPromises);
 
                 orderText += `\n*Datos del Cliente:*\n`;
@@ -881,25 +858,21 @@
 
                 const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
 
-                // 1. Limpiar el pedido actual y guardar todo
                 window.currentOrder = [];
                 localStorage.setItem('currentOrder', JSON.stringify(window.currentOrder));
                 
-                // 2. Cerrar el modal y rerenderizar
                 const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
                 ordersModal.hide();
                 
-                // 3. Rerenderizar las tarjetas (para mostrar el stock descontado)
                 window.loadProductsFromFirebase();
 
                 alert("¡Pedido enviado! El stock ha sido actualizado en la base de datos de Firestore. Redirigiendo a WhatsApp.");
                 
-                // 4. Redirigir a WhatsApp
                 window.open(whatsappURL, '_blank');
 
             } catch (error) {
                 console.error("Error al finalizar la compra y actualizar stock:", error);
-                alert("Hubo un error al procesar el pedido. Por favor, revisa tu stock o las reglas de Firestore.");
+                alert("Hubo un error al procesar el pedido. Por favor, verifica el stock.");
             }
         }
 
