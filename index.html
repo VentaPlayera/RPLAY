@@ -278,7 +278,7 @@
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
         
-        // 🚨 Lista de nombres de archivos que el usuario confirmó que van en minúsculas en el servidor.
+        // 🚨 V8.6: Lista de nombres de archivos que deben ser forzados a minúsculas
         const MUST_BE_LOWERCASE = ['xim1', 'negro', 'blanco', 'negro2', 'blanco2', 'medidas', 'logo']; 
 
         // Variables que serán llenadas con datos de Firebase
@@ -317,20 +317,22 @@
         }
         
         // =================================================================================
-        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (V8.5: RESPETANDO MAYÚSCULAS/MINÚSCULAS)
+        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (V8.6: FUERZA CAPITALIZACIÓN)
         // =================================================================================
         function formatFileName(rawName) {
             if (!rawName) return null;
             
-            // Base file name without extension
             let baseName = rawName.split('.')[0]; 
             const lowerBaseName = baseName.toLowerCase();
             
-            // Si el nombre del archivo (en minúsculas) está en la lista de excepciones, 
-            // lo forzamos a minúsculas. De lo contrario, usamos la capitalización 
-            // exacta que viene de la base de datos (Ej: 'Abi1').
             if (MUST_BE_LOWERCASE.includes(lowerBaseName)) {
+                // Si es una excepción (xim1, blanco, negro, etc.), forzar minúsculas
                 baseName = lowerBaseName; 
+            } else {
+                // Si NO es una excepción (Abi1, Gon3, etc.), forzar mayúscula inicial
+                if (baseName.length > 0) {
+                    baseName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+                }
             }
             
             return { name: baseName, ext: IMAGE_EXTENSION };
