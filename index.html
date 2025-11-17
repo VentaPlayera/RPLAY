@@ -13,9 +13,9 @@
     </header>
 
     <main id="products-container">
-        <h2>Cargando inventario...</h2>
+        <h2>Cargando inventario desde Realtime Database...</h2>
     </main>
-
+    
     <div id="cart-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="toggleCartModal()">&times;</span>
@@ -35,64 +35,61 @@
                 </div>
         </div>
     </div>
-    
+
     <script type="module">
         // 🚨 CONFIGURACIÓN DE FIREBASE (TU PROYECTO RPLAY)
         const firebaseConfig = {
             apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE",
             authDomain: "rplay-f04dc.firebaseapp.com",
+            databaseURL: "TU_DATABASE_URL_AQUI", // 🚨 DEBES REEMPLAZAR ESTO con la URL de tu Realtime DB
             projectId: "rplay-f04dc",
             storageBucket: "rplay-f04dc.appspot.com",
             messagingSenderId: "787828282738",
             appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
             measurementId: "G-XEKR4KEDMR"
         };
+        // NOTA: La databaseURL se ve como: "https://rplay-f04dc-default-rtdb.firebaseio.com"
 
-        // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE (Versión modular recomendada)
+        // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-        import { 
-            getFirestore, 
-            collection, 
-            getDocs, 
-            doc, 
-            setDoc, 
-            updateDoc,
-            writeBatch 
-        } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
+        import { getDatabase, ref, get, set, runTransaction } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
 
-        // Inicializar Firebase y Firestore
+        // Inicializar Firebase y Realtime Database
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const productsCollection = collection(db, "products");
+        const db = getDatabase(app);
 
         // 🚨 EXPOSICIÓN GLOBAL PARA EL SCRIPT DE MIGRACIÓN (Temporal)
-        // Esto permite que el código de migración más abajo acceda a las funciones de Firebase
         window.db = db;
-        window.setDoc = setDoc;
-        window.doc = doc;
-        window.writeBatch = writeBatch;
-        window.updateDoc = updateDoc;
-        window.getDocs = getDocs;
-        window.collection = collection;
+        window.ref = ref;
+        window.get = get;
+        window.set = set;
+        window.runTransaction = runTransaction;
 
         // =================================================================================
-        // FUNCIÓN PRINCIPAL PARA CARGAR PRODUCTOS DESDE FIREBASE
+        // FUNCIÓN PRINCIPAL PARA CARGAR PRODUCTOS DESDE REALTIME DATABASE
         // =================================================================================
 
         let inventory = []; // El inventario se almacena aquí globalmente
 
         async function loadProductsFromFirebase() {
             try {
-                console.log("Cargando inventario desde Firestore...");
-                const querySnapshot = await getDocs(productsCollection);
+                console.log("Cargando inventario desde Realtime Database...");
+                const snapshot = await get(ref(db, 'products'));
                 
-                // Mapear los documentos a nuestro array de inventario
-                inventory = querySnapshot.docs.map(doc => doc.data());
-                console.log(`Inventario cargado: ${inventory.length} productos.`);
-                
-                renderProducts(); // Renderizar los productos cargados
+                if (snapshot.exists()) {
+                    // Los datos de RTDB vienen como un objeto con PROD_001, PROD_002, etc.
+                    // Los convertimos a un array para usar en el JS de la tienda.
+                    const productsObject = snapshot.val();
+                    inventory = Object.values(productsObject); 
+                    
+                    console.log(`Inventario cargado: ${inventory.length} productos.`);
+                    // renderProducts(); // Asegúrate de que esta función existe y usa 'inventory'
+                } else {
+                    console.log("No hay productos en la base de datos.");
+                    document.getElementById('products-container').innerHTML = '<h2>No hay inventario. ¿Ejecutaste el script de migración?</h2>';
+                }
             } catch (e) {
-                console.error("Error al cargar productos desde Firebase (Verifica si la DB está activa):", e);
+                console.error("Error al cargar productos desde Firebase:", e);
                 document.getElementById('products-container').innerHTML = '<h2>Error al cargar inventario. Revisa la consola y la configuración de Firebase.</h2>';
             }
         }
@@ -102,10 +99,9 @@
 
 
         // =================================================================================
-        // FUNCIÓN PARA ACTUALIZAR STOCK TRAS LA COMPRA
+        // FUNCIÓN PARA ACTUALIZAR STOCK TRAS LA COMPRA (ADAPTADA A REALTIME DB)
         // =================================================================================
 
-        // La función de finalización de compra que descuenta el stock
         window.sendOrderToWhatsapp = async function() {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
             if (cart.length === 0) {
@@ -114,30 +110,54 @@
             }
 
             try {
-                const batch = writeBatch(db);
                 let whatsappMessage = "¡Hola! Quisiera hacer un pedido:\n\n";
+                const transactionPromises = [];
 
                 for (const item of cart) {
-                    const productRef = doc(db, "products", item.id);
-                    const isColor = item.isColorProduct;
-
                     whatsappMessage += `- ${item.name} (${item.isColorProduct ? item.color : 'Único'}) - Talla ${item.size} x ${item.quantity} unidades\n`;
+                    
+                    const productPath = `products/${item.id}`;
 
-                    if (isColor) {
-                        // Actualizar stockByColor
-                        batch.update(productRef, {
-                            [`stockByColor.${item.color}.${item.size}`]: item.stockBefore - item.quantity
-                        });
-                    } else {
-                        // Actualizar stock simple
-                        batch.update(productRef, {
-                            [`stock.${item.size}`]: item.stockBefore - item.quantity
-                        });
-                    }
+                    // Usar runTransaction para garantizar que el descuento sea atómico (seguro)
+                    const transactionPromise = runTransaction(ref(db, productPath), (currentProduct) => {
+                        if (currentProduct) {
+                            let newStock = 0;
+                            if (item.isColorProduct) {
+                                // Stock en Realtime DB: stockByColor/Color/Talla
+                                const currentStock = currentProduct.stockByColor?.[item.color]?.[item.size] || 0;
+                                newStock = currentStock - item.quantity;
+                                
+                                if (newStock >= 0) {
+                                    if (!currentProduct.stockByColor) currentProduct.stockByColor = {};
+                                    if (!currentProduct.stockByColor[item.color]) currentProduct.stockByColor[item.color] = {};
+                                    currentProduct.stockByColor[item.color][item.size] = newStock;
+                                } else {
+                                    // Stock insuficiente
+                                    return; 
+                                }
+                            } else {
+                                // Stock en Realtime DB: stock/Talla
+                                const currentStock = currentProduct.stock?.[item.size] || 0;
+                                newStock = currentStock - item.quantity;
+                                
+                                if (newStock >= 0) {
+                                    if (!currentProduct.stock) currentProduct.stock = {};
+                                    currentProduct.stock[item.size] = newStock;
+                                } else {
+                                    // Stock insuficiente
+                                    return;
+                                }
+                            }
+                            return currentProduct; // Retorna el nuevo estado para guardar
+                        }
+                        return currentProduct; // No hacer cambios si el producto no existe
+                    });
+                    
+                    transactionPromises.push(transactionPromise);
                 }
 
-                // Ejecutar el batch para actualizar el stock
-                await batch.commit();
+                // Esperar a que todas las transacciones se completen
+                await Promise.all(transactionPromises);
 
                 // Enviar mensaje de WhatsApp (debes agregar tu número)
                 whatsappMessage += `\nTotal a pagar: $${document.getElementById('cart-total').textContent}`;
@@ -145,19 +165,18 @@
                 window.open(`https://wa.me/TUNUMEROAQUI?text=${encodedMessage}`, '_blank');
 
                 // Limpiar carrito y actualizar vista
-                clearCart();
+                // clearCart(); // Descomenta esta línea una vez que todas las funciones de tu tienda estén completas
                 alert("Pedido realizado y stock actualizado en la nube. ¡Revisa WhatsApp!");
+                loadProductsFromFirebase(); // Recargar inventario
 
             } catch (error) {
                 console.error("Error al finalizar la compra y actualizar stock:", error);
                 alert("Hubo un error al procesar el pedido. Por favor, inténtalo de nuevo.");
             }
         }
-
-        // 🚨 Otras funciones de la tienda (renderProducts, toggleCartModal, addToCart, etc.)
-        // Estas funciones deben estar aquí después de loadProductsFromFirebase y usar la variable 'inventory'.
-        // ... (Tu código JavaScript original va aquí, adaptado para usar 'inventory' en lugar de 'products')
-        // Por la extensión, no lo incluyo, pero asume que está aquí.
+        
+        // 🚨 (TUS OTRAS FUNCIONES JS, como renderProducts, toggleCartModal, etc., deben estar aquí)
+        
     </script>
 
 
@@ -166,8 +185,9 @@
         // BÓRRALA O COMENTALA DESPUÉS DE EJECUTAR UPLOADALLPRODUCTS() UNA VEZ.
 
         function getOriginalInventory() {
+            // ... (El código de tu inventario de 43 productos es el mismo que antes) ...
             const ORIGINAL_PRODUCTS_DEFINITION = [
-                // Modelos estándar (estructura simple: i=1 a i=41)
+                // Modelos estándar (i=1 a i=41)
                 { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'Xime2', sideFile: 'blanco' },
                 { i: 2, name: 'BTS', description: 'Playera Modelo 2', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'Xime3', backFile: 'Xime4', sideFile: 'negro' },
                 { i: 3, name: 'MICHAEL JACKSON', description: 'Playera Modelo 3', stock:{ 'S':1, 'M':1, 'L': 1 }, frontFile: 'Abi1', backFile: 'Abi2', sideFile: 'blanco' },
@@ -243,8 +263,9 @@
                 },
             ];
             
-            // Adaptar el formato de tu array al formato que requiere Firestore
-            const productsForFirebase = ORIGINAL_PRODUCTS_DEFINITION.map(p => {
+            // Adaptar el formato de tu array al formato final (mismo que Firestore, pero la estructura de la DB es diferente)
+            const productsObject = {};
+            ORIGINAL_PRODUCTS_DEFINITION.forEach(p => {
                 const paddedIndex = p.i.toString().padStart(3, '0');
                 const id = `PROD_${paddedIndex}`;
                 
@@ -270,13 +291,33 @@
                     doc.sideFileBase = p.sideFile;
                 }
                 
-                return doc;
+                productsObject[id] = doc;
             });
 
-            return productsForFirebase;
+            return productsObject;
         }
 
+        // Función de migración masiva ADAPTADA A REALTIME DATABASE
+        window.uploadAllProducts = async function() {
+            const allProductsObject = getOriginalInventory();
+            
+            if (!window.db || !window.set || !window.ref) {
+                console.error("❌ ERROR: Realtime Database no está inicializada. Asegúrate de que la URL de la base de datos es correcta.");
+                return;
+            }
+            
+            console.log(`✅ Intentando subir ${Object.keys(allProductsObject).length} productos a la colección 'products'...`);
+            
+            try {
+                // RTDB permite subir todo el objeto en una sola operación
+                await set(ref(db, 'products'), allProductsObject);
+                console.log("=========================================================");
+                console.log("🎉 MIGRACIÓN TERMINADA. ¡Verifica tu Realtime Database!");
+                console.log("=========================================================");
+            } catch(e) {
+                console.error("❌ Error al subir los productos a Realtime Database: ", e);
+            }
+        }
     </script>
 </body>
 </html>
-
