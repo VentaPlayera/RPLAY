@@ -276,7 +276,7 @@
         
         const IMAGE_EXTENSION = '.png';
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
-        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
+        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; // 🚨 Esto es la imagen de la tabla de medidas
 
         // Variables que serán llenadas con datos de Firebase
         window.inventory = []; // Almacena todos los productos de Firestore
@@ -315,7 +315,7 @@
         }
         
         // =================================================================================
-        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (IMAGENES - CORRIGE EL USO DE MAYÚSCULAS)
+        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (CORRIGE MAYÚSCULAS Y ASEGURA EL USO DE .png)
         // =================================================================================
         function formatFileName(rawName) {
             if (!rawName) return null;
@@ -323,44 +323,48 @@
             // 1. Quitar cualquier extensión existente para tener solo el nombre base
             const nameWithoutExt = rawName.split('.')[0]; 
             
-            let finalName = nameWithoutExt; 
-            let extension = IMAGE_EXTENSION; // Default: .png (para negro, blanco, xime1, etc.)
+            // 2. 🚨 CORRECCIÓN CLAVE: Convertimos a minúsculas por defecto.
+            // Esto asegura que 'xime1', 'negro', 'blanco', 'negro2', 'blanco2' funcionen.
+            let finalBaseName = nameWithoutExt.toLowerCase(); 
+            let finalExtension = IMAGE_EXTENSION; // Default: .png
 
-            // 2. CASO ESPECIAL (GON): Si el nombre empieza con 'gon' (ignorar mayúsculas)
-            if (finalName.toLowerCase().startsWith('gon')) {
-                 // Forzamos la extensión a mayúsculas para este modelo
-                 extension = '.PNG'; 
+            // 3. CASO ESPECIAL (GON): Si el nombre empieza con 'gon'
+            if (finalBaseName.startsWith('gon')) {
+                 // Si los archivos están guardados con mayúscula inicial y extensión mayúscula (Gon1.PNG)
+                 // NOTA: Si los archivos están en minúscula (gon1.png), borra estas dos líneas.
+                 finalBaseName = finalBaseName.charAt(0).toUpperCase() + finalBaseName.slice(1);
+                 finalExtension = '.PNG'; 
             }
             
-            // 3. LA CLAVE DE LA CORRECCIÓN: Devolvemos el nombre tal como viene de la base de datos
-            //    (sin forzar la capitalización de la primera letra), lo que permite que 'negro'
-            //    se quede como 'negro' y 'xime1' como 'xime1'.
-            
-            return { name: finalName, ext: extension }; 
+            return { name: finalBaseName, ext: finalExtension }; 
         }
 
         function getImageUrl(fileBase) {
+             // 🚨 TRATAMIENTO DE LA IMAGEN DE MEDIDAS (medidas.png)
              if (fileBase === GENERIC_SIDE_IMAGE_BASE) {
                 return `${GITHUB_BASE_URL}${GENERIC_SIDE_IMAGE_BASE}${IMAGE_EXTENSION}`;
             }
+            
             const fileInfo = formatFileName(fileBase);
             if (!fileInfo) return `${GITHUB_BASE_URL}fallback_default${IMAGE_EXTENSION}`; 
             
-            // Ruta final: https://ventaplayera.github.io/RPLAY/negro.png o https://ventaplayera.github.io/RPLAY/xime1.png
+            // Ruta final generada, por ejemplo:
+            // getImageUrl('xime1') -> https://ventaplayera.github.io/RPLAY/xime1.png
+            // getImageUrl('blanco2') -> https://ventaplayera.github.io/RPLAY/blanco2.png
             return `${GITHUB_BASE_URL}${fileInfo.name}${fileInfo.ext}`;
         }
 
 
         // =======================================================
-        // LÓGICA DE STOCKS (ADAPTADA A FIRESTORE)
+        // LÓGICA DE STOCKS (ADAPTADA A FIRESTORE Y ASEGURANDO NÚMERO)
         // =======================================================
         function getStock(product, size, color = null) {
             if (product.isColorProduct && color) {
-                // Asumiendo que stockByColor es un mapa en Firestore: { "Negro": { "S": 10, "M": 5 } }
-                return product.stockByColor?.[color]?.[size] || 0;
+                // FIX: Usamos Number() para asegurar que el stock es un número, resolviendo el problema de 'M': 1.
+                return Number(product.stockByColor?.[color]?.[size]) || 0; 
             } else {
-                // Asumiendo que stock es un mapa en Firestore: { "S": 10, "M": 5 }
-                return product.stock?.[size] || 0;
+                // FIX: Usamos Number() para asegurar que el stock es un número, resolviendo el problema de 'M': 1.
+                return Number(product.stock?.[size]) || 0;
             }
         }
 
@@ -384,12 +388,12 @@
                 if (product.isColorProduct && product.stockByColor) {
                     for (const color in product.stockByColor) {
                         for (const size in product.stockByColor[color]) {
-                            maxStock = Math.max(maxStock, getStock(product, size, color));
+                            maxStock = Math.max(maxStock, getStock(product, size, color)); 
                         }
                     }
                 } else if (product.stock) {
                     for (const size in product.stock) {
-                        maxStock = Math.max(maxStock, getStock(product, size));
+                        maxStock = Math.max(maxStock, getStock(product, size)); 
                     }
                 }
                 
@@ -423,7 +427,7 @@
         }
         
         // =======================================================
-        // LÓGICA DE MODAL DE DETALLE (SE MANTIENE IGUAL QUE RTDB)
+        // LÓGICA DE MODAL DE DETALLE (SE MANTIENE IGUAL)
         // =======================================================
 
         function getFileBase(product, view, color = null) {
@@ -496,7 +500,8 @@
             
             const frontFileBase = getFileBase(product, 'front', color);
             const backFileBase = getFileBase(product, 'back', color);
-            const sideFileBase = getFileBase(product, 'side', color) || GENERIC_SIDE_IMAGE_BASE;
+            // 🚨 GENERIC_SIDE_IMAGE_BASE ES LA IMAGEN DE MEDIDAS (medidas.png)
+            const sideFileBase = getFileBase(product, 'side', color) || GENERIC_SIDE_IMAGE_BASE; 
             
             const colorText = color ? ` (${color})` : '';
 
@@ -545,7 +550,8 @@
             });
             
             sizesToProcess.forEach(size => {
-                const stock = stockMap[size] || 0;
+                // CORRECCIÓN DE STOCK: Aseguramos que el stock se interprete como número
+                const stock = Number(stockMap[size]) || 0; 
                 
                 if (stock > 0) {
                     const option = document.createElement('option');
@@ -825,10 +831,10 @@
 
                     if (item.isColorProduct) {
                         stockMap = currentProduct.stockByColor?.[item.color] || {};
-                        currentStock = stockMap[item.size] || 0;
+                        currentStock = Number(stockMap[item.size]) || 0; // Usamos Number() aquí también
                     } else {
                         stockMap = currentProduct.stock || {};
-                        currentStock = stockMap[item.size] || 0;
+                        currentStock = Number(stockMap[item.size]) || 0; // Usamos Number() aquí también
                     }
                     
                     const newStock = currentStock - item.quantity;
