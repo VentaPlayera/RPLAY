@@ -314,22 +314,33 @@
                         'Blanco': { 'S': 2, 'M': 1, 'L': 2 }, 
                         'Negro': { 'S': 1, 'M': 3 } 
                     }, 
+                    // ARCHIVOS MAPADOS POR COLOR SEGÚN TU SOLICITUD
+                    imageFilesByColor: {
+                        'Blanco': { front: 'Aro1', back: 'Aro2', side: 'blanco' },
+                        'Negro': { front: 'Aro3', back: 'Aro4', side: 'negro' }
+                    },
+                    // Usamos la versión 'Blanco' para la imagen principal de la tarjeta
                     frontFile: 'Aro1', 
                     backFile: 'Aro2',
-                    sideFile: COLOR_SIDE_PLACEHOLDER
+                    sideFile: 'blanco'
                 },
                 { 
                     i: 43, 
                     name: 'BLACKPINK', 
-                    description: 'Modelo 43 con opción de color.', 
+                    description: 'Modelo 43 con opción de color. (PENDIENTE DE ARCHIVOS)', 
                     colors: ['Blanco', 'Negro'],
                     stockByColor: { 
                         'Blanco': { 'S': 1, 'M': 1 }, 
                         'Negro': { 'S': 1, 'M': 1, 'XL': 1 } 
                     }, 
-                    frontFile: 'Aro3', 
-                    backFile: 'Aro4',
-                    sideFile: COLOR_SIDE_PLACEHOLDER
+                    // ASUMIMOS NOMBRES DE ARCHIVO DIFERENTES PARA EL MODELO 43 PARA EVITAR CONFLICTOS CON EL 42
+                    imageFilesByColor: {
+                        'Blanco': { front: 'Aro5', back: 'Aro6', side: 'blanco' },
+                        'Negro': { front: 'Aro7', back: 'Aro8', side: 'negro' }
+                    },
+                    frontFile: 'Aro5', // Usamos la versión 'Blanco' para la imagen principal de la tarjeta
+                    backFile: 'Aro6',
+                    sideFile: 'blanco'
                 },
             ];
 
@@ -402,14 +413,15 @@
                     sizes: modelSizes, 
                     colors: prod.colors || [], 
                     
-                    // La imagen principal de la tarjeta siempre será la base, sin sufijo de color.
+                    // La imagen principal de la tarjeta siempre será la base (Aro1 para el 42), sin sufijo de color.
                     mainImg: `${GITHUB_BASE_URL}${frontFileBase}${IMAGE_EXTENSION}`,
                     
-                    // Guarda las bases de los nombres de archivo
+                    // Guarda las bases de los nombres de archivo y el mapa de colores
                     frontFileBase: frontFileBase,
                     backFileBase: backFileBase,
                     sideFileBase: sideFileBase,
-                    stockByColor: prod.stockByColor || null // Guardamos el mapa de stock para la lógica dinámica
+                    stockByColor: prod.stockByColor || null, // Guardamos el mapa de stock para la lógica dinámica
+                    imageFilesByColor: prod.imageFilesByColor || null // Nuevo mapa de archivos por color
                 };
 
                 productData.push(product);
@@ -528,6 +540,7 @@
 
             // Si es producto con color (ej. 42, 43)
             if (product.stockByColor && color) {
+                // Obtener las tallas disponibles para el color seleccionado
                 const availableSizesForColor = product.stockByColor[color] || {};
                 
                 // Mapeamos solo las tallas que tienen stock > 0 para ese color
@@ -536,7 +549,7 @@
                     if (stock > 0) {
                          const option = document.createElement('option');
                         option.value = size;
-                        option.textContent = `${size}`; 
+                        option.textContent = `${size} (Stock: ${stock})`; // Mostramos el stock en la opción
                         sizeSelect.appendChild(option);
 
                         if (!firstAvailableSize) {
@@ -552,7 +565,7 @@
                     if (stock > 0) {
                         const option = document.createElement('option');
                         option.value = size;
-                        option.textContent = `${size}`; 
+                        option.textContent = `${size} (Stock: ${stock})`; 
                         sizeSelect.appendChild(option);
 
                         if (!firstAvailableSize) {
@@ -565,6 +578,15 @@
             // Selecciona la primera talla disponible
             if (firstAvailableSize) {
                 sizeSelect.value = firstAvailableSize;
+            }
+            
+            // Si no hay tallas disponibles para el color/producto, añadir una opción de agotado
+            if (sizeSelect.options.length === 0) {
+                 const option = document.createElement('option');
+                option.value = '';
+                option.textContent = `--- Agotado ---`; 
+                option.disabled = true;
+                sizeSelect.appendChild(option);
             }
         }
 
@@ -587,14 +609,21 @@
             if (product.colors && product.colors.length > 0) {
                 colorContainer.style.display = 'block';
                 colorSelect.innerHTML = '';
-                product.colors.forEach(color => {
+                
+                // Aseguramos que solo mostramos colores que tienen al menos 1 unidad de stock en alguna talla
+                const availableColors = product.colors.filter(color => {
+                    const stockBySize = product.stockByColor[color] || {};
+                    return Object.values(stockBySize).some(stock => stock > 0);
+                });
+                
+                availableColors.forEach(color => {
                     const option = document.createElement('option');
                     option.value = color;
                     option.textContent = color;
                     colorSelect.appendChild(option);
                 });
                 
-                defaultColor = product.colors[0]; 
+                defaultColor = availableColors.length > 0 ? availableColors[0] : null; 
                 
                 // Listener para actualizar al cambiar el color
                 colorSelect.onchange = () => {
@@ -603,6 +632,13 @@
                     renderCarousel(product, selectedColor);
                     updateTotalAndCheckStock(); 
                 };
+                
+                // Si el producto con color no tiene stock en ningún color
+                if (!defaultColor) {
+                    colorSelect.disabled = true;
+                } else {
+                    colorSelect.disabled = false;
+                }
 
             } else {
                 colorContainer.style.display = 'none';
@@ -626,7 +662,7 @@
             updateTotalAndCheckStock(); 
         }
         
-        // FUNCIÓN CLAVE PARA RENDERIZAR IMÁGENES CON COLOR, INCLUYENDO LA TABLA
+        // FUNCIÓN CLAVE PARA RENDERIZAR IMÁGENES CON COLOR
         function renderCarousel(product, color = null) {
             const indicators = document.getElementById('carouselIndicators');
             const inner = document.getElementById('carouselInner');
@@ -634,16 +670,19 @@
             inner.innerHTML = '';
             
             const isColorProduct = product.colors && product.colors.length > 0;
-            // El sufijo de color SÓLO se añade si el producto es de color Y se seleccionó un color
-            const colorSuffix = color && isColorProduct ? `_${color.toLowerCase()}` : '';
-
-            // Mapeamos las bases de nombres de archivo que definiste
+            
+            // 1. Obtener los nombres de archivo específicos por color, si existen
+            const colorFileMap = (isColorProduct && color && product.imageFilesByColor) 
+                ? product.imageFilesByColor[color] 
+                : null;
+                
+            // Definición de variantes: Aquí indicamos qué queremos mostrar
             const imageVariants = [
-                { variant: 'Frente', fileBase: product.frontFileBase, alt: 'Frente', type: 'product' }, 
-                { variant: 'Espalda', fileBase: product.backFileBase, alt: 'Espalda', type: 'product' },
-                { variant: 'Lateral', fileBase: product.sideFileBase, alt: 'Lateral', type: 'side' },
-                // AÑADIDO: Tabla de Medidas (siempre la misma imagen)
-                { variant: 'Tabla de Tallas', fileBase: SIZE_CHART_FILE, alt: 'Tabla de Medidas', type: 'chart' } 
+                { variant: 'Frente', defaultFileBase: product.frontFileBase, type: 'product' }, 
+                { variant: 'Espalda', defaultFileBase: product.backFileBase, type: 'product' },
+                { variant: 'Lateral', defaultFileBase: product.sideFileBase, type: 'side' },
+                // La tabla de tallas SIEMPRE es la cuarta diapositiva
+                { variant: 'Tabla de Tallas', defaultFileBase: SIZE_CHART_FILE, type: 'chart' } 
             ];
 
             let index = 0;
@@ -651,30 +690,49 @@
             imageVariants.forEach((item) => {
                 let imgUrl;
                 let altText = `${product.name} ${item.alt} ${color ? `(${color})` : ''}`;
+                let fileBase = '';
 
+                // Lógica de URL
+                
+                // 1. Caso Tabla de Tallas
                 if (item.type === 'chart') {
-                    // Lógica para la tabla de medidas (siempre la misma imagen)
                     imgUrl = `${GITHUB_BASE_URL}${SIZE_CHART_FILE}${IMAGE_EXTENSION}`;
-                    altText = item.alt; // Simplificamos el altText para la tabla
-                } else if (item.fileBase === GENERIC_SIDE_PLACEHOLDER) {
-                    // Si es el placeholder genérico, usa la URL de Imgur.
-                    imgUrl = GENERIC_SIDE_IMAGE;
+                    altText = item.variant; 
                 } 
-                // Lógica para la imagen lateral según el color
-                else if (item.fileBase === COLOR_SIDE_PLACEHOLDER && color) {
-                    // La imagen lateral es el nombre del color (ej: blanco.png, negro.png)
-                    imgUrl = `${GITHUB_BASE_URL}${color.toLowerCase()}${IMAGE_EXTENSION}`; 
-                } 
-                // Lógica para Frente o Espalda de productos con color
-                else if (isColorProduct && item.type === 'product') {
-                    // Usa la base + el sufijo de color (ej. Aro1_blanco.png)
-                    imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${colorSuffix}${IMAGE_EXTENSION}`;
-                }
+                // 2. Casos Frente/Espalda/Lateral
                 else {
-                    // Normal (productos sin color o imágenes laterales predefinidas)
-                    imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${IMAGE_EXTENSION}`;
+                    // A. Intentar usar el mapa de archivos por color (Modelos 42, 43...)
+                    if (colorFileMap) {
+                        if (item.variant === 'Frente') {
+                            fileBase = colorFileMap.front;
+                        } else if (item.variant === 'Espalda') {
+                            fileBase = colorFileMap.back;
+                        } else if (item.variant === 'Lateral') {
+                            fileBase = colorFileMap.side;
+                        }
+                    } 
+                    // B. Usar el archivo base predeterminado (Modelos 1-41)
+                    else {
+                        fileBase = item.defaultFileBase;
+                    }
+
+                    // Manejo de Placeholders y archivos especiales (Genéricos, de color)
+                    if (fileBase === GENERIC_SIDE_PLACEHOLDER) {
+                        imgUrl = GENERIC_SIDE_IMAGE;
+                    } 
+                    // Si el archivo base es un placeholder de color, usamos el nombre del color
+                    else if (fileBase === COLOR_SIDE_PLACEHOLDER && color) {
+                        fileBase = color.toLowerCase();
+                        imgUrl = `${GITHUB_BASE_URL}${fileBase}${IMAGE_EXTENSION}`;
+                    }
+                    // Construir la URL final si no es un placeholder directo de Imgur
+                    else if (!imgUrl) {
+                        // NOTA: Con la lógica de colorFileMap, fileBase ya tiene el nombre exacto (ej. 'Aro3')
+                        imgUrl = `${GITHUB_BASE_URL}${fileBase}${IMAGE_EXTENSION}`;
+                    }
                 }
 
+                // Generar Indicador
                 indicators.innerHTML += `
                     <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" 
                         class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" 
@@ -682,6 +740,7 @@
                     </button>
                 `;
                 
+                // Generar Diapositiva
                 inner.innerHTML += `
                     <div class="carousel-item ${index === 0 ? 'active' : ''}">
                         <img src="${imgUrl}" class="d-block w-100" alt="${altText}">
@@ -690,6 +749,7 @@
                 index++;
             });
         }
+
 
         function updateTotalAndCheckStock() {
             const productId = document.getElementById('modalProductId').value;
