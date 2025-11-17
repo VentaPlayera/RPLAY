@@ -228,8 +228,9 @@
         const MINIMUM_TO_SHIP = 1;   
         const WHATSAPP_NUMBER = '529991480151'; 
         
-        // 🚨 V9.0 CORRECCIÓN CRÍTICA: Usar la extensión en mayúsculas (.PNG)
-        const IMAGE_EXTENSION = '.PNG'; 
+        // 🚨 V9.2: Extensión por defecto es minúscula. Solo 'Gon' usa .PNG (cambio solicitado por el usuario)
+        const DEFAULT_EXTENSION = '.png'; 
+        const UPPERCASE_EXTENSION = '.PNG'; // Para Gon
         // 🚨 ENLACE CRÍTICO: RUTA REAL DE IMÁGENES EN GITHUB PAGES
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         
@@ -267,8 +268,14 @@
                 }
             }
             
-            // Retorna el nombre base correctamente capitalizado y la extensión .PNG
-            return { name: baseName, ext: IMAGE_EXTENSION };
+            // 🚨 V9.2 Lógica de la extensión: solo 'Gon' usa .PNG
+            let extension = DEFAULT_EXTENSION;
+            if (lowerBaseName.startsWith('gon')) {
+                 extension = UPPERCASE_EXTENSION;
+            }
+            
+            // Retorna el nombre base correctamente capitalizado y la extensión correcta
+            return { name: baseName, ext: extension };
         }
 
         function getImageUrl(fileBase) {
@@ -285,7 +292,7 @@
             }
             
             const fileInfo = formatFileName(fileBase);
-            // Genera la URL (Ej: /RPLAY/Gon1.PNG o /RPLAY/blanco.PNG)
+            // Genera la URL (Ej: /RPLAY/Gon1.PNG o /RPLAY/xime1.png)
             return `${GITHUB_BASE_URL}${fileInfo.name}${fileInfo.ext}`; 
         }
 
