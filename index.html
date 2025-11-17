@@ -219,29 +219,9 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script> 
     
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-          apiKey: "AIzaSyCtgsjjbNiS0lv5aLDb8nkpN_9-4sXIJvE",
-          authDomain: "rplay-f04dc.firebaseapp.com",
-          projectId: "rplay-f04dc",
-          storageBucket: "rplay-f04dc.firebasestorage.app",
-          messagingSenderId: "787828282738",
-          appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
-          measurementId: "G-XEKR4KEDMR"
-        };
-        
-        // Initialize Firebase (Usando la sintaxis global de CDN)
-        const app = firebase.initializeApp(firebaseConfig);
-        // const analytics = firebase.analytics(app); // Opcional, si lo usas
-        const database = firebase.database(app); // Inicialización de Realtime Database
-    </script>
-    
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
     <script>
         // =======================================================
@@ -253,8 +233,13 @@
         
         // --- CONSTANTES DE IMAGEN ---
         const IMAGE_EXTENSION = '.png';
-        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
+        // Asume que tienes una imagen de medidas llamada 'medidas.png' en tu carpeta RPLAY
+        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; // Usamos el nombre base de la imagen de medidas
+        
+        // 🚨 ENLACE CRÍTICO: DEBES VERIFICAR QUE ESTA URL ES TU RUTA REAL DE IMÁGENES EN GITHUB PAGES
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
+        
+        // Placeholder para la imagen lateral genérica (se usará si no defines sideFile)
         const GENERIC_SIDE_PLACEHOLDER = 'generic_side_image_placeholder';
 
         let productData = []; 
@@ -267,6 +252,7 @@
 
         // =======================================================
         // DEFINICIÓN DE PRODUCTOS ORIGINALES (USADA PARA INICIALIZAR Y EXPORTAR)
+        // 🚨 CORRECCIÓN DEL MODELO 30: SE AÑADE LA EXTENSIÓN .PNG PARA FUNCIONAR CON TU ARCHIVO 🚨
         // =======================================================
         const ORIGINAL_PRODUCTS_DEFINITION = [
             // Modelos estándar (estructura simple)
@@ -355,12 +341,15 @@
         function generateInitialInventory() {
             // Limpiar datos globales antes de regenerar
             productData.length = 0; 
-            
+            for (const key in productInventory) { delete productInventory[key]; }
+
             // --- STOCK BASE PARA MODELOS NO DEFINIDOS (MÁXIMO 2 TALLAS) ---
             const defaultStock = { 'M': 1, 'L': 1 }; 
             
-            const initialProducts = ORIGINAL_PRODUCTS_DEFINITION; 
+            // 🚨🚨 LISTA DE MODELOS INTEGRADA 🚨🚨
+            const initialProducts = ORIGINAL_PRODUCTS_DEFINITION; // <--- USAMOS LA CONSTANTE GLOBAL
             
+
             // Rellenar hasta el modelo 43 con stock por defecto si no están definidos
             const MAX_MODELS = 43;
             const existingIndices = initialProducts.map(p => p.i);
@@ -389,11 +378,6 @@
                 let modelSizes = [];
                 let mainImg = '';
                 
-                // Si el inventario global (productInventory) está vacío (o solo tiene claves vacías) 
-                // por un fallo de Firebase/LocalStorage, lo rellenamos con la definición estática.
-                // Si ya tiene datos (cargados de Firebase o LocalStorage), los respetamos.
-                const shouldPopulateInventory = Object.keys(productInventory).length === 0;
-
                 if (prod.isColorProduct && prod.stockByColor) {
                     // --- PROCESAR PRODUCTOS CON COLOR (NUEVA ESTRUCTURA) ---
                     const availableColors = Object.keys(prod.stockByColor);
@@ -403,17 +387,11 @@
                         const colorSizes = Object.keys(colorStock);
                         
                         colorSizes.forEach(size => {
-                            const key = `${id}_${color}_${size}`;
                             const stockAmount = colorStock[size];
-                            
-                            // Usamos el stock final: si ya fue cargado, lo usamos; si no, usamos el de la definición
-                            const finalStock = productInventory.hasOwnProperty(key) ? productInventory[key] : stockAmount;
-                            
-                            if (finalStock > 0) {
-                                // Si estamos rellenando el inventario vacío, o si el stock ya fue cargado, lo mantenemos
-                                if(shouldPopulateInventory || productInventory.hasOwnProperty(key)) {
-                                     productInventory[key] = finalStock;
-                                }
+                            if (stockAmount > 0) {
+                                // CLAVE DE INVENTARIO: PROD_042_Blanco_S
+                                const key = `${id}_${color}_${size}`;
+                                productInventory[key] = stockAmount;
                                 
                                 if (!modelSizes.includes(size)) {
                                     modelSizes.push(size);
@@ -422,105 +400,136 @@
                         });
                     });
                     
+                    // Imagen principal de la tarjeta: usa la imagen de frente del primer color
                     if (prod.colors.length > 0 && prod.colorMap[prod.colors[0]]) {
                         const fileBase = prod.colorMap[prod.colors[0]].front;
-                        mainImg = `${GITHUB_BASE_URL}${fileBase}${IMAGE_EXTENSION}`; 
+                        // 🚨 IMPORTANTE: Usa la nueva función corregida
+                        mainImg = getImageUrl(fileBase); 
                     } else {
-                        mainImg = `${GITHUB_BASE_URL}fallback_default${IMAGE_EXTENSION}`; 
+                        mainImg = getImageUrl('fallback_default'); 
                     }
                     
                 } else {
                     // --- PROCESAR PRODUCTOS ESTÁNDAR (ESTRUCTURA ANTIGUA) ---
-                    modelSizes = Object.keys(prod.stock).filter(size => {
-                        const key = `${id}_${size}`;
-                        const finalStock = productInventory.hasOwnProperty(key) ? productInventory[key] : prod.stock[size];
-                        
-                        if (finalStock > 0) {
-                           if(shouldPopulateInventory || productInventory.hasOwnProperty(key)) {
-                              productInventory[key] = finalStock; 
-                           }
-                           return true;
+                    modelSizes = Object.keys(prod.stock).filter(size => prod.stock[size] > 0); 
+                    
+                    modelSizes.forEach(size => {
+                        const stockAmount = prod.stock[size];
+                        if (stockAmount > 0) {
+                           // CLAVE DE INVENTARIO: PROD_001_M
+                           productInventory[`${id}_${size}`] = stockAmount;
                         }
-                        return false;
                     });
                     
-                    mainImg = `${GITHUB_BASE_URL}${prod.frontFile}${IMAGE_EXTENSION}`;
+                    // Imagen principal de la tarjeta: usa la base del frontFile
+                    mainImg = getImageUrl(prod.frontFile);
                 }
 
                 // --- CREACIÓN DEL OBJETO PRODUCTO ---
-                if (modelSizes.length > 0) {
-                    const product = {
-                        id: id,
-                        name: prod.name,
-                        description: prod.description, 
-                        price: PRODUCT_PRICE,
-                        sizes: modelSizes.sort(), 
-                        colors: prod.colors || [], 
-                        isColorProduct: prod.isColorProduct || false,
-                        colorMap: prod.colorMap || {},
-                        stockByColor: prod.stockByColor || {},
-                        
-                        mainImg: mainImg,
-                        
-                        frontFileBase: prod.frontFile || '',
-                        backFileBase: prod.backFile || '',
-                        sideFileBase: prod.sideFile || GENERIC_SIDE_PLACEHOLDER,
-                    };
-    
-                    productData.push(product);
-                }
+                const product = {
+                    id: id,
+                    name: prod.name,
+                    description: prod.description, // <-- Añadido al objeto producto
+                    price: PRODUCT_PRICE,
+                    sizes: modelSizes.sort(), 
+                    colors: prod.colors || [], 
+                    isColorProduct: prod.isColorProduct || false,
+                    colorMap: prod.colorMap || {},
+                    stockByColor: prod.stockByColor || {},
+                    
+                    mainImg: mainImg,
+                    
+                    // Guardar bases estándar (solo para no color)
+                    frontFileBase: prod.frontFile || '',
+                    backFileBase: prod.backFile || '',
+                    sideFileBase: prod.sideFile || GENERIC_SIDE_PLACEHOLDER,
+                };
+
+                productData.push(product);
             });
         }
 
         // =======================================================
         // FUNCIÓN DE ADMINISTRACIÓN OCULTA (SOLO COMANDOS)
-        // (Dejado para debug y exportación manual)
         // =======================================================
         
+        // 🚨 NUEVA FUNCIÓN MEJORADA: CONSTRUCCIÓN DE URL DE IMAGEN
+        function getImageUrl(fileBase) {
+            // Verifica si el nombre base ya incluye una extensión (ej: 'Gon1.PNG')
+            if (/\.(png|jpg|jpeg|webp)$/i.test(fileBase)) {
+                return `${GITHUB_BASE_URL}${fileBase}`;
+            }
+            // Si no incluye extensión, añade la extensión global (ej: '.png')
+            return `${GITHUB_BASE_URL}${fileBase}${IMAGE_EXTENSION}`;
+        }
+        
+        // 🚨 NUEVA FUNCIÓN PARA EXPORTAR EL CÓDIGO ACTUALIZADO 🚨
+        // Genera el código JSON actualizado listo para reemplazar ORIGINAL_PRODUCTS_DEFINITION
         window.exportInitialProductsArray = function() {
+            // Aseguramos que el inventario local esté cargado para tener los últimos descuentos
             loadInventoryStorage(); 
             
             console.log("\n==============================================");
             console.log("     CÓDIGO DE INVENTARIO ACTUALIZADO (ADMIN)");
             console.log("==============================================");
             
+            // Creamos una copia de la definición original para trabajar sobre ella
             const newProductsDefinition = JSON.parse(JSON.stringify(ORIGINAL_PRODUCTS_DEFINITION));
             const exportedArray = [];
 
             newProductsDefinition.forEach(prod => {
                 const i = prod.i;
+                // Aseguramos que el ID tenga 3 dígitos, ej: PROD_001
                 const id = `PROD_${String(i).padStart(3, '0')}`; 
                 
+                // Crear una copia limpia del producto sin stock para reconstruir
                 const newProd = JSON.parse(JSON.stringify(prod));
-                let totalStock = 0;
 
                 if (newProd.isColorProduct) {
+                    // Producto de Color: Reconstruir stockByColor con valores actuales
                     if (newProd.stockByColor) {
                         for (const color in newProd.stockByColor) {
                             for (const size in newProd.stockByColor[color]) {
                                 const key = `${id}_${color}_${size}`;
+                                // Traemos el stock actual del localStorage
                                 const currentStock = productInventory[key] || 0; 
                                 newProd.stockByColor[color][size] = currentStock;
-                                totalStock += currentStock;
                             }
                         }
                     }
                 } else {
+                    // Producto Estándar: Reconstruir stock con valores actuales
                     if (newProd.stock) {
                         for (const size in newProd.stock) {
                             const key = `${id}_${size}`;
+                            // Traemos el stock actual del localStorage
                             const currentStock = productInventory[key] || 0;
                             newProd.stock[size] = currentStock;
-                            totalStock += currentStock;
                         }
                     }
                 }
                 
+                // Solo incluimos el producto si tiene un total de stock > 0.
+                let totalStock = 0;
+                if (newProd.isColorProduct) {
+                     for (const color in newProd.stockByColor) {
+                        for (const size in newProd.stockByColor[color]) {
+                            totalStock += newProd.stockByColor[color][size];
+                        }
+                    }
+                } else {
+                    for (const size in newProd.stock) {
+                        totalStock += newProd.stock[size];
+                    }
+                }
+                
+                // Si el stock es 0, el producto no se exporta (se asume agotado y se omite en la lista)
                 if (totalStock > 0) {
                      exportedArray.push(newProd);
                 }
             });
 
+            // Generamos el JSON con formato legible (indentación 4)
             const jsonString = JSON.stringify(exportedArray, null, 4);
 
             console.log("⚠️ PASO CRÍTICO: COPIA EL TEXTO COMPLETO ENTRE LAS LÍNEAS DE PUNTOS.\n");
@@ -544,6 +553,7 @@
                 const stock = productInventory[key];
                 if (stock > 0) {
                     const parts = key.split('_');
+                    // Identifica si es stock por color (4 partes: PROD_042_Blanco_S) o simple (3 partes: PROD_001_M)
                     const isColor = parts.length === 4;
                     const id = isColor ? `${parts[0]}_${parts[1]}` : key.substring(0, key.lastIndexOf('_')); 
                     const color = isColor ? parts[2] : null; 
@@ -574,14 +584,9 @@
         window.resetInventoryAndOrders = function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
-            // 1. Reiniciar el inventario global
-            productInventory = {};
-            // 2. Regenerar usando el stock estático
             generateInitialInventory(); 
-            // 3. Guardar el estado inicial
             saveInventoryStorage();
             
-            // 4. Resetear órdenes
             PENDING_ORDERS = [];
             orderIdCounter = 0;
             currentOrder = [];
@@ -608,8 +613,12 @@
             const storedInventory = localStorage.getItem('productInventory');
             if (storedInventory) {
                 const loadedInventory = JSON.parse(storedInventory); 
-                // Aseguramos que el inventario global se llene con lo que está en localStorage
-                productInventory = loadedInventory;
+                // Asegurar que solo cargamos lo que existe en la configuración inicial
+                for (const key in loadedInventory) {
+                    if (productInventory.hasOwnProperty(key)) {
+                        productInventory[key] = loadedInventory[key];
+                    }
+                }
             }
         }
         
@@ -634,6 +643,7 @@
         // LÓGICA DE STOCKS
         // =======================================================
 
+        // 🚨 FUNCIÓN MEJORADA PARA MANEJAR STOCK POR COLOR O SIMPLE
         function getStock(productId, size, color = null) {
             let key;
             if (color) {
@@ -646,7 +656,7 @@
 
 
         // =======================================================
-        // LÓGICA DE MODAL DE DETALLE Y CARRUSEL
+        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO
         // =======================================================
 
         function renderProductCards() {
@@ -656,14 +666,19 @@
             productData.forEach(product => {
                 let maxStock = 0;
                 
+                // Lógica para calcular stock máximo en productos de color
                 if (product.isColorProduct) {
                     for (const color in product.stockByColor) {
-                        for (const size in product.stockByColor[color]) { 
+                        const colorStock = product.stockByColor[color];
+                        for (const size in colorStock) {
+                            // Usar getStock para obtener el valor actualizado
                             maxStock = Math.max(maxStock, getStock(product.id, size, color));
                         }
                     }
                 } else {
+                    // Lógica para productos estándar
                     product.sizes.forEach(size => {
+                        // Usar getStock para obtener el valor actualizado
                         maxStock = Math.max(maxStock, getStock(product.id, size));
                     });
                 }
@@ -671,28 +686,31 @@
                 const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
                 const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
 
-                if (maxStock > 0) {
-                    const card = `
-                        <div class="col-6 col-md-4 col-lg-3">
-                            <div class="card product-card h-100">
-                                <span class="stock-badge ${statusClass} badge fs-6 p-2 rounded-0">${status}</span> 
-                                <img src="${product.mainImg}" class="card-img-top p-2" alt="${product.name}">
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title">${product.name}</h5>
-                                    <p class="card-text text-success fw-bold">$${product.price.toFixed(2)}</p>
-                                    <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}" 
-                                            ${maxStock === 0 ? 'disabled' : ''}>
-                                        ${maxStock === 0 ? 'Agotado' : (product.isColorProduct ? 'Ver Colores / Pedir' : 'Ver / Pedir')}
-                                    </button>
-                                </div>
+                const card = `
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card product-card h-100">
+                            <span class="stock-badge ${statusClass} badge fs-6 p-2 rounded-0">${status}</span> 
+                            <img src="${product.mainImg}" class="card-img-top p-2" alt="${product.name}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">${product.name}</h5>
+                                <p class="card-text text-success fw-bold">$${product.price.toFixed(2)}</p>
+                                <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}" 
+                                        ${maxStock === 0 ? 'disabled' : ''}>
+                                    ${maxStock === 0 ? 'Agotado' : (product.isColorProduct ? 'Ver Colores / Pedir' : 'Ver / Pedir')}
+                                </button>
                             </div>
                         </div>
-                    `;
-                    list.innerHTML += card;
-                }
+                    </div>
+                `;
+                list.innerHTML += card;
             });
         }
         
+        // =======================================================
+        // LÓGICA DE MODAL DE DETALLE
+        // =======================================================
+        
+        // 🚨 FUNCIÓN MEJORADA PARA ACTUALIZAR TALLAS BASADO EN COLOR
         function updateSizesForSelectedColor(product, selectedColor) {
             const sizeSelect = document.getElementById('sizeSelect');
             sizeSelect.innerHTML = '';
@@ -700,11 +718,9 @@
             
             let sizesToProcess = product.sizes;
             
+            // Si es producto con color, obtener las tallas que realmente existen para ese color
             if (product.isColorProduct && product.stockByColor[selectedColor]) {
-                // Obtener las tallas que tienen stock > 0 para el color seleccionado, según el inventario actual
-                sizesToProcess = Object.keys(product.stockByColor[selectedColor]).filter(size => 
-                    getStock(product.id, size, selectedColor) > 0
-                ).sort();
+                sizesToProcess = Object.keys(product.stockByColor[selectedColor]).sort();
             }
             
             sizesToProcess.forEach(size => {
@@ -713,6 +729,7 @@
                 if (stock > 0) {
                     const option = document.createElement('option');
                     option.value = size;
+                    // Mostrar el stock disponible de la talla seleccionada/color
                     option.textContent = `${size} (Stock: ${stock})`; 
                     sizeSelect.appendChild(option);
 
@@ -748,35 +765,14 @@
                 colorContainer.style.display = 'block';
                 colorSelect.innerHTML = '';
                 
-                let firstAvailableColor = null;
-                
                 product.colors.forEach(color => {
-                    // Solo añadir colores si tienen stock total disponible
-                    let colorTotalStock = 0;
-                    if(product.stockByColor[color]) {
-                         for(const size in product.stockByColor[color]) {
-                            colorTotalStock += getStock(product.id, size, color);
-                        }
-                    }
-
-                    if(colorTotalStock > 0){
-                        const option = document.createElement('option');
-                        option.value = color;
-                        option.textContent = color;
-                        colorSelect.appendChild(option);
-                        
-                        if (!firstAvailableColor) {
-                            firstAvailableColor = color;
-                        }
-                    }
+                    const option = document.createElement('option');
+                    option.value = color;
+                    option.textContent = color;
+                    colorSelect.appendChild(option);
                 });
-
-                if(firstAvailableColor) {
-                    colorSelect.value = firstAvailableColor;
-                    defaultColor = firstAvailableColor;
-                } else {
-                    colorContainer.style.display = 'none'; // Si no hay stock en ningún color, ocultar
-                }
+                
+                defaultColor = product.colors[0]; 
                 
                 colorSelect.onchange = () => {
                     const selectedColor = colorSelect.value;
@@ -785,6 +781,7 @@
                 };
 
             } else {
+                // Producto sin opción de color (es decir, usa la estructura de stock simple)
                 colorContainer.style.display = 'none';
                 colorSelect.innerHTML = '';
                 defaultColor = null; 
@@ -807,6 +804,7 @@
             updateTotalAndCheckStock(); 
         }
         
+        // FUNCIÓN CLAVE PARA RENDERIZAR IMÁGENES CON COLOR
         function renderCarousel(product, color = null) {
             const indicators = document.getElementById('carouselIndicators');
             const inner = document.getElementById('carouselInner');
@@ -815,15 +813,19 @@
             
             let imageVariants = [];
 
+            // 🚨 Lógica para productos con colorMap (como Aro1, Aro2, etc.)
             if (product.isColorProduct && color && product.colorMap[color]) {
                 const map = product.colorMap[color];
                 imageVariants = [
+                    // map.front es 'Aro1', map.back es 'Aro2', etc. (USADO TAL CUAL)
                     { variant: `Frente (${color})`, fileBase: map.front, alt: 'Frente' }, 
                     { variant: `Espalda (${color})`, fileBase: map.back, alt: 'Espalda' },
                     { variant: `Lateral`, fileBase: map.side, alt: 'Lateral' }
                 ];
                 
             } else {
+                // Lógica para productos ESTÁNDAR (que sí necesitan sufijo de color si está definido)
+                // Nota: Los modelos 1-41 usan el sufijo que ya tenías configurado
                 const colorSuffix = color ? `_${color.toLowerCase()}` : ''; 
                 imageVariants = [
                     { variant: 'Frente', fileBase: `${product.frontFileBase}${colorSuffix}`, alt: 'Frente' }, 
@@ -839,10 +841,13 @@
                 let imgUrl;
                 let altText = `${product.name} ${item.alt}`;
 
+                // Usa la imagen genérica si el nombre base es el placeholder o el nombre de medidas
                 if (item.fileBase === GENERIC_SIDE_PLACEHOLDER || item.fileBase === GENERIC_SIDE_IMAGE_BASE) {
-                    imgUrl = `${GITHUB_BASE_URL}${GENERIC_SIDE_IMAGE_BASE}${IMAGE_EXTENSION}`;
+                    // El placeholder de medidas SIEMPRE usa la extensión global (minúscula)
+                    imgUrl = getImageUrl(GENERIC_SIDE_IMAGE_BASE); 
                 } else {
-                    imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${IMAGE_EXTENSION}`;
+                    // Usa la función mejorada para manejar .PNG o .png correctamente
+                    imgUrl = getImageUrl(item.fileBase);
                 }
 
                 indicators.innerHTML += `
@@ -868,10 +873,12 @@
             const quantityInput = document.getElementById('quantityInput');
             const colorSelect = document.getElementById('colorSelect');
             
+            // Determinar si es un producto de color y obtener el color seleccionado
             const product = productData.find(p => p.id === productId);
             const selectedColor = product && product.isColorProduct ? colorSelect.value : null;
 
             let quantity = parseInt(quantityInput.value);
+            // 🚨 USAR getStock CON COLOR
             const stock = getStock(productId, size, selectedColor); 
             const addButton = document.getElementById('addToOrderButton');
 
@@ -880,7 +887,7 @@
                 quantity = 1;
             }
 
-            if (stock > 0 && size) {
+            if (stock > 0) {
                 addButton.disabled = false;
                 addButton.textContent = `Añadir ${quantity} a Pedido`;
                 
@@ -910,6 +917,7 @@
 
             if (!product || quantity <= 0) return;
 
+            // 🚨 USAR getStock CON COLOR
             const stock = getStock(productId, size, color); 
 
             if (quantity > stock) {
@@ -928,7 +936,7 @@
                 currentOrder.push({
                     productId: productId,
                     name: product.name,
-                    description: product.description, 
+                    description: product.description, // <--- CAMBIO: Incluir la descripción del modelo
                     size: size,
                     color: color, 
                     quantity: quantity,
@@ -944,7 +952,7 @@
         // =======================================================
         // LÓGICA DE MODAL DE PEDIDOS (CHECKOUT)
         // =======================================================
-        
+
         function openOrdersModal() {
             renderOrdersList();
             const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
@@ -1073,6 +1081,7 @@
             
             currentOrder.forEach((item, index) => {
                 const colorText = item.color ? ` (${item.color})` : '';
+                // 🚨 CAMBIO PARA INCLUIR LA DESCRIPCIÓN DEL MODELO
                 orderText += `${index + 1}. *${item.name}* - ${item.description} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
             });
 
@@ -1083,34 +1092,8 @@
             orderText += `\n*IMPORTANTE:* Adjunta aquí tu comprobante de pago o transferencia para confirmar tu pedido.`;
 
             const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
-            
-            // --- LÓGICA DE DESCUENTO DE STOCK Y ACTUALIZACIÓN ---
-            const updates = {};
-            currentOrder.forEach(item => {
-                let key;
-                if (item.color) {
-                    key = `${item.productId}_${item.color}_${item.size}`;
-                } else {
-                    key = `${item.productId}_${item.size}`;
-                }
 
-                if (productInventory[key] !== undefined && productInventory[key] >= item.quantity) {
-                    // 1. Descuento en la variable local (para que se refleje inmediatamente si se recarga antes de un push a Firebase)
-                    productInventory[key] -= item.quantity; 
-                    
-                    // 2. Preparar actualización para Firebase
-                    updates[`inventory/${key}`] = productInventory[key];
-                }
-            });
-
-            // 3. Empujar los cambios a Firebase (asíncrono, no bloquea el envío de WhatsApp)
-            if(Object.keys(updates).length > 0) {
-                 database.ref().update(updates)
-                    .then(() => console.log("Stock actualizado en Firebase."))
-                    .catch(error => console.error("Error al actualizar stock en Firebase (¡IMPORTANTE!):", error));
-            }
-
-            // 4. Crear Historial (siempre se guarda)
+            // 1. CREAR HISTORIAL
             orderIdCounter++;
             PENDING_ORDERS.push({
                 id: orderIdCounter,
@@ -1121,94 +1104,70 @@
                 date: new Date().toLocaleString()
             });
 
-            // 5. Limpiar el pedido actual y guardar todo en Local Storage (seguro)
+            // 2. APLICAR EL DESCUENTO DEL STOCK (por ID, Color y Talla)
+            // ESTO DESCUENTA EL STOCK SOLO LOCALMENTE (en el navegador del cliente/admin)
+            currentOrder.forEach(item => {
+                let key;
+                if (item.color) {
+                    key = `${item.productId}_${item.color}_${item.size}`;
+                } else {
+                    key = `${item.productId}_${item.size}`;
+                }
+
+                if (productInventory[key] !== undefined && productInventory[key] >= item.quantity) {
+                    productInventory[key] -= item.quantity;
+                }
+            });
+
+            // 3. Limpiar el pedido actual y guardar todo
             currentOrder = [];
             saveInventoryStorage();
             saveOrdersStorage();
             
-            // 6. Cerrar el modal y redirigir
+            // 4. Cerrar el modal y redirigir
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             ordersModal.hide();
 
-            // 7. Rerenderizar las tarjetas (para reflejar el nuevo stock local si falla Firebase)
-            generateInitialInventory(); 
+            // 5. Rerenderizar las tarjetas 
             renderProductCards();
+            
+            // 🚨 RECORDATORIO MANUAL (ADMIN) 🚨
+            console.log("=================================================");
+            console.log("✅ ¡STOCK LOCAL DESCONTADO! PASO CRÍTICO MANUAL:");
+            console.log("Copia el código ejecutando: window.exportInitialProductsArray();");
+            console.log("Y sube el nuevo 'aplay.html' a GitHub.");
+            console.log("=================================================");
+            // 🚨 FIN RECORDATORIO 🚨
             
             window.open(whatsappURL, '_blank');
         }
-        
-        // =======================================================
-        // LÓGICA DE FIREBASE Y CONEXIÓN (CORREGIDA)
-        // =======================================================
 
-        function loadInventoryFromFirebase() {
-            return new Promise((resolve, reject) => {
-                console.log("Cargando inventario desde Realtime Database...");
-
-                const timeout = setTimeout(() => {
-                    reject(new Error("Conexión a Firebase Realtime Database superó el tiempo límite de 10 segundos."));
-                }, 10000); 
-
-                // Usamos la variable global 'database' que se inicializó en el script tag anterior
-                database.ref('inventory').once('value', snapshot => {
-                    clearTimeout(timeout);
-                    const dbInventory = snapshot.val();
-                    
-                    if (dbInventory) {
-                        // Limpiamos el inventario local y lo llenamos con datos de Firebase
-                        productInventory = {}; 
-                        let totalProductsLoaded = 0;
-                        
-                        for (const key in dbInventory) {
-                            const stockValue = parseInt(dbInventory[key]);
-                            if (!isNaN(stockValue) && stockValue > 0) {
-                                productInventory[key] = stockValue;
-                                totalProductsLoaded += stockValue;
-                            }
-                        }
-                        console.log(`✅ Inventario cargado de Firebase: ${totalProductsLoaded} productos.`);
-                        resolve();
-                    } else {
-                        console.warn("⚠️ Nodo '/inventory' en Firebase está vacío. Usando fallback local.");
-                        reject(new Error("No hay datos de inventario disponibles en Firebase."));
-                    }
-                }, (error) => {
-                    clearTimeout(timeout);
-                    console.error("❌ ERROR al conectar con Firebase Realtime Database:", error.message);
-                    alert(`Hubo un error al conectar con el inventario en tiempo real. Esto podría deberse a permisos (permission_denied) o un fallo de conexión. Usando el inventario local. (${error.message || 'Error desconocido'})`);
-                    reject(error);
-                });
-            });
-        }
-        
         // =======================================================
         // INICIALIZACIÓN
         // =======================================================
+
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtgsjjbNiS0lv5aLDb8nkpN_9-4sXIJvE",
+      authDomain: "rplay-f04dc.firebaseapp.com",
+      projectId: "rplay-f04dc",
+      storageBucket: "rplay-f04dc.firebasestorage.app",
+      messagingSenderId: "787828282738",
+      appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
+      measurementId: "G-XEKR4KEDMR"
+    };
+
+    // Inicializar Firebase (usando el objeto global 'firebase' de las nuevas etiquetas script)
+    firebase.initializeApp(firebaseConfig);
+    // Nota: El código de getAnalytics(app) se elimina porque requiere los módulos que causaban error.
 
         document.addEventListener('DOMContentLoaded', () => {
             
             loadOrdersStorage();
             
-            // 1. Intentar cargar Firebase
-            loadInventoryFromFirebase()
-                .then(() => {
-                    // Éxito: productInventory ya está lleno con datos de Firebase.
-                    console.log("Inicializando productos con stock de Firebase.");
-                })
-                .catch(() => {
-                    // Fallback: Si Firebase falló (permisos, conexión o vacío).
-                    console.warn("FALLBACK: Usando inventario estático local o el guardado en LocalStorage.");
-                    // Si Firebase falló, intentamos cargar el último inventario guardado localmente (para persistir los descuentos).
-                    loadInventoryStorage(); 
-                })
-                .finally(() => {
-                    // 2. Generar la estructura del producto (productData) usando el inventario disponible (Firebase o LocalStorage).
-                    generateInitialInventory(); 
-                    
-                    // 3. Renderizar las tarjetas
-                    renderProductCards();
-                });
-            
+            generateInitialInventory();
+            loadInventoryStorage(); // Cargar descuentos si existen en localStorage
+
             document.getElementById('product-list').addEventListener('click', (e) => {
                 const target = e.target.closest('.btn-buy');
                 if (target && !target.disabled) {
@@ -1222,9 +1181,10 @@
                 quantityInput.addEventListener('change', updateTotalAndCheckStock);
                 quantityInput.addEventListener('input', updateTotalAndCheckStock);
             }
+            
+            renderProductCards();
         });
 
     </script>
 </body>
 </html>
-
