@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RPLAY - Venta de Playeras</title>
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -229,7 +228,7 @@
         const WHATSAPP_NUMBER = '529991480151'; 
         
         // --- CONSTANTES DE IMAGEN ---
-        const IMAGE_EXTENSION = '.png'; // USAMOS .png para coincidir con tus archivos
+        const IMAGE_EXTENSION = '.png'; 
         const GENERIC_SIDE_IMAGE = 'https://i.imgur.com/uR1j9sW.png'; 
         
         // 🚨 ENLACE CRÍTICO: DEBES VERIFICAR QUE ESTA URL ES TU RUTA REAL DE IMÁGENES EN GITHUB PAGES
@@ -237,6 +236,8 @@
         
         // Placeholder para la imagen lateral genérica (se usará si no defines sideFile)
         const GENERIC_SIDE_PLACEHOLDER = 'generic_side_image_placeholder';
+        // Nuevo placeholder para indicar que la imagen lateral es el COLOR seleccionado (ej. 'negro.png')
+        const COLOR_SIDE_PLACEHOLDER = 'color_side_image_placeholder'; 
 
         let productData = []; 
         let productInventory = {}; 
@@ -263,9 +264,8 @@
                 { i: 2, name: 'BTS', description: 'Playera Modelo 2', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'Xime3', backFile: 'Xime4', sideFile: 'negro' },
                 { i: 3, name: 'MICHAEL JACKSON', description: 'Playera Modelo 3', stock:{ 'S':1, 'M':1, 'L': 1 },  frontFile: 'Abi1', backFile: 'Abi2', sideFile: 'blanco' },
                 
-                // CORRECCIÓN: Eliminada coma extra después del stock
+                // Modelos basados en tus archivos subidos: Abi1.png, Abi2.png, etc.
                 { i: 4, name: 'MICHAEL JACKSON', description: 'Playera Modelo 4', stock: {'L': 1 }, frontFile: 'Abi3', backFile: 'Abi4', sideFile: 'negro' },
-                
                 { i: 5, name: 'ADO', description: 'Playera Modelo 5', stock: {'XL': 1 }, frontFile: 'Lucy1', backFile: 'Lucy2', sideFile: 'blanco' },
                 { i: 6, name: 'ADO', description: 'Playera Modelo 6', stock: { 'M': 1, 'L': 1, 'XL':2 }, frontFile: 'Lucy3', backFile: 'Lucy4', sideFile: 'negro' },
                 { i: 7, name: 'BRUNO MARS', description: 'Playera Modelo 7', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Raul1', backFile: 'Raul2', sideFile: 'negro' },
@@ -291,10 +291,8 @@
                 { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
                 { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
                 { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
-                
-                { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'katy1', backFile: 'katy2', sideFile: 'negro' },
-                { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'katy3', backFile: 'katy4', sideFile: 'blanco' },
-                
+                { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1', backFile: 'Gon2', sideFile: 'negro' },
+                { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
                 { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
                 { i: 33, name: 'TAYLOR SWIFT', description: 'Playera Modelo 33', stock: { 'S': 1, 'M ': 1, 'L':1 },frontFile: 'Bere3', backFile: 'Bere4', sideFile: 'negro2' },
                 { i: 34, name: 'BTS', description: 'Playera Modelo 34', stock: { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Dan1', backFile: 'Dan2', sideFile: 'negro2' },
@@ -307,17 +305,16 @@
                 { i: 41, name: 'HOZIER', description: 'Playera Modelo 41', stock:  { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Adri3', backFile: 'Adri4', sideFile: 'blanco2' },
                
                
-
-                // --- MODELOS CON OPCIÓN DE COLOR ---
+                // --- MODELOS CON OPCIÓN DE COLOR (CORREGIDO) ---
                 { 
                     i: 42, 
                     name: 'BLACKPINK', 
                     description: 'Modelo 42 con opción de color.', 
                     stock: { 'S': 1, 'M': 1 }, 
                     colors: ['Blanco', 'Negro'],
-                    // El código añadirá '_blanco' o '_negro' automáticamente al final del nombre
                     frontFile: 'Aro1', 
                     backFile: 'Aro2',
+                    // sideFile se omite, se usará el COLOR_SIDE_PLACEHOLDER
                 },
                 { 
                     i: 43, 
@@ -325,8 +322,9 @@
                     description: 'Modelo 43 con opción de color.', 
                     stock: { 'S': 1, 'M': 1 }, 
                     colors: ['Blanco', 'Negro'],
-                    frontFile: 'Aro2',
+                    frontFile: 'Aro3', // 🚨 CORRECCIÓN: Asumido Aro3 en lugar de Aro2
                     backFile: 'Aro4',
+                    // sideFile se omite, se usará el COLOR_SIDE_PLACEHOLDER
                 },
             ];
 
@@ -360,7 +358,15 @@
                 // ASIGNACIÓN DE NOMBRES DE ARCHIVO
                 const frontFileBase = prod.frontFile || `xime${i}_frente_FALLBACK`;
                 const backFileBase = prod.backFile || `xime${i}_espalda_FALLBACK`;
-                const sideFileBase = prod.sideFile || GENERIC_SIDE_PLACEHOLDER; 
+                let sideFileBase;
+                
+                // 🚨 LÓGICA DE CORRECCIÓN: Si tiene colores, la imagen lateral es el COLOR_SIDE_PLACEHOLDER
+                if (prod.colors && prod.colors.length > 0) {
+                    sideFileBase = COLOR_SIDE_PLACEHOLDER; 
+                } else {
+                    // Si no tiene color definido, usa el sideFile que definió o el genérico de imgur.
+                    sideFileBase = prod.sideFile || GENERIC_SIDE_PLACEHOLDER; 
+                }
                 
                 // --- INVENTARIO INICIAL POR ID_TALLA ---
                 modelSizes.forEach(size => {
@@ -636,8 +642,15 @@
                 let altText = `${product.name} ${item.alt} ${color ? `(${color})` : ''}`;
 
                 if (item.fileBase === GENERIC_SIDE_PLACEHOLDER) {
+                    // Si es el placeholder genérico, usa la URL de Imgur.
                     imgUrl = GENERIC_SIDE_IMAGE;
-                } else {
+                } 
+                // 🚨 CORRECCIÓN CLAVE: Si es un producto de color y estamos en el lateral, usa el nombre del color
+                else if (item.fileBase === COLOR_SIDE_PLACEHOLDER && color) {
+                    // La imagen lateral es el nombre del color (ej: blanco.png, negro.png)
+                    imgUrl = `${GITHUB_BASE_URL}${color.toLowerCase()}${IMAGE_EXTENSION}`; 
+                } 
+                else {
                     // Combina GITHUB_BASE_URL + Nombre de Archivo Base + Sufijo de Color (si aplica) + .png
                     imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${colorSuffix}${IMAGE_EXTENSION}`;
                 }
