@@ -120,7 +120,7 @@
 
     <main class="container">
         <div class="row" id="product-list">
-             <h2 class="text-center">Cargando inventario desde Firebase Realtime Database...</h2>
+             <h2 class="text-center">Cargando inventario desde Cloud Firestore...</h2>
         </div>
     </main>
 
@@ -251,7 +251,6 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCtgsjjbNIS0lv5aLD8nkpN_9-4sXIJVE", 
             authDomain: "rplay-f04dc.firebaseapp.com",
-            databaseURL: "https://rplay-f04dc-default-rtdb.firebaseio.com", // URL de Realtime Database
             projectId: "rplay-f04dc",
             storageBucket: "rplay-f04dc.appspot.com",
             messagingSenderId: "787828282738",
@@ -259,14 +258,14 @@
             measurementId: "G-XEKR4KEDMR"
         };
         
-        // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE (Realtime Database)
+        // 🚨 IMPORTAR LIBRERÍAS DE FIREBASE (Cloud Firestore)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-        // Importación correcta para Realtime Database
-        import { getDatabase, ref, get, runTransaction } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
+        // Importación correcta para Cloud Firestore
+        import { getFirestore, collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
-        // Inicializar Firebase y Realtime Database
+        // Inicializar Firebase y Cloud Firestore
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app); 
+        const db = getFirestore(app); 
 
         // =======================================================
         // DECLARACIÓN DE VARIABLES GLOBALES Y CONSTANTES
@@ -280,64 +279,64 @@
         const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
 
         // Variables que serán llenadas con datos de Firebase
-        window.inventory = []; // Almacena todos los productos de RTDB
+        window.inventory = []; // Almacena todos los productos de Firestore
         window.currentOrder = JSON.parse(localStorage.getItem('currentOrder') || '[]'); // Pedido actual (carrito)
         window.currentProductInModal = null; 
         
         // =================================================================================
-        // FUNCIÓN CLAVE: CARGAR PRODUCTOS DESDE REALTIME DATABASE
+        // FUNCIÓN CLAVE: CARGAR PRODUCTOS DESDE FIRESTORE
         // =================================================================================
 
         window.loadProductsFromFirebase = async function() {
             try {
                 const list = document.getElementById('product-list');
-                list.innerHTML = '<h2 class="text-center">Cargando inventario desde Firebase Realtime Database...</h2>';
+                list.innerHTML = '<h2 class="text-center">Cargando inventario desde Cloud Firestore...</h2>';
 
-                const snapshot = await get(ref(db, 'products')); 
+                const querySnapshot = await getDocs(collection(db, 'products')); 
                 
-                if (snapshot.exists()) {
-                    const productsObject = snapshot.val();
-                    window.inventory = Object.keys(productsObject).map(key => ({
-                        id: key,
-                        // Se agrega el precio aquí para que use el precio de Firebase si existe, si no usa la constante
-                        price: productsObject[key].price || PRODUCT_PRICE, 
-                        ...productsObject[key]
+                if (!querySnapshot.empty) {
+                    window.inventory = querySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        // Se agrega el precio aquí para que use el precio de Firestore si existe, si no usa la constante
+                        price: doc.data().price || PRODUCT_PRICE, 
+                        ...doc.data()
                     }));
                     
                     console.log(`Inventario cargado: ${window.inventory.length} productos.`);
                     window.renderProductCards();
                 } else {
-                    console.log("No hay productos en la base de datos de RTDB.");
-                    list.innerHTML = '<h2 class="text-center text-danger">¡Inventario vacío en la nube! Contacta al administrador.</h2>';
+                    console.log("No hay productos en la colección de Firestore /products.");
+                    list.innerHTML = '<h2 class="text-center text-danger">¡Inventario vacío en la nube! Revisa la colección /products.</h2>';
                 }
             } catch (e) {
-                console.error("Error al cargar productos desde RTDB:", e);
-                list.innerHTML = '<h2 class="text-center text-danger">Error al cargar inventario. Revisa la Consola y las Reglas de RTDB.</h2>';
+                console.error("Error al cargar productos desde Firestore:", e);
+                list.innerHTML = '<h2 class="text-center text-danger">Error al cargar inventario. Revisa la Consola y las Reglas de Firestore.</h2>';
             }
         }
         
         // =================================================================================
-        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (IMAGENES - CORRIGE CASOS DE USO)
+        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (IMAGENES - CORRIGE EL USO DE MAYÚSCULAS)
         // =================================================================================
         function formatFileName(rawName) {
             if (!rawName) return null;
             
-            // Si tiene extensión (ej. Gon1.PNG), la quitamos y la reasignamos
+            // 1. Quitar cualquier extensión existente para tener solo el nombre base
             const nameWithoutExt = rawName.split('.')[0]; 
-            const lowerCaseName = nameWithoutExt.toLowerCase();
-            let extension = IMAGE_EXTENSION; // Default: .png
+            
+            let finalName = nameWithoutExt; 
+            let extension = IMAGE_EXTENSION; // Default: .png (para negro, blanco, xime1, etc.)
 
-            // Casos especiales de tus archivos (ej. Gon1.PNG)
-            if (lowerCaseName.startsWith('gon')) {
-                 extension = '.PNG'; // Mantener el .PNG para este modelo
-            } else if (nameWithoutExt.toUpperCase().endsWith('1')) {
-                 extension = '.png'; // Mantener minúscula para la mayoría
+            // 2. CASO ESPECIAL (GON): Si el nombre empieza con 'gon' (ignorar mayúsculas)
+            if (finalName.toLowerCase().startsWith('gon')) {
+                 // Forzamos la extensión a mayúsculas para este modelo
+                 extension = '.PNG'; 
             }
             
-            // El nombre del archivo debe coincidir con la base de tu URL (ej. Xime1, Abi1)
-            const formattedName = nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
+            // 3. LA CLAVE DE LA CORRECCIÓN: Devolvemos el nombre tal como viene de la base de datos
+            //    (sin forzar la capitalización de la primera letra), lo que permite que 'negro'
+            //    se quede como 'negro' y 'xime1' como 'xime1'.
             
-            return { name: formattedName, ext: extension }; 
+            return { name: finalName, ext: extension }; 
         }
 
         function getImageUrl(fileBase) {
@@ -347,24 +346,26 @@
             const fileInfo = formatFileName(fileBase);
             if (!fileInfo) return `${GITHUB_BASE_URL}fallback_default${IMAGE_EXTENSION}`; 
             
-            // Ruta final: https://ventaplayera.github.io/RPLAY/Xime1.png
+            // Ruta final: https://ventaplayera.github.io/RPLAY/negro.png o https://ventaplayera.github.io/RPLAY/xime1.png
             return `${GITHUB_BASE_URL}${fileInfo.name}${fileInfo.ext}`;
         }
 
 
         // =======================================================
-        // LÓGICA DE STOCKS (ADAPTADA A RTDB)
+        // LÓGICA DE STOCKS (ADAPTADA A FIRESTORE)
         // =======================================================
         function getStock(product, size, color = null) {
             if (product.isColorProduct && color) {
+                // Asumiendo que stockByColor es un mapa en Firestore: { "Negro": { "S": 10, "M": 5 } }
                 return product.stockByColor?.[color]?.[size] || 0;
             } else {
+                // Asumiendo que stock es un mapa en Firestore: { "S": 10, "M": 5 }
                 return product.stock?.[size] || 0;
             }
         }
 
         // =======================================================
-        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO (ADAPTADA A RTDB)
+        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO (ADAPTADA A FIRESTORE)
         // =======================================================
 
         window.renderProductCards = function() {
@@ -379,14 +380,14 @@
             window.inventory.forEach(product => {
                 let maxStock = 0;
                 
-                // Recalcular stock máximo usando la data de RTDB
-                if (product.isColorProduct) {
+                // Recalcular stock máximo usando la data de Firestore
+                if (product.isColorProduct && product.stockByColor) {
                     for (const color in product.stockByColor) {
                         for (const size in product.stockByColor[color]) {
                             maxStock = Math.max(maxStock, getStock(product, size, color));
                         }
                     }
-                } else {
+                } else if (product.stock) {
                     for (const size in product.stock) {
                         maxStock = Math.max(maxStock, getStock(product, size));
                     }
@@ -397,7 +398,7 @@
 
                 // Determinar imagen principal
                 let frontFileBase = product.frontFileBase || '';
-                if (product.isColorProduct && product.colors && product.colorMap[product.colors[0]]) {
+                if (product.isColorProduct && product.colors && product.colorMap && product.colorMap[product.colors[0]]) {
                      frontFileBase = product.colorMap[product.colors[0]].front;
                 }
 
@@ -422,7 +423,7 @@
         }
         
         // =======================================================
-        // LÓGICA DE MODAL DE DETALLE (ADAPTADA A RTDB)
+        // LÓGICA DE MODAL DE DETALLE (SE MANTIENE IGUAL QUE RTDB)
         // =======================================================
 
         function getFileBase(product, view, color = null) {
@@ -781,7 +782,7 @@
         });
 
         // =======================================================
-        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK (ADAPTADO A RTDB)
+        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK (ADAPTADO A FIRESTORE)
         // =======================================================
 
         window.sendOrderToWhatsapp = async function() {
@@ -803,48 +804,60 @@
             orderText += `*Productos:*\n`;
             
             const transactionPromises = [];
+            const firestoreDB = getFirestore(app);
 
             for (const [index, item] of window.currentOrder.entries()) {
                 const colorText = item.color && item.color !== 'Único' ? ` (${item.color})` : '';
                 orderText += `${index + 1}. *${item.name}* - ${item.description} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
                 
-                const productRef = ref(db, `products/${item.productId}`);
+                // Referencia al documento en Firestore
+                const productRef = doc(firestoreDB, 'products', item.productId);
 
-                const transactionPromise = runTransaction(productRef, (currentProduct) => {
-                    if (currentProduct) {
-                        let newStock = 0;
-                        let sizeStockPath = '';
-                        
-                        if (item.isColorProduct) {
-                            const stockMap = currentProduct.stockByColor?.[item.color] || {};
-                            const currentStock = stockMap[item.size] || 0;
-                            newStock = currentStock - item.quantity;
-                            sizeStockPath = `stockByColor/${item.color}/${item.size}`;
-                        } else {
-                            const stockMap = currentProduct.stock || {};
-                            const currentStock = stockMap[item.size] || 0;
-                            newStock = currentStock - item.quantity;
-                            sizeStockPath = `stock/${item.size}`;
-                        }
-                        
-                        if (newStock >= 0) {
-                            // Crear o actualizar la estructura del stock dentro de currentProduct
-                            const pathSegments = sizeStockPath.split('/');
-                            let current = currentProduct;
-                            for (let i = 0; i < pathSegments.length - 1; i++) {
-                                const segment = pathSegments[i];
-                                if (!current[segment]) current[segment] = {};
-                                current = current[segment];
-                            }
-                            current[pathSegments[pathSegments.length - 1]] = newStock;
-                            return currentProduct; 
-                        } else {
-                            // Esto no debería pasar si la validación del carrito fue correcta
-                            console.error(`Error de stock: No hay suficiente stock para ${item.name} (${item.color}, ${item.size}).`);
-                            return; // Abortar esta transacción
-                        }
+                const transactionPromise = runTransaction(firestoreDB, async (transaction) => {
+                    const docSnapshot = await transaction.get(productRef);
+                    if (!docSnapshot.exists()) {
+                        throw new Error(`Documento de producto con ID ${item.productId} no encontrado.`);
                     }
-                    return currentProduct;
+
+                    const currentProduct = docSnapshot.data();
+                    let currentStock = 0;
+                    let stockMap = {};
+
+                    if (item.isColorProduct) {
+                        stockMap = currentProduct.stockByColor?.[item.color] || {};
+                        currentStock = stockMap[item.size] || 0;
+                    } else {
+                        stockMap = currentProduct.stock || {};
+                        currentStock = stockMap[item.size] || 0;
+                    }
+                    
+                    const newStock = currentStock - item.quantity;
+                    
+                    if (newStock >= 0) {
+                        // Clonar y actualizar el mapa de stock
+                        const updatedStockMap = { ...stockMap, [item.size]: newStock };
+                        
+                        // Preparar la actualización para la transacción
+                        let updateData = {};
+                        if (item.isColorProduct) {
+                            // Si es por color, actualizamos el mapa de colores específico
+                            updateData = { 
+                                stockByColor: {
+                                    ...currentProduct.stockByColor,
+                                    [item.color]: updatedStockMap
+                                }
+                            };
+                        } else {
+                            // Si es stock simple, actualizamos el mapa de stock
+                            updateData = { stock: updatedStockMap };
+                        }
+                        
+                        transaction.update(productRef, updateData);
+                        return currentProduct;
+                    } else {
+                        // Error de concurrencia o stock insuficiente
+                        throw new Error(`Stock insuficiente para ${item.name} (${item.color}, ${item.size}).`);
+                    }
                 });
                 
                 transactionPromises.push(transactionPromise);
@@ -873,14 +886,14 @@
                 // 3. Rerenderizar las tarjetas (para mostrar el stock descontado)
                 window.loadProductsFromFirebase();
 
-                alert("¡Pedido enviado! El stock ha sido actualizado en la base de datos de Firebase. Redirigiendo a WhatsApp.");
+                alert("¡Pedido enviado! El stock ha sido actualizado en la base de datos de Firestore. Redirigiendo a WhatsApp.");
                 
                 // 4. Redirigir a WhatsApp
                 window.open(whatsappURL, '_blank');
 
             } catch (error) {
                 console.error("Error al finalizar la compra y actualizar stock:", error);
-                alert("Hubo un error al procesar el pedido. Por favor, revisa tu stock o las reglas de RTDB.");
+                alert("Hubo un error al procesar el pedido. Por favor, revisa tu stock o las reglas de Firestore.");
             }
         }
 
@@ -890,8 +903,6 @@
         // =======================================================
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Las órdenes se cargan automáticamente al inicio del script
-
             document.getElementById('product-list').addEventListener('click', (e) => {
                 const target = e.target.closest('.btn-buy');
                 if (target && !target.disabled) {
