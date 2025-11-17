@@ -5,44 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda RPLAY</title>
     <style>
-        /* Estilos básicos para que el código funcione visualmente */
-        body { font-family: sans-serif; margin: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        #products-container { display: flex; flex-wrap: wrap; gap: 20px; }
-        .product-card { border: 1px solid #ccc; padding: 15px; width: 300px; }
-        .product-card img { max-width: 100%; height: auto; }
-        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        /* Base y Estructura */
+        body { font-family: sans-serif; margin: 20px; background-color: #f8f8f8; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid #ddd; }
+        #products-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        
+        /* Tarjetas de Producto */
+        .product-card { 
+            border: 1px solid #ccc; 
+            padding: 15px; 
+            width: 300px; 
+            text-align: center;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .product-card img { 
+            max-width: 100%; 
+            height: 300px; /* Tamaño fijo para consistencia */
+            object-fit: cover; /* Asegura que la imagen se ajuste sin distorsionarse */
+            margin-bottom: 10px;
+        }
+        .product-card button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Modal Base */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); }
         .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 1000px; }
         .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
         .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
-        .cart-item { border-bottom: 1px dashed #eee; padding: 10px 0; }
-        .stock-option { margin-right: 10px; padding: 5px 10px; border: 1px solid #ccc; cursor: pointer; }
-        .stock-option.active { background-color: #007bff; color: white; }
+
+        /* Modal de Producto Específico */
+        #modal-product-view { display: flex; gap: 40px; }
+        #modal-images { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        #main-product-image { 
+            max-width: 100%; 
+            height: 450px; /* Tamaño fijo para el modal */
+            object-fit: contain; 
+            border: 1px solid #eee;
+        }
+        #modal-details { flex: 1; padding-top: 20px; }
+        .image-toggle-buttons button { margin-right: 5px; padding: 8px 15px; cursor: pointer; background-color: #eee; border: 1px solid #ccc; }
         
-        /* Estilos para el modal del producto */
-        #modal-product-view { display: flex; gap: 20px; }
-        #modal-images { flex: 1; display: flex; flex-direction: column; gap: 10px;}
-        #modal-images img { max-width: 100%; height: auto; border: 1px solid #eee;}
-        #modal-details { flex: 1;}
-        .image-toggle-buttons button { margin-right: 5px; padding: 8px; cursor: pointer;}
-        
-        /* Estilos para los botones de color */
+        /* Tabla de Tallas (Estética Restaurada) */
+        .size-chart { margin-top: 20px; }
+        .size-chart h4 { color: #cc0066; border-bottom: 2px solid #cc0066; padding-bottom: 5px; }
+        .size-chart table { border-collapse: collapse; width: 100%; margin-top: 10px; font-size: 0.9em; }
+        .size-chart th, .size-chart td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+
+        /* Botones de Color (Estética Rosa Restaurada) */
+        #color-options { margin: 10px 0 20px; }
         #color-options button { 
-            width: 30px; 
-            height: 30px; 
+            width: 35px; 
+            height: 35px; 
             border-radius: 50%; 
             border: 2px solid transparent; 
             margin: 5px; 
             cursor: pointer;
-            box-shadow: 0 0 0 1px #ccc; /* Borde gris sutil */
+            box-shadow: 0 0 0 1px #ff99cc; /* Borde rosa sutil */
+            transition: all 0.2s;
         }
         #color-options button.active {
-            border: 3px solid #000; /* Borde negro para indicar activo */
-            box-shadow: 0 0 0 1px white, 0 0 0 4px #000; /* Efecto de borde más grueso */
+            border: 3px solid #cc0066; /* Borde rosa fuerte para indicar activo */
+            box-shadow: 0 0 0 2px white, 0 0 0 5px #cc0066; 
         }
-        
-        .size-chart table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-        .size-chart th, .size-chart td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+
+        /* Opciones de Talla y Carrito */
+        .stock-option { margin-right: 10px; padding: 8px 15px; border: 1px solid #ccc; cursor: pointer; background-color: #f0f0f0; }
+        .stock-option.active { background-color: #cc0066; color: white; border-color: #cc0066; }
+        #add-to-cart-button {
+            background-color: #cc0066 !important; 
+        }
     </style>
 </head>
 <body>
@@ -89,10 +127,10 @@
                     <div id="product-options">
                         </div>
 
-                    <label for="quantity">Cantidad:</label>
+                    <label for="quantity">Cantidad a agregar:</label>
                     <input type="number" id="quantity" value="1" min="1" max="100" style="width: 60px; margin-bottom: 20px;"> 
 
-                    <button id="add-to-cart-button" onclick="" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; cursor: pointer;">Añadir al Carrito</button>
+                    <button id="add-to-cart-button" onclick="" style="padding: 10px 20px; color: white; border: none; cursor: pointer;">Añadir al Carrito</button>
                 </div>
             </div>
         </div>
@@ -153,7 +191,7 @@
 
         // =================================================================================
         // FUNCIÓN PARA ACTUALIZAR STOCK TRAS LA COMPRA (ADAPTADA A REALTIME DB)
-        =================================================================================
+        // =================================================================================
 
         window.sendOrderToWhatsapp = async function() {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -289,17 +327,23 @@
         function formatFileName(rawName) {
             if (!rawName) return null;
             
-            // Convertir a minúsculas para la comparación
             const lowerCaseName = rawName.toLowerCase();
-            
-            // 1. REGLA EXCEPCIONAL 'xime1': Solo xime1 es todo minúsculas.
+            let extension = '.png'; // Extensión por defecto
+
+            // REGLA 1: EXCEPCIÓN 'xime1' (todo minúsculas)
             if (lowerCaseName === 'xime1') { 
-                return lowerCaseName; // xime1
+                return { name: lowerCaseName, ext: extension }; // { name: 'xime1', ext: '.png' }
             } 
             
-            // 2. REGLA GENERAL (cubre a Gon1, Miri1, Didi3, etc.): 
-            // Capitalizar la primera letra.
-            return rawName.charAt(0).toUpperCase() + rawName.slice(1);
+            // REGLA 2: EXCEPCIÓN 'gon1' o 'gon2' (la extensión es .PNG en MAYÚSCULAS)
+            if (lowerCaseName.startsWith('gon')) {
+                 extension = '.PNG'; // Cambiar extensión a mayúsculas
+            }
+            
+            // 3. REGLA GENERAL (y Gon): Capitalizar la primera letra.
+            const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+            
+            return { name: formattedName, ext: extension }; 
         }
 
         // =================================================================================
@@ -323,12 +367,15 @@
                 const rawImageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
                 
                 // Aplicar el formato de nombre para coincidir con tus archivos locales
-                const imageFile = formatFileName(rawImageFile);
+                const fileInfo = formatFileName(rawImageFile);
+                if (!fileInfo) return; // Si no hay nombre de archivo, salta.
 
-                // RUTA RAÍZ Y EXTENSIÓN .png
+                // RUTA RAÍZ Y EXTENSIÓN (CORREGIDA)
+                const imagePath = `${fileInfo.name}${fileInfo.ext}`;
+                
                 card.innerHTML = `
                     <h3>${product.name}</h3>
-                    <img src="${imageFile}.png" alt="${product.name}" /> 
+                    <img src="${imagePath}" alt="${product.name}" /> 
                     <p>${product.description}</p>
                     <p><strong>$${product.price.toFixed(2)}</strong></p>
                     <button onclick="window.showProductModal('${product.id}')">Ver / Pedir</button>
@@ -350,9 +397,9 @@
             if (!rawFileName) return null;
 
             // Aplicar la lógica de formato de nombre
-            const fileName = formatFileName(rawFileName);
+            const fileInfo = formatFileName(rawFileName);
             
-            return `${fileName}.png`; // Se mantiene .png y ruta raíz
+            return `${fileInfo.name}${fileInfo.ext}`; // Retorna el nombre completo con la extensión correcta
         }
 
         window.changeModalImage = function(view) {
@@ -413,7 +460,6 @@
                 initialColor = product.colors[0]; // Seleccionar el primer color por defecto
                 
                 product.colors.forEach(colorName => {
-                    // Asegurar que el color exista en colorMap para obtener el HEX
                     const colorData = product.colorMap[colorName];
                     if (!colorData || !colorData.hex) {
                         console.warn(`Advertencia: Falta el código HEX para el color ${colorName} en Firebase.`);
@@ -423,7 +469,6 @@
                     const colorCode = colorData.hex;
                     const isActive = colorName === initialColor ? 'active' : '';
                     
-                    // Nota: Usamos style.backgroundColor para pintar el círculo
                     colorButtonsHTML += `
                         <button 
                             data-color="${colorName}" 
@@ -449,10 +494,8 @@
 
             // 3. Inicializar imagen principal y tallas
             if (product.isColorProduct) {
-                // Para productos con color: inicializa imagen y tallas con el primer color.
                 window.changeColorAndSize(product, initialColor);
             } else {
-                // Para productos sin color: inicializa tallas y setea la imagen frontal por defecto.
                 document.getElementById('size-options').innerHTML = generateSizeOptionsHTML(product, null);
                 const fileName = getFileName(product, 'front', null);
                 document.getElementById('main-product-image').src = fileName;
@@ -471,6 +514,8 @@
                  document.getElementById('size-chart-container').innerHTML = '';
             }
             
+            // Resetear cantidad a 1
+            document.getElementById('quantity').value = 1;
 
             document.getElementById('product-modal').style.display = "block";
         }
@@ -490,7 +535,9 @@
             const sizes = Object.keys(stockMap).sort((a, b) => {
                 // Ordenar tallas comunes (XS, S, M, L, XL, etc.)
                 const order = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
-                return order.indexOf(a) - order.indexOf(b);
+                const aIndex = order.indexOf(a.toUpperCase());
+                const bIndex = order.indexOf(b.toUpperCase());
+                return (aIndex > -1 ? aIndex : 100) - (bIndex > -1 ? bIndex : 100);
             }).filter(size => stockMap[size] > 0);
 
             let html = `<p>Código Producto: <strong>${productCodeForTitle}</strong></p>
@@ -534,7 +581,9 @@
             }
         }
 
-
+        // =================================================================================
+        // FUNCIÓN PRINCIPAL DE AGREGAR AL CARRITO (CORRECCIÓN DE STOCK)
+        // =================================================================================
         window.addToCart = function(productId, color) {
             const product = window.inventory.find(p => p.id === productId);
             if (!product) return;
@@ -556,24 +605,35 @@
                 availableStock = product.stock?.[size] || 0;
             }
 
-            if (quantity > availableStock) {
-                alert(`Solo hay ${availableStock} unidades de la Talla ${size} disponibles.`);
-                return;
-            }
-
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
             const cartItemId = `${productId}-${finalColor}-${size}`;
 
             const existingItemIndex = cart.findIndex(item => item.cartItemId === cartItemId);
 
+            let currentInCart = 0;
             if (existingItemIndex > -1) {
-                const newQuantity = cart[existingItemIndex].quantity + quantity;
-                if (newQuantity > availableStock) {
-                    alert(`No puedes agregar más. Stock máximo: ${availableStock}`);
-                    return;
+                currentInCart = cart[existingItemIndex].quantity;
+            }
+
+            const newQuantityTotal = currentInCart + quantity;
+
+            // **LÓGICA DE STOCK CORREGIDA:** Si la nueva cantidad total excede el stock disponible.
+            if (newQuantityTotal > availableStock) {
+                const maxToAdd = availableStock - currentInCart;
+                if (maxToAdd > 0) {
+                    alert(`No puedes agregar esa cantidad. Solo puedes agregar ${maxToAdd} unidad(es) más. Stock disponible: ${availableStock}.`);
+                } else {
+                     alert(`Stock agotado o máximo alcanzado. Solo hay ${availableStock} unidad(es) disponibles.`);
                 }
-                cart[existingItemIndex].quantity = newQuantity;
+                return;
+            }
+
+
+            if (existingItemIndex > -1) {
+                // Actualiza la cantidad
+                cart[existingItemIndex].quantity = newQuantityTotal;
             } else {
+                // Agrégalo como un nuevo artículo
                 cart.push({
                     cartItemId: cartItemId,
                     id: productId,
