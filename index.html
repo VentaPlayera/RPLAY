@@ -110,7 +110,7 @@
 
     <header class="p-3 mb-4 bg-white shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
-            <img src='https://ventaplayera.github.io/RPLAY/logo.png' style="max-width: 150px; height: auto;" alt="RPLAY Logo">
+            <img src='https://ventaplayera.github.io/RPLAY/logo.PNG' style="max-width: 150px; height: auto;" alt="RPLAY Logo">
             <h1 class="h3 text-primary d-none d-md-block">RPLAY</h1>
             <button class="btn btn-outline-secondary" onclick="window.openOrdersModal()">
                 Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
@@ -274,11 +274,12 @@
         const MINIMUM_TO_SHIP = 1;   
         const WHATSAPP_NUMBER = '529991480151'; 
         
-        const IMAGE_EXTENSION = '.png'; 
+        // 🚨 V8.7 CORRECCIÓN: Usar la extensión en mayúsculas (.PNG)
+        const IMAGE_EXTENSION = '.PNG'; 
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
         
-        // 🚨 V8.6: Lista de nombres de archivos que deben ser forzados a minúsculas
+        // Lista de nombres de archivos que deben ser forzados a minúsculas
         const MUST_BE_LOWERCASE = ['xim1', 'negro', 'blanco', 'negro2', 'blanco2', 'medidas', 'logo']; 
 
         // Variables que serán llenadas con datos de Firebase
@@ -317,24 +318,26 @@
         }
         
         // =================================================================================
-        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (V8.6: FUERZA CAPITALIZACIÓN)
+        // FUNCIÓN AUXILIAR DE FORMATO DE NOMBRE (V8.7: FUERZA CAPITALIZACIÓN + .PNG)
         // =================================================================================
         function formatFileName(rawName) {
             if (!rawName) return null;
             
+            // 1. Obtener el nombre base sin extensión
             let baseName = rawName.split('.')[0]; 
             const lowerBaseName = baseName.toLowerCase();
             
             if (MUST_BE_LOWERCASE.includes(lowerBaseName)) {
-                // Si es una excepción (xim1, blanco, negro, etc.), forzar minúsculas
+                // 2. Si es una excepción (xim1, blanco, negro, etc.), forzar minúsculas
                 baseName = lowerBaseName; 
             } else {
-                // Si NO es una excepción (Abi1, Gon3, etc.), forzar mayúscula inicial
+                // 3. Si NO es una excepción (Abi1, Gon3, etc.), forzar mayúscula inicial
                 if (baseName.length > 0) {
                     baseName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
                 }
             }
             
+            // 4. Retorna el nombre base correctamente capitalizado y la extensión .PNG
             return { name: baseName, ext: IMAGE_EXTENSION };
         }
 
@@ -347,7 +350,7 @@
             const fileInfo = formatFileName(fileBase);
             if (!fileInfo) return `${GITHUB_BASE_URL}fallback_default${IMAGE_EXTENSION}`; 
             
-            // Genera la URL usando el nombre con la capitalización correcta (Ej: /RPLAY/Abi1.png o /RPLAY/blanco.png)
+            // Genera la URL (Ej: /RPLAY/Gon1.PNG o /RPLAY/blanco.PNG)
             return `${GITHUB_BASE_URL}${fileInfo.name}${fileInfo.ext}`;
         }
 
