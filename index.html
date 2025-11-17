@@ -234,7 +234,7 @@
 
 
         // =================================================================================
-        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS (CORRECCIÓN PNG y RUTA RAÍZ)
+        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS (CORRECCIÓN CAPITALIZACIÓN APLICADA)
         // =================================================================================
 
         window.renderProducts = function() {
@@ -250,10 +250,20 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
 
-                // Determinar la imagen a mostrar
-                const imageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
+                // 1. Obtener el nombre base del archivo de Firebase
+                const rawImageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
+                
+                let imageFile = rawImageFile;
 
-                // 🚨 CORRECCIÓN APLICADA: RUTA ELIMINADA y EXTENSIÓN .png
+                // 2. Aplicar la lógica de mayúsculas/minúsculas específica:
+                // Si el nombre no es 'xime1' (en minúsculas), capitalizar la primera letra.
+                if (rawImageFile && rawImageFile.toLowerCase() !== 'xime1') {
+                    // Capitalizar la primera letra (Miri1, Didi3, etc.)
+                    imageFile = rawImageFile.charAt(0).toUpperCase() + rawImageFile.slice(1);
+                } 
+                // Si es 'xime1', permanece 'xime1'.
+
+                // 🚨 RUTA RAÍZ Y EXTENSIÓN .png CONFIRMADA
                 card.innerHTML = `
                     <h3>${product.name}</h3>
                     <img src="${imageFile}.png" alt="${product.name}" /> 
