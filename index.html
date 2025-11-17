@@ -367,6 +367,7 @@
             // --- LÓGICA DE PROCESAMIENTO ---
             initialProducts.forEach(prod => {
                 const i = prod.i;
+                // Guardamos el ID del producto como PROD_0XX
                 const id = `PROD_${String(i).padStart(3, '0')}`;
 
                 let modelSizes = [];
@@ -397,7 +398,6 @@
                     // Imagen principal de la tarjeta: usa la imagen de frente del primer color
                     if (prod.colors.length > 0 && prod.colorMap[prod.colors[0]]) {
                         const fileBase = prod.colorMap[prod.colors[0]].front;
-                        // 🚨 IMPORTANTE: Aquí se usa el nombre exacto de la base (ej. 'Aro1')
                         mainImg = `${GITHUB_BASE_URL}${fileBase}${IMAGE_EXTENSION}`; 
                     } else {
                         mainImg = `${GITHUB_BASE_URL}fallback_default${IMAGE_EXTENSION}`; 
@@ -448,6 +448,7 @@
         // =======================================================
         
         window.showInventoryReport = function() {
+            // ... (Función de reporte sin cambios)
             console.log("\n==============================================");
             console.log("     REPORTE DE INVENTARIO (ADMIN)");
             console.log("==============================================");
@@ -459,7 +460,6 @@
                 const stock = productInventory[key];
                 if (stock > 0) {
                     const parts = key.split('_');
-                    // Identifica si es stock por color (4 partes: PROD_042_Blanco_S) o simple (3 partes: PROD_001_M)
                     const isColor = parts.length === 4;
                     const id = isColor ? `${parts[0]}_${parts[1]}` : key.substring(0, key.lastIndexOf('_')); 
                     const color = isColor ? parts[2] : null; 
@@ -520,6 +520,7 @@
             if (storedInventory) {
                 const loadedInventory = JSON.parse(storedInventory); 
                 for (const key in loadedInventory) {
+                    // Solo actualizamos el stock si la clave existe en el inventario inicial para evitar errores
                     if (productInventory.hasOwnProperty(key)) {
                         productInventory[key] = loadedInventory[key];
                     }
@@ -548,7 +549,7 @@
         // LÓGICA DE STOCKS
         // =======================================================
 
-        // 🚨 FUNCIÓN MEJORADA PARA MANEJAR STOCK POR COLOR O SIMPLE
+        // FUNCIÓN MEJORADA PARA MANEJAR STOCK POR COLOR O SIMPLE
         function getStock(productId, size, color = null) {
             let key;
             if (color) {
@@ -576,13 +577,15 @@
                     for (const color in product.stockByColor) {
                         const colorStock = product.stockByColor[color];
                         for (const size in colorStock) {
-                            maxStock = Math.max(maxStock, getStock(product.id, size, color));
+                            // Usamos el stock actual, no el inicial
+                            maxStock = Math.max(maxStock, getStock(product.id, size, color)); 
                         }
                     }
                 } else {
                     // Lógica para productos estándar
                     product.sizes.forEach(size => {
-                        maxStock = Math.max(maxStock, getStock(product.id, size));
+                        // Usamos el stock actual, no el inicial
+                        maxStock = Math.max(maxStock, getStock(product.id, size)); 
                     });
                 }
                 
@@ -622,8 +625,9 @@
             
             let sizesToProcess = product.sizes;
             
-            if (product.isColorProduct && product.stockByColor[selectedColor]) {
-                sizesToProcess = Object.keys(product.stockByColor[selectedColor]).sort();
+            if (product.isColorProduct && selectedColor) {
+                // Si es producto con color, usamos las tallas definidas para ese color
+                sizesToProcess = Object.keys(product.stockByColor[selectedColor] || {}).sort();
             }
             
             sizesToProcess.forEach(size => {
@@ -632,7 +636,7 @@
                 if (stock > 0) {
                     const option = document.createElement('option');
                     option.value = size;
-                    // CORRECCIÓN ANTERIOR: Solo mostrar la talla, sin la palabra "Stock"
+                    // Solo mostrar la talla
                     option.textContent = `${size}`; 
                     sizeSelect.appendChild(option);
 
@@ -684,7 +688,7 @@
                 };
 
             } else {
-                // Producto sin opción de color (es decir, usa la estructura de stock simple)
+                // Producto sin opción de color
                 colorContainer.style.display = 'none';
                 colorSelect.innerHTML = '';
                 defaultColor = null; 
@@ -716,19 +720,16 @@
             
             let imageVariants = [];
 
-            // 🚨 Lógica para productos con color que usan colorMap (como Aro1, Aro2, etc.)
             if (product.isColorProduct && color && product.colorMap[color]) {
                 const map = product.colorMap[color];
                 imageVariants = [
-                    // map.front es 'Aro1', map.back es 'Aro2', etc. (USADO TAL CUAL)
                     { variant: `Frente (${color})`, fileBase: map.front, alt: 'Frente' }, 
                     { variant: `Espalda (${color})`, fileBase: map.back, alt: 'Espalda' },
                     { variant: `Lateral`, fileBase: map.side, alt: 'Lateral' }
                 ];
                 
             } else {
-                // Lógica para productos ESTÁNDAR (que sí necesitan sufijo de color si está definido)
-                // Nota: Los modelos 1-41 usan el sufijo que ya tenías configurado
+                // Lógica para productos ESTÁNDAR
                 const colorSuffix = color ? `_${color.toLowerCase()}` : ''; 
                 imageVariants = [
                     { variant: 'Frente', fileBase: `${product.frontFileBase}${colorSuffix}`, alt: 'Frente' }, 
@@ -744,12 +745,9 @@
                 let imgUrl;
                 let altText = `${product.name} ${item.alt}`;
 
-                // Usa la imagen genérica si el nombre base es el placeholder o el nombre de medidas
                 if (item.fileBase === GENERIC_SIDE_PLACEHOLDER || item.fileBase === GENERIC_SIDE_IMAGE_BASE) {
                     imgUrl = `${GITHUB_BASE_URL}${GENERIC_SIDE_IMAGE_BASE}${IMAGE_EXTENSION}`;
                 } else {
-                    // Para productos con colorMap, item.fileBase es el nombre exacto (Aro1)
-                    // Para productos estándar, item.fileBase es el nombre + sufijo (xime1_blanco)
                     imgUrl = `${GITHUB_BASE_URL}${item.fileBase}${IMAGE_EXTENSION}`;
                 }
 
@@ -776,12 +774,10 @@
             const quantityInput = document.getElementById('quantityInput');
             const colorSelect = document.getElementById('colorSelect');
             
-            // Determinar si es un producto de color y obtener el color seleccionado
             const product = productData.find(p => p.id === productId);
             const selectedColor = product && product.isColorProduct ? colorSelect.value : null;
 
             let quantity = parseInt(quantityInput.value);
-            // 🚨 USAR getStock CON COLOR
             const stock = getStock(productId, size, selectedColor); 
             const addButton = document.getElementById('addToOrderButton');
 
@@ -807,6 +803,7 @@
             }
         }
 
+        // 🚨 LÓGICA DE DESCUENTO DE STOCK INMEDIATO (AL AÑADIR AL CARRITO)
         document.getElementById('orderForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -820,7 +817,6 @@
 
             if (!product || quantity <= 0) return;
 
-            // 🚨 USAR getStock CON COLOR
             const stock = getStock(productId, size, color); 
 
             if (quantity > stock) {
@@ -828,6 +824,21 @@
                 alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size}${colorText}. Por favor, reduce la cantidad.`);
                 return;
             }
+            
+            // --- INICIO DE LA NUEVA LÓGICA DE DEDUCCIÓN DE STOCK ---
+            let key;
+            if (color) {
+                key = `${productId}_${color}_${size}`;
+            } else {
+                key = `${productId}_${size}`;
+            }
+
+            if (productInventory[key] !== undefined && productInventory[key] >= quantity) {
+                productInventory[key] -= quantity; // Descuenta el stock inmediatamente
+                saveInventoryStorage();           // Guarda el inventario
+                renderProductCards();             // Actualiza las tarjetas (muestra "Agotado" si es necesario)
+            } 
+            // --- FIN DE LA NUEVA LÓGICA DE DEDUCCIÓN DE STOCK ---
 
             const existingItemIndex = currentOrder.findIndex(item => 
                 item.productId === productId && item.size === size && item.color === color
@@ -909,8 +920,28 @@
             updateOrdersTotal(); 
         }
 
+        // 🚨 LÓGICA DE DEVOLUCIÓN DE STOCK (AL ELIMINAR DEL CARRITO)
         function removeItemFromOrder(index) {
+            const item = currentOrder[index];
+            
+            // 1. DEVOLVER EL STOCK
+            let key;
+            if (item.color) {
+                key = `${item.productId}_${item.color}_${item.size}`;
+            } else {
+                key = `${item.productId}_${item.size}`;
+            }
+
+            if (productInventory[key] !== undefined) {
+                productInventory[key] += item.quantity; // Devuelve el stock
+                saveInventoryStorage(); // Guarda el inventario
+                renderProductCards();   // Rerenderiza las tarjetas
+            }
+            
+            // 2. ELIMINAR DE LA ORDEN
             currentOrder.splice(index, 1);
+            
+            // 3. RERENDERIZAR LA LISTA DE PEDIDOS
             renderOrdersList();
         }
 
@@ -960,7 +991,7 @@
         });
 
         // =======================================================
-        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK
+        // LÓGICA DE ENVÍO POR WHATSAPP (EL STOCK YA FUE DESCONTADO AL AÑADIR)
         // =======================================================
 
         function sendOrderToWhatsapp() {
@@ -982,7 +1013,7 @@
             orderText += `*Productos:*\n`;
             
             currentOrder.forEach((item, index) => {
-                // 🚨 CORRECCIÓN APLICADA AQUÍ: Extraer y mostrar el número del modelo (ej. PROD_042 -> #42)
+                // 🚨 Se mantiene la corrección para mostrar el número de modelo
                 const modelNumber = item.productId.split('_')[1].replace(/^0+/, ''); 
                 const colorText = item.color ? ` (${item.color})` : '';
                 
@@ -1008,30 +1039,18 @@
                 date: new Date().toLocaleString()
             });
 
-            // 2. APLICAR EL DESCUENTO DEL STOCK
-            currentOrder.forEach(item => {
-                let key;
-                if (item.color) {
-                    key = `${item.productId}_${item.color}_${item.size}`;
-                } else {
-                    key = `${item.productId}_${item.size}`;
-                }
-
-                if (productInventory[key] !== undefined && productInventory[key] >= item.quantity) {
-                    productInventory[key] -= item.quantity;
-                }
-            });
+            // 2. ⚠️ IMPORTANTE: EL DESCUENTO DE STOCK YA SE REALIZÓ EN "AÑADIR AL PEDIDO", AQUÍ SOLO SE LIMPIA.
 
             // 3. Limpiar el pedido actual y guardar todo
-            currentOrder = [];
-            saveInventoryStorage();
+            currentOrder = []; // El stock ya fue deducido y no debe devolverse.
+            saveInventoryStorage(); // Guardar el inventario (aunque no se modificó)
             saveOrdersStorage();
             
             // 4. Cerrar el modal y redirigir
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             ordersModal.hide();
 
-            // 5. Rerenderizar las tarjetas (para mostrar "Agotado" si el stock bajó a cero)
+            // 5. Rerenderizar las tarjetas (esto no es estrictamente necesario ya que se hizo al añadir, pero es un buen paso de limpieza)
             renderProductCards();
             
             window.open(whatsappURL, '_blank');
