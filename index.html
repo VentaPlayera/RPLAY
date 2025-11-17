@@ -234,7 +234,7 @@
 
 
         // =================================================================================
-        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS
+        // FUNCIÓN PRINCIPAL DE RENDERIZADO DE PRODUCTOS (CORRECCIÓN PNG APLICADA AQUÍ)
         // =================================================================================
 
         window.renderProducts = function() {
@@ -250,12 +250,13 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
 
-                // Determinar la imagen a mostrar (usando el frontFileBase por defecto)
+                // Determinar la imagen a mostrar
                 const imageFile = product.frontFileBase || (product.isColorProduct ? product.colorMap[product.colors[0]].front : '');
 
+                // 🚨 CORRECCIÓN APLICADA: CAMBIO DE .jpg A .png
                 card.innerHTML = `
                     <h3>${product.name}</h3>
-                    <img src="assets/images/${imageFile}.jpg" alt="${product.name}" />
+                    <img src="assets/images/${imageFile}.png" alt="${product.name}" /> 
                     <p>${product.description}</p>
                     <p><strong>$${product.price.toFixed(2)}</strong></p>
                     <button onclick="window.showProductModal('${product.id}')">Ver / Pedir</button>
