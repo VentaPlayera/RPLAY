@@ -258,7 +258,7 @@
             
             // 🚨🚨 LISTA DE MODELOS INTEGRADA BASADA EN TUS ARCHIVOS SUBIDOS (.png) 🚨🚨
             const initialProducts = [
-                // Modelos sin opción de color
+                // Modelos sin opción de color (Color Fijo)
                 { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'Xime2', sideFile: 'blanco' },
                 { i: 2, name: 'BTS', description: 'Playera Modelo 2', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'Xime3', backFile: 'Xime4', sideFile: 'negro' },
                 { i: 3, name: 'MICHAEL JACKSON', description: 'Playera Modelo 3', stock:{ 'S':1, 'M':1, 'L': 1 },  frontFile: 'Abi1', backFile: 'Abi2', sideFile: 'blanco' },
@@ -299,11 +299,9 @@
                 { i: 38, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 38', stock: { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Bra1', backFile: 'Bra2', sideFile: 'negro2' },
                 { i: 39, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 39', stock: { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Bra3', backFile: 'Bra4', sideFile: 'negro2' },
                 { i: 40, name: 'HOZIER', description: 'Playera Modelo 40', stock:  { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Adri1', backFile: 'Adri2', sideFile: 'negro2' },
-                { i: 41, name: 'HOZIER', description: 'Playera Modelo 41', stock:  { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Adri3', backFile: 'Adri4', sideFile: 'blanco2' },
+                { i: 41, name: 'HOZIER', description: 'Playera Modelo 41', stock:  { 'S': 1, 'M ': 1, 'L':1 }, frontFile: 'Adri3', backFile: 'Adri4', sideFile: 'blanco2' }, 
                
-               
-
-                // --- MODELOS CON OPCIÓN DE COLOR (USANDO MAPEO DE SUFIJOS PARA IMÁGENES) ---
+                // --- MODELOS CON OPCIÓN DE COLOR (42 Y 43) ---
                 { 
                     i: 42, 
                     name: 'BLACKPINK', 
@@ -320,7 +318,7 @@
                     },
                     frontFile: 'Aro1', 
                     backFile: 'Aro2',
-                    sideFile: SIZE_CHART_FILE // Usamos esto como referencia, aunque la lógica del carrusel lo sobreescribe
+                    sideFile: SIZE_CHART_FILE 
                 },
                 { 
                     i: 43, 
@@ -338,7 +336,7 @@
                     },
                     frontFile: 'Aro3', 
                     backFile: 'Aro4',
-                    sideFile: SIZE_CHART_FILE
+                    sideFile: SIZE_CHART_FILE 
                 },
             ];
 
@@ -712,14 +710,17 @@
             let imageVariants = [];
             
             if (isColorProduct) {
-                // Para productos con color (42, 43): Frente (con sufijo), Espalda (con sufijo), Tabla de Tallas (sin sufijo)
+                // Para productos con color (42, 43): 
+                // 1. Frente (con sufijo de color), 
+                // 2. Espalda (con sufijo de color), 
+                // 3. Tabla de Tallas (CON sufijo de color).
                 imageVariants = [
                     { fileBase: product.frontFileBase, alt: `Frente ${color ? `(${color})` : ''}`, suffix: imageSuffix, isPlaceholder: false }, 
                     { fileBase: product.backFileBase, alt: `Espalda ${color ? `(${color})` : ''}`, suffix: imageSuffix, isPlaceholder: false },
-                    { fileBase: SIZE_CHART_FILE, alt: 'Tabla de Tallas', suffix: '', isPlaceholder: false } // Tabla siempre estática
+                    { fileBase: SIZE_CHART_FILE, alt: 'Tabla de Tallas', suffix: imageSuffix, isPlaceholder: false } // AHORA USA imageSuffix (TABLA DINÁMICA)
                 ];
             } else {
-                 // Para productos simples (1-41): Frente (sin sufijo), Espalda (sin sufijo), Lateral/Color (sin sufijo)
+                 // Para productos simples (1-41): Frente, Espalda, Lateral/Color. Todos estáticos.
                  imageVariants = [
                     { fileBase: product.frontFileBase, alt: 'Frente', suffix: '', isPlaceholder: false }, 
                     { fileBase: product.backFileBase, alt: 'Espalda', suffix: '', isPlaceholder: false },
@@ -771,241 +772,225 @@
 
             // Usar el color en getStock para verificar el stock exacto
             const stock = getStock(productId, size, color); 
-            const addButton = document.getElementById('addToOrderButton');
 
-            if (quantity < 1 || isNaN(quantity)) {
-                quantityInput.value = 1;
-                quantity = 1;
+            const stockIndicator = document.getElementById('stockIndicator');
+            const addToOrderButton = document.getElementById('addToOrderButton');
+
+            // 1. Validar la cantidad
+            if (quantity > stock) {
+                quantity = stock; 
+                quantityInput.value = quantity;
+                stockIndicator.textContent = `Solo quedan ${stock} unidades en esta talla y color.`;
+                stockIndicator.className = 'badge text-bg-warning';
+            } else if (stock === 0) {
+                stockIndicator.textContent = 'Agotado en esta talla y color.';
+                stockIndicator.className = 'badge text-bg-danger';
+                addToOrderButton.disabled = true;
+            } else {
+                stockIndicator.textContent = `${stock} unidades disponibles`;
+                stockIndicator.className = 'badge text-bg-info';
             }
 
-            if (stock > 0) {
-                addButton.disabled = false;
-                addButton.textContent = `Añadir ${quantity} a Pedido`;
-                
-                if (quantity > stock) {
-                    quantityInput.value = stock;
-                    quantity = stock;
-                    addButton.textContent = `Añadir ${stock} a Pedido (Max)`;
-                }
-                
+            // 2. Controlar la habilitación del botón
+            if (quantity > 0 && quantity <= stock) {
+                addToOrderButton.disabled = false;
             } else {
-                addButton.disabled = true;
-                addButton.textContent = 'Añadir al Pedido (Agotado)';
-                quantityInput.value = 0;
+                addToOrderButton.disabled = true;
             }
         }
+        
+        // =======================================================
+        // LÓGICA DE PEDIDOS (ÓRDENES)
+        // =======================================================
 
-        document.getElementById('orderForm').addEventListener('submit', (e) => {
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const productId = document.getElementById('modalProductId').value;
             const product = productData.find(p => p.id === productId);
             const size = document.getElementById('sizeSelect').value;
             const quantity = parseInt(document.getElementById('quantityInput').value);
-
+            
+            // Obtener el color
             const colorSelect = document.getElementById('colorSelect');
             const color = colorSelect.style.display !== 'none' ? colorSelect.value : null;
-
-            if (!product || quantity <= 0) return;
-
-            // Chequear stock con color
-            const stock = getStock(productId, size, color); 
-
-            if (quantity > stock) {
-                alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size} ${color ? `(${color})` : ''}. Por favor, reduce la cantidad.`);
-                return;
-            }
-
-            const existingItemIndex = currentOrder.findIndex(item => 
-                item.productId === productId && item.size === size && item.color === color
-            );
-
-            if (existingItemIndex !== -1) {
-                currentOrder[existingItemIndex].quantity += quantity;
-            } else {
+            
+            const stockKey = color ? `${productId}_${size}_${color.replace(/\s/g, '')}` : `${productId}_${size}`;
+            
+            if (quantity > 0 && productInventory[stockKey] >= quantity) {
+                
+                // 1. Reducir stock en la memoria (inventory)
+                productInventory[stockKey] -= quantity;
+                saveInventoryStorage();
+                
+                // 2. Añadir a la orden actual
                 currentOrder.push({
                     productId: productId,
                     name: product.name,
+                    price: product.price,
                     size: size,
-                    color: color, 
+                    color: color,
                     quantity: quantity,
-                    price: product.price
+                    subtotal: product.price * quantity,
+                });
+
+                document.getElementById('ordersCounter').textContent = currentOrder.length;
+                
+                // 3. Cerrar modal y mostrar confirmación
+                const modal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
+                if(modal) modal.hide();
+                
+                alert(`Añadido al pedido: ${quantity} x ${product.name} (Talla: ${size}${color ? ', Color: ' + color : ''})`);
+                
+                // 4. Rerenderizar tarjetas para actualizar stock visual (opcional si ocultas stock)
+                renderProductCards();
+                
+            } else {
+                alert('Error: La cantidad solicitada no está disponible o es inválida.');
+            }
+        });
+
+        function openOrdersModal() {
+            const list = document.getElementById('currentOrdersList');
+            const totalDisplay = document.getElementById('ordersTotal');
+            const emptyMessage = document.getElementById('emptyOrdersMessage');
+            const finalizeButton = document.getElementById('finalizeOrderButton');
+            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
+            const halfPaymentAmountSpan = document.getElementById('halfPaymentAmount');
+            const paymentDetailsSection = document.getElementById('paymentDetailsSection');
+            
+            list.innerHTML = '';
+            let total = 0;
+            
+            if (currentOrder.length === 0) {
+                emptyMessage.style.display = 'block';
+                finalizeButton.disabled = true;
+                halfPaymentCheck.disabled = true;
+                paymentDetailsSection.style.display = 'none';
+            } else {
+                emptyMessage.style.display = 'none';
+                finalizeButton.disabled = false;
+                halfPaymentCheck.disabled = false;
+                paymentDetailsSection.style.display = halfPaymentCheck.checked ? 'block' : 'none';
+
+                currentOrder.forEach((item, index) => {
+                    total += item.subtotal;
+                    
+                    const colorText = item.color ? ` - ${item.color}` : '';
+                    
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    listItem.innerHTML = `
+                        <div>
+                            ${item.quantity} x ${item.name} <span class="badge text-bg-secondary">${item.size}${colorText}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-muted small">$${item.price.toFixed(2)} c/u</span>
+                            <span class="text-success ms-2 fw-bold">$${item.subtotal.toFixed(2)}</span>
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeItemFromOrder(${index})">
+                                &times;
+                            </button>
+                        </div>
+                    `;
+                    list.appendChild(listItem);
                 });
             }
 
-            const detailModal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
-            detailModal.hide();
-            openOrdersModal(); 
-        });
+            totalDisplay.textContent = `$${total.toFixed(2)}`;
+            
+            const halfPayment = total / 2;
+            halfPaymentAmountSpan.textContent = `$${halfPayment.toFixed(2)}`;
 
-        // =======================================================
-        // LÓGICA DE MODAL DE PEDIDOS (CHECKOUT)
-        // =======================================================
+            halfPaymentCheck.onchange = () => {
+                const finalTotal = halfPaymentCheck.checked ? halfPayment : total;
+                totalDisplay.textContent = `$${finalTotal.toFixed(2)}`;
+                paymentDetailsSection.style.display = halfPaymentCheck.checked ? 'block' : 'none';
+            };
+            
+            // Inicializar el total correcto basado en el estado del checkbox al abrir el modal
+            halfPaymentCheck.dispatchEvent(new Event('change')); 
 
-        function openOrdersModal() {
-            renderOrdersList();
             const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
             modal.show();
         }
 
-        function renderOrdersList() {
-            const list = document.getElementById('currentOrdersList');
-            const emptyMessage = document.getElementById('emptyOrdersMessage');
-            
-            list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => {
-                if(item !== emptyMessage) item.remove();
-            });
-            
-            if (currentOrder.length === 0) {
-                emptyMessage.style.display = 'block';
-                document.getElementById('finalizeOrderButton').disabled = true;
-                updateOrdersCounter(0);
-                updateModalUI(false);
-                updateOrdersTotal(); 
-                return;
-            }
-
-            emptyMessage.style.display = 'none';
-            let totalItems = 0;
-
-            currentOrder.forEach((item, index) => {
-                const totalPrice = item.quantity * item.price;
-                totalItems += item.quantity;
-                
-                const colorText = item.color ? ` (${item.color})` : '';
-
-                const listItem = document.createElement('li');
-                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-                listItem.innerHTML = `
-                    <div>
-                        <span class="fw-bold">${item.name}</span> (${item.size})${colorText} x ${item.quantity}
-                        <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="fw-bold text-primary me-3">$${totalPrice.toFixed(2)}</span>
-                        <button class="btn btn-sm btn-outline-danger" onclick="removeItemFromOrder(${index})">
-                            &times;
-                        </button>
-                    </div>
-                `;
-                list.insertBefore(listItem, emptyMessage);
-            });
-            
-            updateOrdersCounter(currentOrder.length);
-            updateModalUI(true);
-            updateOrdersTotal(); 
-        }
-
         function removeItemFromOrder(index) {
+            const item = currentOrder[index];
+            
+            // 1. Devolver stock al inventario
+            const colorKey = item.color ? item.color.replace(/\s/g, '') : null;
+            const stockKey = colorKey ? `${item.productId}_${item.size}_${colorKey}` : `${item.productId}_${item.size}`;
+            
+            productInventory[stockKey] = (productInventory[stockKey] || 0) + item.quantity;
+            saveInventoryStorage();
+
+            // 2. Eliminar de la orden actual
             currentOrder.splice(index, 1);
-            renderOrdersList();
+            document.getElementById('ordersCounter').textContent = currentOrder.length;
+
+            // 3. Rerenderizar modal y tarjetas
+            renderProductCards();
+            openOrdersModal(); 
         }
-
-        function updateOrdersTotal() {
-            const totalElement = document.getElementById('ordersTotal');
-            const halfPaymentElement = document.getElementById('halfPaymentAmount');
-            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
-            
-            const subtotal = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            
-            const halfAmount = subtotal / 2;
-            halfPaymentElement.textContent = `$${halfAmount.toFixed(2)}`;
-
-            if (halfPaymentCheck.checked) {
-                totalElement.textContent = `$${halfAmount.toFixed(2)}`;
-            } else {
-                totalElement.textContent = `$${subtotal.toFixed(2)}`;
-            }
-        }
-        
-        document.getElementById('halfPaymentCheck').addEventListener('change', updateOrdersTotal); 
-
-        function updateOrdersCounter(count) {
-            document.getElementById('ordersCounter').textContent = currentOrder.length; 
-        }
-
-        function updateModalUI(hasItems) {
-            const finalizeButton = document.getElementById('finalizeOrderButton');
-            const clientDataForm = document.getElementById('clientDataForm');
-            const paymentDetailsSection = document.getElementById('paymentDetailsSection');
-            
-            if (hasItems) {
-                finalizeButton.disabled = !document.getElementById('clientDataForm').checkValidity();
-                clientDataForm.style.display = 'block';
-                paymentDetailsSection.style.display = 'block';
-            } else {
-                finalizeButton.disabled = true;
-                clientDataForm.style.display = 'none';
-                paymentDetailsSection.style.display = 'none';
-            }
-        }
-        
-        document.getElementById('clientDataForm').addEventListener('input', () => {
-            if (currentOrder.length > 0) {
-                document.getElementById('finalizeOrderButton').disabled = !document.getElementById('clientDataForm').checkValidity();
-            }
-        });
-
-        // =======================================================
-        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK
-        // =======================================================
 
         function sendOrderToWhatsapp() {
-            if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
-                alert("Por favor, añade productos al pedido y completa tus datos de envío.");
-                return;
-            }
-
             const clientName = document.getElementById('clientName').value;
             const clientAddress = document.getElementById('clientAddress').value;
             const clientPhone = document.getElementById('clientPhone').value;
-            const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
-            
-            const total = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const amountToPay = isHalfPayment ? total / 2 : total;
+            const halfPaymentChecked = document.getElementById('halfPaymentCheck').checked;
+            const ordersTotal = document.getElementById('ordersTotal').textContent;
 
-            let orderText = `*PEDIDO #${orderIdCounter + 1} - RPLAY*\n\n`;
-            orderText += `*Total a Pagar:* $${amountToPay.toFixed(2)} (${isHalfPayment ? 'Anticipo 50%' : 'Pago Completo'})\n`;
-            orderText += `*Productos:*\n`;
+            if (!clientName || !clientAddress || !clientPhone) {
+                alert('Por favor, completa todos los campos de datos de contacto y envío.');
+                return;
+            }
+
+            if (currentOrder.length === 0) {
+                alert('Tu pedido está vacío.');
+                return;
+            }
+
+            // 1. Generar ID y almacenar la orden
+            orderIdCounter++;
+            const newOrder = {
+                id: `ORD-${orderIdCounter}`,
+                client: { name: clientName, address: clientAddress, phone: clientPhone },
+                items: currentOrder,
+                total: ordersTotal,
+                paymentType: halfPaymentChecked ? '50% Anticipo' : '100% Total',
+                date: new Date().toISOString(),
+            };
+            PENDING_ORDERS.push(newOrder);
+            saveOrdersStorage();
+            
+            // 2. Generar mensaje de WhatsApp
+            let message = `*¡NUEVO PEDIDO DE RPLAY!* %0A`;
+            message += `*ID de Pedido:* ${newOrder.id}%0A`;
+            message += `*Cliente:* ${clientName}%0A`;
+            message += `*Teléfono:* ${clientPhone}%0A`;
+            message += `*Dirección de Correo:* ${clientAddress}%0A%0A`;
+            message += `*Detalle del Pedido:*%0A`;
             
             currentOrder.forEach((item, index) => {
                 const colorText = item.color ? ` (${item.color})` : '';
-                orderText += `${index + 1}. ${item.name} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+                message += `${index + 1}. ${item.quantity}x ${item.name} - Talla ${item.size}${colorText} ($${item.subtotal.toFixed(2)})%0A`;
             });
 
-            orderText += `\n*Datos del Cliente:*\n`;
-            orderText += `Nombre: ${clientName}\n`;
-            orderText += `Teléfono: ${clientPhone}\n`;
-            orderText += `Dirección: ${clientAddress}\n`;
-            orderText += `\n*IMPORTANTE:* Adjunta aquí tu comprobante de pago o transferencia para confirmar tu pedido.`;
+            message += `%0A*TOTAL A PAGAR:* ${ordersTotal}%0A`;
+            message += `*Método de Pago:* ${newOrder.paymentType}%0A%0A`;
+            
+            if (halfPaymentChecked) {
+                message += `*Instrucciones:* Se requiere adjuntar el comprobante de pago del anticipo o total.`;
+            } else {
+                message += `*Instrucciones:* Se requiere adjuntar el comprobante de pago del total.`;
+            }
 
-            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
+            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
 
-            // 1. CREAR HISTORIAL
-            orderIdCounter++;
-            PENDING_ORDERS.push({
-                id: orderIdCounter,
-                items: JSON.parse(JSON.stringify(currentOrder)), 
-                client: { name: clientName, address: clientAddress, phone: clientPhone },
-                total: total,
-                amountPaid: amountToPay,
-                date: new Date().toLocaleString()
-            });
-
-            // 2. APLICAR EL DESCUENTO DEL STOCK (por ID, Talla y Color)
-            currentOrder.forEach(item => {
-                // Usa el color de visualización para la clave de inventario
-                const key = item.color ? `${item.productId}_${item.size}_${item.color.replace(/\s/g, '')}` : `${item.productId}_${item.size}`;
-                
-                if (productInventory[key] !== undefined && productInventory[key] >= item.quantity) {
-                    productInventory[key] -= item.quantity;
-                }
-            });
-
-            // 3. Limpiar el pedido actual y guardar todo
-            currentOrder = [];
-            saveInventoryStorage();
-            saveOrdersStorage();
+            // 3. Limpiar la orden actual
+            currentOrder.length = 0; 
+            document.getElementById('ordersCounter').textContent = 0;
+            document.getElementById('clientDataForm').reset();
             
             // 4. Cerrar el modal y redirigir
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
