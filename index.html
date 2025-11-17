@@ -60,7 +60,6 @@
 
         // =================================================================================
         // FUNCIÓN PRINCIPAL PARA CARGAR PRODUCTOS DESDE REALTIME DATABASE
-        // CORREGIDA: Exponemos la función al objeto window para evitar errores de referencia
         // =================================================================================
 
         let inventory = []; // El inventario se almacena aquí globalmente
@@ -75,8 +74,8 @@
                     inventory = Object.values(productsObject); 
                     
                     console.log(`Inventario cargado: ${inventory.length} productos.`);
-                    // Llama a tu función para mostrar los productos. 
-                    // Asegúrate de que 'renderProducts()' está definida más adelante en tu código.
+                    // Llama a tu función para mostrar los productos.
+                    // Si tienes una función llamada renderProducts(), descomenta la línea de abajo:
                     // renderProducts(); 
                 } else {
                     console.log("No hay productos en la base de datos.");
@@ -159,7 +158,7 @@
                 window.open(`https://wa.me/TUNUMEROAQUI?text=${encodedMessage}`, '_blank');
 
                 // Limpiar carrito y actualizar vista
-                // clearCart(); // Descomenta esta línea una vez que todas las funciones de tu tienda estén completas
+                // clearCart(); // Descomenta esta línea si ya tienes la función
                 alert("Pedido realizado y stock actualizado en la nube. ¡Revisa WhatsApp!");
                 window.loadProductsFromFirebase(); // Recargar inventario
 
@@ -169,7 +168,7 @@
             }
         }
         
-        // 🚨 (TUS OTRAS FUNCIONES JS DE CARRITO Y MODALES deben ir aquí)
+        // 🚨 (TUS OTRAS FUNCIONES JS DE CARRITO Y MODALES deben ir aquí, si no están en otro archivo)
         
     </script>
     
