@@ -373,12 +373,10 @@
         let currentProductId = null;
 
         // Lista de productos con el stock inicial (solo se usa si Firebase está vacío)
-        // ESTE ES TU STOCK MAESTRO
+        // ** NOTA: Usamos .png en minúscula para evitar problemas de case-sensitivity en GitHub. **
         const ORIGINAL_PRODUCTS_DEFINITION = [
             // El formato es: [ID_ÚNICO, Nombre, Descripción, Precio, Archivo_Frente, Archivo_Espalda, Stock_Inicial]
-            // ID: Debe ser único.
-            // Stock_Inicial: La cantidad total de unidades que tienes.
-            ["P30", "Playera Gon1", "Diseño gráfico con toques abstractos en negro.", 250, "Gon1.PNG", "Gon3.PNG", 200],
+            ["P30", "Playera Gon1", "Diseño gráfico con toques abstractos en negro.", 250, "Gon1.png", "Gon3.png", 200],
             ["P1", "Playera Katy", "Diseño Minimalista de Katy.", 200, "Katy3.png", "Katy3.png", 200],
             ["P2", "Playera Bere", "Diseño Minimalista de Bere.", 200, "Bere1.png", "Bere3.png", 200],
             ["P3", "Playera Dan", "Diseño Minimalista de Dan.", 200, "Dan1.png", "Dan3.png", 200],
@@ -426,8 +424,8 @@
          * si el nodo 'inventory' está vacío.
          */
         function initializeInventory(snapshot) {
-            if (snapshot.val() === null) {
-                console.log("Firebase Inventory vacío. Subiendo stock inicial...");
+            if (snapshot.val() === null || Object.keys(snapshot.val()).length === 0) {
+                console.warn("Firebase Inventory vacío. Subiendo stock inicial...");
                 const initialInventory = {};
                 ORIGINAL_PRODUCTS_DEFINITION.forEach(([id, name, desc, price, front, back, stock]) => {
                     initialInventory[id] = {
@@ -447,7 +445,8 @@
                     })
                     .catch(error => {
                         console.error("Error al subir inventario inicial:", error);
-                        alert("Error al subir el inventario inicial a Firebase.");
+                        // Esto fallará si las reglas de seguridad no dan permiso de escritura en 'inventory'
+                        alert("Error al subir el inventario inicial. ¡Revisa y publica las reglas de seguridad de Firebase!");
                     });
             } else {
                 console.log("Inventario cargado desde Firebase.");
@@ -510,7 +509,7 @@
             return `
                 <div class="col">
                     <div class="${cardClasses}">
-                        <img src="${IMAGE_PATH}${product.frontFile}" class="card-img-top" alt="${product.name} - Frente">
+                        <img src="${IMAGE_PATH}${product.frontFile}" class="card-img-top" alt="${product.name} - Frente" onerror="this.onerror=null;this.src='${IMAGE_PATH}default.png';">
                         <div class="product-info">
                             <h5 class="card-title">${product.name}</h5>
                             <p class="card-text">${product.description}</p>
@@ -533,7 +532,18 @@
             container.innerHTML = '';
             
             // Convierte el objeto products en un array y lo ordena por ID
-            const productArray = Object.values(products).sort((a, b) => a.id.localeCompare(b.id));
+            const productArray = Object.values(products);
+            
+            // ** CORRECCIÓN LÓGICA: Se añade una verificación para evitar el error 'localeCompare' si el array está vacío o mal formado **
+            if (productArray.length === 0 || productArray.some(p => typeof p.id === 'undefined')) {
+                console.error("No se pudo renderizar el catálogo. Datos de Firebase incompletos o nulos.");
+                container.innerHTML = `<div class="col-12"><div class="alert alert-danger text-center">No se pudo cargar el catálogo. Revisa la consola y las reglas de seguridad de Firebase.</div></div>`;
+                return;
+            }
+
+            // Ordena los productos por ID (Esto causó el error TypeError: Cannot read properties of undefined)
+            productArray.sort((a, b) => a.id.localeCompare(b.id));
+
 
             productArray.forEach(product => {
                 const cardHtml = createProductCard(product);
@@ -556,8 +566,16 @@
             document.getElementById('detail-price').textContent = `$${product.price.toLocaleString('es-MX')}`;
             
             // Imágenes (siempre mostrar el frente por defecto)
-            document.getElementById('detail-front-image').src = IMAGE_PATH + product.frontFile;
-            document.getElementById('detail-back-image').src = IMAGE_PATH + (product.backFile || product.frontFile); // Si no hay back, usa front
+            const frontImage = document.getElementById('detail-front-image');
+            const backImage = document.getElementById('detail-back-image');
+
+            frontImage.src = IMAGE_PATH + product.frontFile;
+            backImage.src = IMAGE_PATH + (product.backFile || product.frontFile); // Si no hay back, usa front
+            
+            // Manejo de error de imagen para la principal
+            frontImage.onerror = function() { this.onerror=null; this.src=IMAGE_PATH + 'default.png'; };
+            backImage.onerror = function() { this.onerror=null; this.src=IMAGE_PATH + 'default.png'; };
+
             showFrontImage();
 
             // Stock
@@ -749,7 +767,7 @@
             const clientAddress = prompt("Ingresa la Dirección de Envío:");
             if (!clientAddress) return;
             
-            const clientPhone = prompt("Ingresa tu número de WhatsApp (código de país y número):");
+            const clientPhone = prompt("Ingresa tu número de WhatsApp (código de país y número, ej: 5218112345678):");
             if (!clientPhone) return;
 
             // 2. Generar el mensaje de WhatsApp y el objeto de pedido
@@ -804,79 +822,66 @@
          */
         function processOrder(order, whatsappMessage) {
             
-            // 3a. Iniciar transacciones para descontar stock
+            // 3a. Verificar stock antes de iniciar transacciones
+            for (const item of order.items) {
+                const product = products[item.id];
+                if (!product || product.stock < item.quantity) {
+                    alert(`Error: Stock insuficiente para ${item.name} (Disponible: ${product ? product.stock : 0}). Por favor, ajusta tu pedido.`);
+                    return; // Aborta el proceso si hay stock insuficiente
+                }
+            }
+
+            // 3b. Iniciar transacciones para descontar stock
             const stockUpdatePromises = order.items.map(item => {
-                // Se usa inventoryRef que ahora está definido globalmente
                 const productRef = inventoryRef.child(item.id);
                 
                 return productRef.transaction((currentData) => {
                     if (currentData) {
-                        const newStock = currentData.stock - item.quantity;
-                        if (newStock < 0) {
-                             // Si el stock es insuficiente (algo salió mal), aborta
-                            console.error(`Error de stock: ${item.name} insuficiente.`);
-                            alert(`Error: Stock insuficiente para ${item.name}. Revisa el stock y la cantidad.`);
-                            return; 
-                        }
-                        currentData.stock = newStock;
+                        currentData.stock -= item.quantity;
                     }
-                    return currentData; // Devuelve el nuevo dato para que Firebase lo actualice
+                    return currentData;
                 }, (error, committed, snapshot) => {
                     if (error) {
                         console.error(`Error en la transacción de stock para ${item.name}:`, error);
-                        alert(`Error crítico al descontar el stock de ${item.name}.`);
                     } else if (!committed) {
                         console.warn(`Transacción de stock no confirmada para ${item.name}.`);
-                    } else {
-                        console.log(`Stock de ${item.name} descontado. Nuevo stock: ${snapshot.val().stock}`);
                     }
                 });
             });
 
-            // 3b. Guardar el pedido y actualizar el contador SOLO si el stock se descontó
+            // 3c. Guardar el pedido y actualizar el contador
             Promise.all(stockUpdatePromises)
                 .then(() => {
-                    // Si todas las transacciones de stock fueron exitosas (o al menos se intentaron)
+                    // 3d. Guardar el pedido en Firebase
+                    return ordersRef.child(nextOrderId).set(order);
+                })
+                .then(() => {
+                    // 3e. Incrementar el contador de pedidos
+                    return orderCounterRef.set(nextOrderId + 1);
+                })
+                .then(() => {
+                    console.log(`Pedido #${order.id} guardado. Contador actualizado.`);
                     
-                    // 3c. Guardar el pedido en Firebase
-                    ordersRef.child(nextOrderId).set(order)
-                        .then(() => {
-                            // 3d. Incrementar el contador de pedidos
-                            orderCounterRef.set(nextOrderId + 1)
-                                .then(() => {
-                                    console.log(`Pedido #${nextOrderId} guardado. Contador actualizado a ${nextOrderId + 1}.`);
-                                    
-                                    // 3e. Limpiar carrito y redirigir
-                                    cart = {};
-                                    saveCart();
-                                    updateCartDisplay();
-                                    
-                                    // Prepara la URL de WhatsApp
-                                    const encodedMessage = encodeURIComponent(whatsappMessage);
-                                    // Si no se proporcionó el teléfono, se usa un número predefinido o se le pide al cliente que lo agregue a la URL.
-                                    const whatsappRecipient = order.clientPhone || 'NUMERO_ADMINISTRADOR'; 
-                                    const whatsappURL = `https://wa.me/${whatsappRecipient}?text=${encodedMessage}`;
-                                    
-                                    alert(`¡Pedido #${order.id} creado exitosamente! Ahora serás redirigido a WhatsApp para enviar los detalles.`);
-                                    window.open(whatsappURL, '_blank');
-                                    
-                                    // Cerrar modal de pedidos
-                                    const modal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
-                                    modal.hide();
-
-                                })
-                                .catch(error => {
-                                    console.error("Error al actualizar el contador de pedidos:", error);
-                                    alert("Error al actualizar el contador de pedidos. Revisa Firebase.");
-                                });
-                        })
-                        .catch(error => {
-                            console.error("Error al guardar el pedido:", error);
-                            alert("Error al guardar el pedido en la base de datos.");
-                        });
+                    // 3f. Limpiar carrito y redirigir
+                    cart = {};
+                    saveCart();
+                    updateCartDisplay();
+                    
+                    // Prepara la URL de WhatsApp
+                    const encodedMessage = encodeURIComponent(whatsappMessage);
+                    const whatsappRecipient = order.clientPhone; 
+                    const whatsappURL = `https://wa.me/${whatsappRecipient}?text=${encodedMessage}`;
+                    
+                    alert(`¡Pedido #${order.id} creado exitosamente! Ahora serás redirigido a WhatsApp para enviar los detalles.`);
+                    window.open(whatsappURL, '_blank');
+                    
+                    // Cerrar modal de pedidos
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+                    modal.hide();
                 })
                 .catch(error => {
-                    console.error("Error general en el proceso de pedido:", error);
+                    console.error("Error en el proceso de pedido (guardar/contador):", error);
+                    alert("ERROR: No se pudo completar el pedido. Hubo un fallo al actualizar el stock o guardar el pedido en la base de datos.");
                 });
         }
         
