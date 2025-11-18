@@ -220,10 +220,14 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script type="module">
+        // =======================================================
+        // 🚨 FIREBASE MODULE IMPORTS 🚨 (VERSION 9 MODULAR)
+        // =======================================================
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js';
+        // Nota: Se elimina getAnalytics para evitar complejidades de importación.
 
-    <script>
         // =======================================================
         // DECLARACIÓN DE VARIABLES GLOBALES Y CONSTANTES
         // =======================================================
@@ -236,7 +240,7 @@
         // Asume que tienes una imagen de medidas llamada 'medidas.png' en tu carpeta RPLAY
         const GENERIC_SIDE_IMAGE_BASE = 'medidas'; // Usamos el nombre base de la imagen de medidas
         
-        // 🚨 ENLACE CRÍTICO: DEBES VERIFICAR QUE ESTA URL ES TU RUTA REAL DE IMÁGENES EN GITHUB PAGES
+        // 🚨 ENLACE CRÍTICO: SE MANTIENE EL USO DE MAYÚSCULAS/MINÚSCULAS QUE TE FUNCIONÓ
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         
         // Placeholder para la imagen lateral genérica (se usará si no defines sideFile)
@@ -252,7 +256,6 @@
 
         // =======================================================
         // DEFINICIÓN DE PRODUCTOS ORIGINALES (USADA PARA INICIALIZAR Y EXPORTAR)
-        // 🚨 CORRECCIÓN DEL MODELO 30: SE AÑADE LA EXTENSIÓN .PNG PARA FUNCIONAR CON TU ARCHIVO 🚨
         // =======================================================
         const ORIGINAL_PRODUCTS_DEFINITION = [
             // Modelos estándar (estructura simple)
@@ -287,6 +290,7 @@
             { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
             { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
             { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
+            // 🚨 MANTENEMOS LA CORRECCIÓN DE LA IMAGEN (EXPLÍCITA .PNG)
             { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1.PNG', backFile: 'Gon2.PNG', sideFile: 'negro' },
             { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
             { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
@@ -464,10 +468,9 @@
         }
         
         // 🚨 NUEVA FUNCIÓN PARA EXPORTAR EL CÓDIGO ACTUALIZADO 🚨
-        // Genera el código JSON actualizado listo para reemplazar ORIGINAL_PRODUCTS_DEFINITION
         window.exportInitialProductsArray = function() {
             // Aseguramos que el inventario local esté cargado para tener los últimos descuentos
-            loadInventoryStorage(); 
+            // NOTA: Con la integración de Firebase, productInventory ya está sincronizado.
             
             console.log("\n==============================================");
             console.log("     CÓDIGO DE INVENTARIO ACTUALIZADO (ADMIN)");
@@ -491,7 +494,7 @@
                         for (const color in newProd.stockByColor) {
                             for (const size in newProd.stockByColor[color]) {
                                 const key = `${id}_${color}_${size}`;
-                                // Traemos el stock actual del localStorage
+                                // Traemos el stock actual (sincronizado con Firebase)
                                 const currentStock = productInventory[key] || 0; 
                                 newProd.stockByColor[color][size] = currentStock;
                             }
@@ -502,7 +505,7 @@
                     if (newProd.stock) {
                         for (const size in newProd.stock) {
                             const key = `${id}_${size}`;
-                            // Traemos el stock actual del localStorage
+                            // Traemos el stock actual (sincronizado con Firebase)
                             const currentStock = productInventory[key] || 0;
                             newProd.stock[size] = currentStock;
                         }
@@ -581,47 +584,32 @@
             return "Inventario impreso en la consola.";
         }
         
+        // Función de reseteo para pruebas
         window.resetInventoryAndOrders = function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
             generateInitialInventory(); 
-            saveInventoryStorage();
+            saveStockToFirebase(); // Guardar el stock inicial en Firebase
             
             PENDING_ORDERS = [];
             orderIdCounter = 0;
             currentOrder = [];
             saveOrdersStorage();
             
-            renderProductCards();
+            // renderProductCards() será llamado por loadStockFromFirebase()
             
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             if(ordersModal) ordersModal.hide();
             
-            alert("Inventario y órdenes reiniciados con éxito. ¡DEBES RECARGAR LA PÁGINA AHORA (F5) para asegurar una carga limpia!");
+            alert("Inventario y órdenes reiniciados. Recarga la página (F5).");
         }
 
 
         // =======================================================
-        // FUNCIONES DE ALMACENAMIENTO (STORAGE)
+        // FUNCIONES DE ÓRDENES (USA LOCALSTORAGE, ESTÁ BIEN)
         // =======================================================
-
-        function saveInventoryStorage() {
-            localStorage.setItem('productInventory', JSON.stringify(productInventory));
-        }
-
-        function loadInventoryStorage() {
-            const storedInventory = localStorage.getItem('productInventory');
-            if (storedInventory) {
-                const loadedInventory = JSON.parse(storedInventory); 
-                // Asegurar que solo cargamos lo que existe en la configuración inicial
-                for (const key in loadedInventory) {
-                    if (productInventory.hasOwnProperty(key)) {
-                        productInventory[key] = loadedInventory[key];
-                    }
-                }
-            }
-        }
         
+        // Guardar órdenes SÍ usa localStorage porque son específicas de la sesión del cliente
         function saveOrdersStorage() {
             localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
             localStorage.setItem('orderIdCounter', orderIdCounter);
@@ -638,6 +626,57 @@
                 orderIdCounter = parseInt(storedCounter);
             }
         }
+
+
+        // =======================================================
+        // FUNCIONES DE FIREBASE (REEMPLAZAN LOCALSTORAGE PARA INVENTARIO)
+        // =======================================================
+
+        function saveStockToFirebase() {
+            // Guarda el inventario local completo en el nodo 'productInventory' de Firebase.
+            set(stockRef, productInventory)
+                .then(() => {
+                    console.log("Inventario actualizado exitosamente en Firebase.");
+                })
+                .catch((error) => {
+                    console.error("Error al guardar el inventario en Firebase: ", error);
+                    alert("⚠️ Error al actualizar el inventario global. ¡Revisa tus reglas de Firebase! Deben tener .write: 'true'");
+                });
+        }
+
+        function loadStockFromFirebase() {
+            // 1. Cargamos la definición inicial de productos
+            generateInitialInventory(); 
+
+            // 2. Escuchamos el nodo de inventario en Firebase para actualizaciones en tiempo real
+            onValue(stockRef, (snapshot) => {
+                const firebaseInventory = snapshot.val();
+                
+                if (firebaseInventory) {
+                    // Si hay datos en Firebase, sobreescribimos el inventario local con ellos.
+                    for (const key in firebaseInventory) {
+                        if (productInventory.hasOwnProperty(key)) {
+                            // Solo actualizamos las claves que existen en nuestra definición inicial
+                            productInventory[key] = firebaseInventory[key]; 
+                        }
+                    }
+                    console.log("Inventario cargado desde Firebase.");
+                } else {
+                    // Si es la primera vez o la DB está vacía, subimos el inventario inicial.
+                    console.log("Inventario de Firebase vacío. Inicializando con valores por defecto.");
+                    saveStockToFirebase(); 
+                }
+
+                // 3. Renderizar las tarjetas de producto una vez que el stock está cargado.
+                renderProductCards();
+            }, (error) => {
+                console.error("Error al cargar el inventario de Firebase: ", error);
+                alert("Error crítico al cargar el stock de productos. Verifique las reglas de lectura.");
+                // Si hay error, renderizar con el stock inicial como fallback
+                renderProductCards(); 
+            });
+        }
+
 
         // =======================================================
         // LÓGICA DE STOCKS
@@ -1105,7 +1144,6 @@
             });
 
             // 2. APLICAR EL DESCUENTO DEL STOCK (por ID, Color y Talla)
-            // ESTO DESCUENTA EL STOCK SOLO LOCALMENTE (en el navegador del cliente/admin)
             currentOrder.forEach(item => {
                 let key;
                 if (item.color) {
@@ -1121,21 +1159,20 @@
 
             // 3. Limpiar el pedido actual y guardar todo
             currentOrder = [];
-            saveInventoryStorage();
+            saveStockToFirebase(); // <-- 🚨 AHORA GUARDA GLOBALMENTE EN FIREBASE 🚨
             saveOrdersStorage();
             
             // 4. Cerrar el modal y redirigir
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             ordersModal.hide();
 
-            // 5. Rerenderizar las tarjetas 
-            renderProductCards();
+            // 5. Renderizar las tarjetas (esto se hace automáticamente cuando saveStockToFirebase() llama a Firebase)
             
             // 🚨 RECORDATORIO MANUAL (ADMIN) 🚨
             console.log("=================================================");
-            console.log("✅ ¡STOCK LOCAL DESCONTADO! PASO CRÍTICO MANUAL:");
-            console.log("Copia el código ejecutando: window.exportInitialProductsArray();");
-            console.log("Y sube el nuevo 'aplay.html' a GitHub.");
+            console.log("✅ ¡STOCK GLOBALMENTE DESCONTADO! PASO CRÍTICO MANUAL:");
+            console.log("Para que el stock quede fijo, ejecuta: window.exportInitialProductsArray();");
+            console.log("Y sube el nuevo 'aplay.html' con el stock actualizado a GitHub.");
             console.log("=================================================");
             // 🚨 FIN RECORDATORIO 🚨
             
@@ -1143,30 +1180,32 @@
         }
 
         // =======================================================
-        // INICIALIZACIÓN
+        // INICIALIZACIÓN DE FIREBASE Y CÓDIGO DE INICIO
         // =======================================================
 
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCtgsjjbNiS0lv5aLDb8nkpN_9-4sXIJvE",
-      authDomain: "rplay-f04dc.firebaseapp.com",
-      projectId: "rplay-f04dc",
-      storageBucket: "rplay-f04dc.firebasestorage.app",
-      messagingSenderId: "787828282738",
-      appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
-      measurementId: "G-XEKR4KEDMR"
-    };
+        // Configuración de Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyCtgsjjbNiS0lv5aLDb8nkpN_9-4sXIJvE",
+          authDomain: "rplay-f04dc.firebaseapp.com",
+          projectId: "rplay-f04dc",
+          storageBucket: "rplay-f04dc.firebasestorage.app",
+          messagingSenderId: "787828282738",
+          appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
+          measurementId: "G-XEKR4KEDMR"
+        };
 
-    // Inicializar Firebase (usando el objeto global 'firebase' de las nuevas etiquetas script)
-    firebase.initializeApp(firebaseConfig);
-    // Nota: El código de getAnalytics(app) se elimina porque requiere los módulos que causaban error.
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        // Inicializar Realtime Database y la referencia al inventario
+        const database = getDatabase(app); 
+        const stockRef = ref(database, 'productInventory');
 
         document.addEventListener('DOMContentLoaded', () => {
             
             loadOrdersStorage();
             
-            generateInitialInventory();
-            loadInventoryStorage(); // Cargar descuentos si existen en localStorage
+            // === CARGAR INVENTARIO DESDE FIREBASE ===
+            loadStockFromFirebase(); 
 
             document.getElementById('product-list').addEventListener('click', (e) => {
                 const target = e.target.closest('.btn-buy');
@@ -1181,8 +1220,6 @@
                 quantityInput.addEventListener('change', updateTotalAndCheckStock);
                 quantityInput.addEventListener('input', updateTotalAndCheckStock);
             }
-            
-            renderProductCards();
         });
 
     </script>
