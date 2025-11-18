@@ -3,276 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Venta Playera</title>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto:wght@100;400;700&display=swap" rel="stylesheet">
+    <title>RPLAY - Venta de Playeras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
     <style>
-        :root {
-            --primary-color: #A000A0; /* Morado fuerte */
-            --secondary-color: #D300D3; /* Morado claro */
-            --dark-color: #212529;
-            --light-color: #f8f9fa;
-        }
-
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--light-color);
+            background-color: #f8f9fa;
         }
-
-        .navbar {
-            background-color: var(--primary-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
-        }
-
-        .navbar-brand, .nav-link, .btn-cart {
-            color: var(--light-color) !important;
-            font-family: 'Oswald', sans-serif;
-        }
-
-        .navbar-brand {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        .hero {
-            background-color: var(--dark-color);
-            color: var(--light-color);
-            padding: 4rem 0;
-            text-align: center;
-        }
-
-        .hero h1 {
-            font-family: 'Oswald', sans-serif;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
         .product-card {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-            height: 100%; 
-            display: flex;
-            flex-direction: column;
+            border: 1px solid #ddd;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
         }
-
         .product-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,.1);
         }
-
-        .product-card img {
-            width: 100%;
-            height: auto;
-            max-height: 300px; 
-            object-fit: cover;
-        }
-
-        .product-info {
-            padding: 15px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .product-info h5 {
-            font-family: 'Oswald', sans-serif;
-            font-weight: 600;
-            color: var(--dark-color);
-            margin-bottom: 5px;
-        }
-
-        .product-info p {
-            font-size: 1rem;
-            color: #6c757d;
-            margin-bottom: auto; 
-        }
-        
-        .product-price {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-top: 10px;
-            margin-bottom: 15px;
-        }
-
         .btn-buy {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            background-color: #ff3366;
             color: white;
-            transition: background-color 0.2s;
-        }
-
-        .btn-buy:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-            color: white;
-        }
-        
-        /* Contador del Carrito */
-        .cart-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            padding: 4px 8px;
-            border-radius: 50%;
-            background-color: #dc3545; /* Rojo */
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 700;
-            line-height: 1;
-            transform: translate(50%, -50%);
-        }
-        
-        .btn-cart {
-            position: relative;
-            background-color: transparent !important;
             border: none;
-            padding: 0;
-            margin-left: 15px;
         }
-        
-        /* Modal de Carrito y Detalles */
-        .modal-header {
-            background-color: var(--primary-color);
+        .btn-buy:hover {
+            background-color: #e6004b;
             color: white;
-            border-bottom: 1px solid var(--secondary-color);
         }
-        .modal-header .btn-close {
-            filter: invert(1);
+        /* ESTO OCULTA EL BADGE DE STOCK EN LA TARJETA Y EN EL MODAL DE DETALLE */
+        .stock-badge, #stockIndicator {
+            display: none !important; 
         }
-        
-        .cart-item {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
+        .carousel-item img {
+            max-height: 500px;
+            object-fit: contain;
         }
-        
-        .cart-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            margin-right: 15px;
-            border-radius: 5px;
-        }
-        
-        .item-details {
-            flex-grow: 1;
-        }
-        
-        .item-details h6 {
-            margin-bottom: 2px;
-            font-family: 'Oswald', sans-serif;
-        }
-        
-        .item-details small {
-            color: #6c757d;
-        }
-        
-        .btn-remove {
-            color: #dc3545;
+        /* Estilo para el botón de WhatsApp fijo */
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #25d366;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 60px;
+            font-size: 30px;
+            z-index: 1000;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
             cursor: pointer;
-            margin-left: 10px;
+            transition: background-color 0.3s;
         }
-        
-        .cart-summary {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 2px solid var(--primary-color);
+        .whatsapp-button:hover {
+            background-color: #128c7e;
         }
-
-        .out-of-stock {
-            opacity: 0.6;
-            pointer-events: none;
-            position: relative;
+        .whatsapp-button i {
+            display: inline-block;
+            transform: translateY(10%);
         }
-
-        .out-of-stock::before {
-            content: "AGOTADO";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 0, 0, 0.4);
-            color: white;
-            font-family: 'Oswald', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
+        /* Estilos para el carrusel de imágenes */
+        .carousel-indicators [data-bs-target] {
+            background-color: #ff3366;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            opacity: 0.5;
         }
-        
-        .stock-level {
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-top: 5px;
-            color: #dc3545;
+        .carousel-indicators .active {
+            opacity: 1;
         }
-
-        .stock-low {
-            color: orange;
-        }
-        .stock-ok {
-            color: green;
-        }
-
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">VENTA PLAYERA</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#catalogue">Catálogo</a>
-                    </li>
-                    <li class="nav-item">
-                        <button class="btn btn-cart" data-bs-toggle="modal" data-bs-target="#ordersModal">
-                            <i class="fas fa-shopping-cart fa-2x"></i>
-                            <span class="cart-badge" id="cart-count">0</span>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <a href="https://wa.me/529991480151" target="_blank" class="whatsapp-button" title="Haz tu pedido por WhatsApp">
+        &#x2705; 
+    </a>
 
-    <header class="hero">
-        <div class="container">
-            <h1>Descubre la Colección Oficial</h1>
-            <p class="lead">Las mejores playeras con diseños únicos, listas para tu próximo pedido.</p>
+    <header class="p-3 mb-4 bg-white shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <img src='https://ventaplayera.github.io/RPLAY/logo.png' style="max-width: 150px; height: auto;">
+            <h1 class="h3 text-primary d-none d-md-block">RPLAY</h1>
+            <button class="btn btn-outline-secondary" onclick="openOrdersModal()">
+                Pedidos <span class="badge text-bg-primary" id="ordersCounter">0</span>
+            </button>
         </div>
     </header>
 
-    <section id="catalogue" class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-5" style="font-family: 'Oswald', sans-serif;">👕 Catálogo Completo</h2>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="products-container">
-                </div>
-        </div>
-    </section>
-    
-    <footer class="bg-dark text-white py-4 mt-5">
-        <div class="container text-center">
-            <p>&copy; 2024 Venta Playera. Todos los derechos reservados.</p>
-        </div>
-    </footer>
+    <main class="container">
+        <div class="row" id="product-list">
+            </div>
+
+        </main>
 
     <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -283,38 +103,53 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <img id="detail-front-image" src="" alt="Frente" class="img-fluid mb-3">
-                            <img id="detail-back-image" src="" alt="Espalda" class="img-fluid" style="display:none;">
-                            <div class="d-flex justify-content-center mt-3">
-                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="showFrontImage()">Frente</button>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="showBackImage()">Espalda</button>
+                        <div class="col-md-6 mb-3">
+                            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-indicators" id="carouselIndicators">
+                                    </div>
+                                <div class="carousel-inner" id="carouselInner">
+                                    </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <h2 id="detail-name" class="fw-bold" style="font-family: 'Oswald', sans-serif;"></h2>
-                            <p id="detail-description"></p>
-                            <div class="product-price mb-3" id="detail-price"></div>
+                            <h2 id="modalProductName" class="text-primary"></h2>
+                            <p id="modalProductDescription" class="text-muted"></p>
                             
-                            <div class="mb-3">
-                                <label for="detail-size" class="form-label fw-bold">Talla:</label>
-                                <select class="form-select" id="detail-size">
-                                    <option value="XS">XS</option>
-                                    <option value="S">S</option>
-                                    <option value="M" selected>M</option>
-                                    <option value="L">L</option>
-                                    <option value="XL">XL</option>
-                                </select>
-                            </div>
+                            <h3 id="modalProductPrice" class="my-3 text-success"></h3>
                             
-                            <div class="mb-3">
-                                <label for="detail-quantity" class="form-label fw-bold">Cantidad:</label>
-                                <input type="number" class="form-control" id="detail-quantity" value="1" min="1" max="100">
-                            </div>
+                            <form id="orderForm">
+                                <input type="hidden" id="modalProductId" name="productId">
 
-                            <div id="detail-stock-level" class="stock-level mb-3"></div>
+                                <div class="mb-3" id="colorSelectContainer" style="display:none;">
+                                    <label for="colorSelect" class="form-label">Color:</label>
+                                    <select class="form-select" id="colorSelect" name="color">
+                                        </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="sizeSelect" class="form-label">Talla:</label>
+                                    <select class="form-select" id="sizeSelect" name="size" required>
+                                        </select>
+                                </div>
 
-                            <button class="btn btn-lg btn-buy w-100" id="add-to-order-button"><i class="fas fa-shopping-cart"></i> Agregar al Pedido</button>
+                                <div class="mb-3">
+                                    <label for="quantityInput" class="form-label">Cantidad:</label>
+                                    <input type="number" class="form-control" id="quantityInput" name="quantity" value="1" min="1" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <span id="stockIndicator" class="badge"></span>
+                                </div>
+
+                                <button type="submit" class="btn btn-buy w-100" id="addToOrderButton">Añadir al Pedido</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -325,644 +160,1017 @@
     <div class="modal fade" id="ordersModal" tabindex="-1" aria-labelledby="ordersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="ordersModalLabel"><i class="fas fa-receipt"></i> Tu Pedido Actual</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="ordersModalLabel">Mi Pedido</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="cart-items-container">
-                        </div>
+                    <ul class="list-group mb-4" id="currentOrdersList">
+                        <li class="list-group-item text-center text-muted" id="emptyOrdersMessage" style="display: none;">Tu pedido está vacío.</li>
+                    </ul>
+
+                    <h4 class="mb-3">Total a Pagar: <span id="ordersTotal" class="text-success">$0.00</span></h4>
                     
-                    <div class="alert alert-warning text-center" role="alert" id="empty-cart-message" style="display:none;">
-                        Tu carrito está vacío. ¡Agrega tu primera playera!
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="" id="halfPaymentCheck">
+                        <label class="form-check-label" for="halfPaymentCheck">
+                            Pagar el 50% de anticipo (<span id="halfPaymentAmount">$0.00</span>)
+                        </label>
                     </div>
 
-                    <div class="cart-summary d-flex justify-content-between">
-                        <span>Total:</span>
-                        <span id="cart-total">$0</span>
+                    <hr>
+
+                    <form id="clientDataForm" class="mt-4">
+                        <h5 class="text-primary">Datos para Envío y Contacto</h5>
+                        <div class="mb-3">
+                            <label for="clientName" class="form-label">Nombre Completo:</label>
+                            <input type="text" class="form-control" id="clientName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clientAddress" class="form-label">Dirección de Correo</label>
+                            <textarea class="form-control" id="clientAddress" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clientPhone" class="form-label">Teléfono (WhatsApp):</label>
+                            <input type="tel" class="form-control" id="clientPhone" required>
+                        </div>
+                    </form>
+
+                    <div id="paymentDetailsSection" style="display: none;">
+                        <hr>
+                        <h5 class="text-primary">Datos de Transferencia Bancaria</h5>
+                        <p class="mb-1"><strong>Banco:</strong>BBVA</p>
+                        <p class="mb-1"><strong>Número de Cuenta:</strong> 4152314029419622</p>
+                        <p class="mb-1"><strong>Beneficiario:</strong> RPLAY</p>
+                        
+                        <p class="mt-3 text-muted">Una vez hecha la transferencia o depósito, presiona "Enviar Pedido por WhatsApp" y adjunta tu comprobante.</p>
                     </div>
 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
-                    <button type="button" class="btn btn-success" id="finalize-order-button" style="display:none;"><i class="fab fa-whatsapp"></i> Finalizar Pedido por WhatsApp</button>
+                    <button type="button" class="btn btn-buy" id="finalizeOrderButton" disabled onclick="sendOrderToWhatsapp()">
+                        Enviar Pedido por WhatsApp
+                    </button>
                 </div>
+            </div>
             </div>
         </div>
     </div>
-
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="module">
+        // =======================================================
+        // 🚨 FIREBASE MODULE IMPORTS 🚨 (VERSION 9 MODULAR)
+        // =======================================================
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js';
+        
+        // =======================================================
+        // DECLARACIÓN DE VARIABLES GLOBALES Y CONSTANTES
+        // =======================================================
+        const PRODUCT_PRICE = 250.00; 
+        const MINIMUM_TO_SHIP = 1;   
+        const WHATSAPP_NUMBER = '529991480151'; 
+        
+        // --- CONSTANTES DE IMAGEN ---
+        const IMAGE_EXTENSION = '.png';
+        const GENERIC_SIDE_IMAGE_BASE = 'medidas.png'; // Usamos la extensión aquí para que getImageUrl la respete
+        const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
+        const GENERIC_SIDE_PLACEHOLDER = 'generic_side_image_placeholder';
 
-    <script>
-        // ====================================================================
-        // === 1. CONFIGURACIÓN INICIAL =======================================
-        // ====================================================================
+        let productData = []; 
+        let productInventory = {}; 
+        let currentOrder = []; 
 
-        // ** LA URL DE FIREBASE HA SIDO CORREGIDA Y REEMPLAZADA **
-        const firebaseConfig = {
-            databaseURL: "https://rplay-f04dc-default-rtdb.firebaseio.com", 
-        };
+        let orderIdCounter = 0;
+        let PENDING_ORDERS = []; 
 
-        // La carpeta donde están las imágenes dentro de tu repositorio (ej: RPLAY/)
-        const IMAGE_PATH = "RPLAY/";
 
-        // ID del producto actualmente abierto en el modal de detalles
-        let currentProductId = null;
-
-        // Lista de productos con el stock inicial (solo se usa si Firebase está vacío)
-        // ** NOTA: Usamos .png en minúscula para evitar problemas de case-sensitivity en GitHub. **
+        // =======================================================
+        // DEFINICIÓN DE PRODUCTOS ORIGINALES (USADA PARA INICIALIZAR Y EXPORTAR)
+        // =======================================================
         const ORIGINAL_PRODUCTS_DEFINITION = [
-            // El formato es: [ID_ÚNICO, Nombre, Descripción, Precio, Archivo_Frente, Archivo_Espalda, Stock_Inicial]
-            ["P30", "Playera Gon1", "Diseño gráfico con toques abstractos en negro.", 250, "Gon1.png", "Gon3.png", 200],
-            ["P1", "Playera Katy", "Diseño Minimalista de Katy.", 200, "Katy3.png", "Katy3.png", 200],
-            ["P2", "Playera Bere", "Diseño Minimalista de Bere.", 200, "Bere1.png", "Bere3.png", 200],
-            ["P3", "Playera Dan", "Diseño Minimalista de Dan.", 200, "Dan1.png", "Dan3.png", 200],
-            ["P4", "Playera Gera", "Diseño Minimalista de Gera.", 200, "Gera1.png", "Gera3.png", 200],
-            ["P5", "Playera Bra", "Diseño Minimalista de Bra.", 200, "Bra1.png", "Bra3.png", 200],
-            ["P6", "Playera Adri", "Diseño Minimalista de Adri.", 200, "Adri1.png", "Adri3.png", 200],
-            ["P7", "Playera Aro", "Diseño Minimalista de Aro.", 200, "Aro1.png", "Aro5.png", 200],
-            ["P8", "Playera Xim", "Diseño Minimalista de Ximena.", 200, "Xim1.png", "Xim3.png", 200]
+            // Modelos estándar (estructura simple)
+            { i: 1, name: 'BTS', description: 'Playera Modelo 1', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'xime1', backFile: 'Xime2', sideFile: 'blanco' },
+            { i: 2, name: 'BTS', description: 'Playera Modelo 2', stock: { 'M': 1, 'L' :1, 'XL': 1}, frontFile: 'Xime3', backFile: 'Xime4', sideFile: 'negro' },
+            { i: 3, name: 'MICHAEL JACKSON', description: 'Playera Modelo 3', stock:{ 'S':1, 'M':1, 'L': 1 },  frontFile: 'Abi1', backFile: 'Abi2', sideFile: 'blanco' },
+            
+            // ... (Modelos del 4 al 41 - Mantenidos con frontFile/backFile simple)
+            { i: 4, name: 'MICHAEL JACKSON', description: 'Playera Modelo 4', stock: {'L': 1 }, frontFile: 'Abi3', backFile: 'Abi4', sideFile: 'negro' },
+            { i: 5, name: 'ADO', description: 'Playera Modelo 5', stock: {'XL': 1 }, frontFile: 'Lucy1', backFile: 'Lucy2', sideFile: 'blanco' },
+            { i: 6, name: 'ADO', description: 'Playera Modelo 6', stock: { 'M': 1, 'L': 1, 'XL':2 }, frontFile: 'Lucy3', backFile: 'Lucy4', sideFile: 'negro' },
+            { i: 7, name: 'BRUNO MARS', description: 'Playera Modelo 7', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Raul1', backFile: 'Raul2', sideFile: 'negro' },
+            { i: 8, name: 'BRUNO MARS', description: 'Playera Modelo 8', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Raul3', backFile: 'Raul4', sideFile: 'negro' },
+            { i: 9, name: 'LATIN MAFIA', description: 'Playera Modelo 9', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dani1', backFile: 'Dani2', sideFile: 'blanco' },
+            { i: 10, name: 'LATIN MAFIA', description: 'Playera Modelo 10', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dani3', backFile: 'Dani4', sideFile: 'negro' },
+            { i: 11, name: 'AESPA', description: 'Playera Modelo 11', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dali1', backFile: 'Dali2', sideFile: 'negro' },
+            { i: 12, name: 'AESPA', description: 'Playera Modelo 12', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Dali3', backFile: 'Dali4', sideFile: 'negro' },
+            { i: 13, name: 'BILLIE EILISH', description: 'Playera Modelo 13', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Yose1', backFile: 'Yose2', sideFile: 'negro' },
+            { i: 14, name: 'BILLIE EILISH', description: 'Playera Modelo 14', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Yose3', backFile: 'Yose4', sideFile: 'negro' },
+            { i: 15, name: 'LANA DEL REY', description: 'Playera Modelo 15', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Keila1', backFile: 'Keila2', sideFile: 'blanco' },
+            { i: 16, name: 'LANA DEL REY', description: 'Playera Modelo 16', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Keila3', backFile: 'Keila4', sideFile: 'negro' },
+            { i: 17, name: 'MY CHEMICAL ROMANCE', description: 'Playera Modelo 17', stock: { 'M': 1, 'L': 1, 'XL':1 },  frontFile: 'Kenji1', backFile: 'Kenji2', sideFile: 'negro' },
+            { i: 18, name: 'MY CHEMICAL ROMANCE', description: 'Playera Modelo 18', stock: { 'M': 1, 'L': 1, 'XL':1 },  frontFile: 'Kenji3', backFile: 'Kenji4', sideFile: 'negro' },
+            { i: 19, name: 'TWENTY ONE PILOTS', description: 'Playera Modelo 19', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Alli1', backFile: 'Alli2', sideFile: 'negro' },
+            { i: 20, name: 'TWENTY ONE PILOTS', description: 'Playera Modelo 20', stock: { 'M': 1, 'L': 1, 'XL':1 },frontFile: 'Alli3', backFile: 'Alli4', sideFile: 'negro' },
+            { i: 21, name: 'SELENA QUINTANILLA', description: 'Playera Modelo 21', stock: { 'XL':1 }, frontFile: 'Ale1', backFile: 'Ale2', sideFile: 'arena' },
+            { i: 22, name: 'OLIVIA RODRIGO', description: 'Playera Modelo 22', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Miri1', backFile: 'Miri2', sideFile: 'negro' },
+            { i: 23, name: 'OLIVIA RODRIGO', description: 'Playera Modelo 23', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Miri3', backFile: 'Miri4', sideFile: 'negro' },
+            { i: 24, name: 'BAD BUNNY', description: 'Playera Modelo 24', stock: { 'M': 1, 'XL':1 }, frontFile: 'Didi1', backFile: 'Didi2', sideFile: 'negro' },
+            { i: 25, name: 'BAD BUNNY', description: 'Playera Modelo 25', stock: { 'L': 1, 'XL':1 }, frontFile: 'Didi3', backFile: 'Didi4', sideFile: 'arena' },
+            { i: 26, name: 'Taylor SWIFT', description: 'Playera Modelo 26', stock:{ 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale1', backFile: 'Vale2', sideFile: 'arena' },
+            { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
+            { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
+            { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
+            // 🚨 CORRECCIÓN CRÍTICA DE IMAGEN: Usamos el nombre de archivo EXACTO con mayúsculas/minúsculas
+            { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1.PNG', backFile: 'Gon2.PNG', sideFile: 'negro' },
+            { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
+            { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
+            { i: 33, name: 'TAYLOR SWIFT', description: 'Playera Modelo 33', stock: { 'S': 1, 'M': 1, 'L':1 },frontFile: 'Bere3', backFile: 'Bere4', sideFile: 'negro2' },
+            { i: 34, name: 'BTS', description: 'Playera Modelo 34', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Dan1', backFile: 'Dan2', sideFile: 'negro2' },
+            { i: 35, name: 'BTS', description: 'Playera Modelo 35', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Dan3', backFile: 'Dan4', sideFile: 'negro2' },
+            { i: 36, name: 'NCT DREAM', description: 'Playera Modelo 36', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Gera1', backFile: 'Gera2', sideFile: 'negro2' },
+            { i: 37, name: 'NCT DREAM', description: 'Playera Modelo 37', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Gera3', backFile: 'Gera4', sideFile: 'negro2' },
+            { i: 38, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 38', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bra1', backFile: 'Bra2', sideFile: 'negro2' },
+            { i: 39, name: 'HUNTRIX/SAJA BOYS', description: 'Playera Modelo 39', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bra3', backFile: 'Bra4', sideFile: 'negro2' },
+            { i: 40, name: 'HOZIER', description: 'Playera Modelo 40', stock:  { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri1', backFile: 'Adri2', sideFile: 'negro2' },
+            { i: 41, name: 'HOZIER', description: 'Playera Modelo 41', stock:  { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri3', backFile: 'Adri4', sideFile: 'blanco2' },
+           
+            // --- MODELOS CON OPCIÓN DE COLOR ---
+            { 
+                i: 42, 
+                name: 'BLACKPINK', 
+                description: 'Modelo 42 con opción de color', 
+                colors: ['Negro', 'Blanco'], 
+                isColorProduct: true,
+                stockByColor: { 
+                    'Blanco': { 'S': 1, 'M': 1 },
+                    'Negro': { 'L': 1 }
+                },
+                colorMap: { 
+                    'Negro': { front: 'Aro1', back: 'Aro2', side: 'negro2' },
+                    'Blanco': { front: 'Aro3', back: 'Aro4', side: 'blanco2' }
+                }
+            },
+            { 
+                i: 43, 
+                name: 'BLACKPINK', 
+                description: 'Modelo 43 con opción de color', 
+                colors: [ 'Negro','Blanco'], 
+                isColorProduct: true,
+                stockByColor: { 
+                    'Blanco': { 'S': 1, 'M': 1 },
+                    'Negro': { 'L': 1 }
+                },
+                colorMap: { 
+                    'Negro': { front: 'Aro5', back: 'Aro6', side: 'negro2' },
+                    'Blanco': { front: 'Aro7', back: 'Aro8', side: 'blanco2'}
+                }
+            },
         ];
 
 
-        // ====================================================================
-        // === 2. VARIABLES Y ESTRUCTURAS DE DATOS ============================
-        // ====================================================================
-        
-        let products = {}; // Objeto que almacenará los datos de los productos, incluyendo el stock real de Firebase
-        let cart = {};     // El carrito de compras (ID_Producto_Talla: {id, name, price, size, quantity})
-        let nextOrderId = 1; // Contador de pedidos. Se leerá de Firebase.
+        // =======================================================
+        // FUNCIÓN DE INVENTARIO INICIAL (CONFIGURACIÓN DE STOCK POR TALLA/COLOR)
+        // =======================================================
 
+        function generateInitialInventory() {
+            // Limpiar datos globales antes de regenerar
+            productData.length = 0; 
+            for (const key in productInventory) { delete productInventory[key]; }
 
-        // ====================================================================
-        // === 3. INICIALIZACIÓN DE FIREBASE (CORRECCIÓN CRÍTICA APLICADA) ====
-        // ====================================================================
+            // --- STOCK BASE PARA MODELOS NO DEFINIDOS (MÁXIMO 2 TALLAS) ---
+            const defaultStock = { 'M': 1, 'L': 1 }; 
+            
+            const initialProducts = ORIGINAL_PRODUCTS_DEFINITION; 
+            
 
-        // Inicializar Firebase
-        // ** SE ELIMINÓ EL BLOQUE TRY/CATCH para evitar ReferenceError: inventoryRef is not defined **
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database();
-        
-        // Referencias a la base de datos (Ahora son globales y accesibles)
-        const inventoryRef = db.ref('inventory');
-        const ordersRef = db.ref('orders');
-        const orderCounterRef = db.ref('nextOrderId');
-        
-
-
-        // ====================================================================
-        // === 4. FUNCIONES DEL INVENTARIO (Firebase) =========================
-        // ====================================================================
-
-        /**
-         * Inicializa el inventario en Firebase con el stock maestro
-         * si el nodo 'inventory' está vacío.
-         */
-        function initializeInventory(snapshot) {
-            if (snapshot.val() === null || Object.keys(snapshot.val()).length === 0) {
-                console.warn("Firebase Inventory vacío. Subiendo stock inicial...");
-                const initialInventory = {};
-                ORIGINAL_PRODUCTS_DEFINITION.forEach(([id, name, desc, price, front, back, stock]) => {
-                    initialInventory[id] = {
-                        id,
-                        name,
-                        description: desc,
-                        price,
-                        frontFile: front,
-                        backFile: back,
-                        stock: stock 
-                    };
-                });
-                
-                inventoryRef.set(initialInventory)
-                    .then(() => {
-                        console.log("Inventario inicial subido exitosamente a Firebase.");
-                    })
-                    .catch(error => {
-                        console.error("Error al subir inventario inicial:", error);
-                        // Esto fallará si las reglas de seguridad no dan permiso de escritura en 'inventory'
-                        alert("Error al subir el inventario inicial. ¡Revisa y publica las reglas de seguridad de Firebase!");
+            // Rellenar hasta el modelo 43 con stock por defecto si no están definidos
+            const MAX_MODELS = 43;
+            const existingIndices = initialProducts.map(p => p.i);
+            
+            for (let i = 1; i <= MAX_MODELS; i++) {
+                if (!existingIndices.includes(i)) {
+                    initialProducts.push({
+                        i: i,
+                        name: `Playera Modelo No. ${i} (Faltan Imágenes)`,
+                        description: `Diseño exclusivo #${i}. ¡Modifica este texto!`,
+                        stock: defaultStock,
+                        frontFile: `xime${i}_frente_DEFAULT`, 
+                        backFile: `xime${i}_espalda_DEFAULT`,
+                        sideFile: GENERIC_SIDE_PLACEHOLDER
                     });
-            } else {
-                console.log("Inventario cargado desde Firebase.");
+                }
             }
-        }
-        
-        /**
-         * Lee el stock actual de Firebase, lo almacena en 'products'
-         * y vuelve a renderizar el catálogo.
-         */
-        inventoryRef.on('value', (snapshot) => {
-            initializeInventory(snapshot); // Asegura que el stock exista
-            products = snapshot.val() || {};
-            renderProducts();
-            updateCartDisplay(); // Actualiza el carrito si el stock cambia
-        }, (errorObject) => {
-            console.error("Fallo la lectura del inventario:", errorObject);
-            // La alerta de 'permission_denied' se verá si las reglas no se publican.
-            alert("Hubo un error al conectar con el inventario en tiempo real. Revisa tu conexión de Firebase y las reglas de seguridad. (" + errorObject.message + ")");
-        });
-
-        /**
-         * Lee el contador del próximo pedido.
-         */
-        orderCounterRef.on('value', (snapshot) => {
-            if (snapshot.exists()) {
-                nextOrderId = snapshot.val();
-                console.log(`Próximo ID de Pedido: #${nextOrderId}`);
-            } else {
-                // Si el contador no existe, lo inicializa
-                orderCounterRef.set(1);
-                nextOrderId = 1;
-            }
-        }, (errorObject) => {
-            console.error("Fallo la lectura del contador de pedidos:", errorObject);
-        });
-
-        // ====================================================================
-        // === 5. FUNCIONES DE RENDERIZADO ====================================
-        // ====================================================================
-
-        /**
-         * Genera el HTML de una tarjeta de producto.
-         */
-        function createProductCard(product) {
-            const stock = product.stock;
-            const isOutOfStock = stock <= 0;
-            let stockHtml = '';
-            let cardClasses = 'product-card h-100';
-
-            if (isOutOfStock) {
-                cardClasses += ' out-of-stock';
-                stockHtml = '<div class="stock-level text-danger fw-bold">AGOTADO</div>';
-            } else if (stock <= 5) {
-                stockHtml = `<div class="stock-level stock-low"><i class="fas fa-exclamation-triangle"></i> ¡Últimas ${stock} unidades!</div>`;
-            } else {
-                stockHtml = `<div class="stock-level stock-ok">En Stock: ${stock}</div>`;
-            }
-
-            return `
-                <div class="col">
-                    <div class="${cardClasses}">
-                        <img src="${IMAGE_PATH}${product.frontFile}" class="card-img-top" alt="${product.name} - Frente" onerror="this.onerror=null;this.src='${IMAGE_PATH}default.png';">
-                        <div class="product-info">
-                            <h5 class="card-title">${product.name}</h5>
-                            <p class="card-text">${product.description}</p>
-                            ${stockHtml}
-                            <div class="product-price">$${product.price.toLocaleString('es-MX')}</div>
-                            <button class="btn btn-buy mt-auto" onclick="openProductDetail('${product.id}')" ${isOutOfStock ? 'disabled' : ''}>
-                                <i class="fas fa-eye"></i> Ver Detalles
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Renderiza todos los productos en el contenedor principal.
-         */
-        function renderProducts() {
-            const container = document.getElementById('products-container');
-            container.innerHTML = '';
-            
-            // Convierte el objeto products en un array y lo ordena por ID
-            const productArray = Object.values(products);
-            
-            // ** CORRECCIÓN LÓGICA: Se añade una verificación para evitar el error 'localeCompare' si el array está vacío o mal formado **
-            if (productArray.length === 0 || productArray.some(p => typeof p.id === 'undefined')) {
-                console.error("No se pudo renderizar el catálogo. Datos de Firebase incompletos o nulos.");
-                container.innerHTML = `<div class="col-12"><div class="alert alert-danger text-center">No se pudo cargar el catálogo. Revisa la consola y las reglas de seguridad de Firebase.</div></div>`;
-                return;
-            }
-
-            // Ordena los productos por ID (Esto causó el error TypeError: Cannot read properties of undefined)
-            productArray.sort((a, b) => a.id.localeCompare(b.id));
+            initialProducts.sort((a, b) => a.i - b.i);
 
 
-            productArray.forEach(product => {
-                const cardHtml = createProductCard(product);
-                container.innerHTML += cardHtml;
+            // --- LÓGICA DE PROCESAMIENTO ---
+            initialProducts.forEach(prod => {
+                const i = prod.i;
+                const id = `PROD_${String(i).padStart(3, '0')}`;
+
+                let modelSizes = [];
+                let mainImg = '';
+                
+                if (prod.isColorProduct && prod.stockByColor) {
+                    // --- PROCESAR PRODUCTOS CON COLOR (NUEVA ESTRUCTURA) ---
+                    const availableColors = Object.keys(prod.stockByColor);
+                    
+                    availableColors.forEach(color => {
+                        const colorStock = prod.stockByColor[color];
+                        const colorSizes = Object.keys(colorStock);
+                        
+                        colorSizes.forEach(size => {
+                            const stockAmount = colorStock[size];
+                            if (stockAmount > 0) {
+                                // CLAVE DE INVENTARIO: PROD_042_Blanco_S
+                                const key = `${id}_${color}_${size}`;
+                                productInventory[key] = stockAmount;
+                                
+                                if (!modelSizes.includes(size)) {
+                                    modelSizes.push(size);
+                                }
+                            }
+                        });
+                    });
+                    
+                    // Imagen principal de la tarjeta: usa la imagen de frente del primer color
+                    if (prod.colors.length > 0 && prod.colorMap[prod.colors[0]]) {
+                        const fileBase = prod.colorMap[prod.colors[0]].front;
+                        mainImg = getImageUrl(fileBase); 
+                    } else {
+                        mainImg = getImageUrl('fallback_default.png'); 
+                    }
+                    
+                } else {
+                    // --- PROCESAR PRODUCTOS ESTÁNDAR (ESTRUCTURA ANTIGUA) ---
+                    modelSizes = Object.keys(prod.stock).filter(size => prod.stock[size] > 0); 
+                    
+                    modelSizes.forEach(size => {
+                        const stockAmount = prod.stock[size];
+                        if (stockAmount > 0) {
+                           // CLAVE DE INVENTARIO: PROD_001_M
+                           productInventory[`${id}_${size}`] = stockAmount;
+                        }
+                    });
+                    
+                    // Imagen principal de la tarjeta: usa la base del frontFile
+                    mainImg = getImageUrl(prod.frontFile);
+                }
+
+                // --- CREACIÓN DEL OBJETO PRODUCTO ---
+                const product = {
+                    id: id,
+                    name: prod.name,
+                    description: prod.description, 
+                    price: PRODUCT_PRICE,
+                    sizes: modelSizes.sort(), 
+                    colors: prod.colors || [], 
+                    isColorProduct: prod.isColorProduct || false,
+                    colorMap: prod.colorMap || {},
+                    stockByColor: prod.stockByColor || {},
+                    
+                    mainImg: mainImg,
+                    
+                    // Guardar bases estándar (solo para no color)
+                    frontFileBase: prod.frontFile || '',
+                    backFileBase: prod.backFile || '',
+                    sideFileBase: prod.sideFile || GENERIC_SIDE_PLACEHOLDER,
+                };
+
+                productData.push(product);
             });
         }
+
+        // =======================================================
+        // FUNCIÓN DE ADMINISTRACIÓN OCULTA (SOLO COMANDOS)
+        // =======================================================
         
-        /**
-         * Abre el modal de detalles del producto.
-         */
-        function openProductDetail(productId) {
-            currentProductId = productId;
-            const product = products[productId];
-            
-            if (!product) return;
-
-            // Llenar el modal
-            document.getElementById('detail-name').textContent = product.name;
-            document.getElementById('detail-description').textContent = product.description;
-            document.getElementById('detail-price').textContent = `$${product.price.toLocaleString('es-MX')}`;
-            
-            // Imágenes (siempre mostrar el frente por defecto)
-            const frontImage = document.getElementById('detail-front-image');
-            const backImage = document.getElementById('detail-back-image');
-
-            frontImage.src = IMAGE_PATH + product.frontFile;
-            backImage.src = IMAGE_PATH + (product.backFile || product.frontFile); // Si no hay back, usa front
-            
-            // Manejo de error de imagen para la principal
-            frontImage.onerror = function() { this.onerror=null; this.src=IMAGE_PATH + 'default.png'; };
-            backImage.onerror = function() { this.onerror=null; this.src=IMAGE_PATH + 'default.png'; };
-
-            showFrontImage();
-
-            // Stock
-            const stock = product.stock;
-            const stockElement = document.getElementById('detail-stock-level');
-            const addButton = document.getElementById('add-to-order-button');
-            const quantityInput = document.getElementById('detail-quantity');
-            
-            if (stock <= 0) {
-                stockElement.innerHTML = '<span class="text-danger fw-bold">¡AGOTADO!</span>';
-                addButton.disabled = true;
-                quantityInput.max = 0;
-            } else if (stock <= 5) {
-                stockElement.innerHTML = `<span class="text-warning fw-bold"><i class="fas fa-exclamation-triangle"></i> ¡Últimas ${stock} unidades!</span>`;
-                addButton.disabled = false;
-                quantityInput.max = stock;
-            } else {
-                stockElement.innerHTML = `<span class="text-success fw-bold">Disponible: ${stock} unidades</span>`;
-                addButton.disabled = false;
-                quantityInput.max = stock;
+        // 🚨 FUNCIÓN DE IMAGEN CORREGIDA: Usa el nombre de archivo EXACTO para respetar mayúsculas
+        function getImageUrl(fileName) {
+            // Usa el nombre de archivo EXACTO (incluyendo mayúsculas/minúsculas)
+            // Si el archivo NO tiene extensión, añade la estándar (.png)
+            if (!fileName.includes('.')) {
+                fileName = fileName + IMAGE_EXTENSION;
             }
             
-            // Asegura que la cantidad seleccionada no exceda el stock
-            if (parseInt(quantityInput.value) > stock) {
-                quantityInput.value = stock > 0 ? 1 : 0;
-            }
+            return `${GITHUB_BASE_URL}${fileName}`;
+        }
+        
+        // 🚨 TODAS LAS FUNCIONES DE WINDOW. DEBEN SER EXPLÍCITAS PARA UN MÓDULO
+        window.exportInitialProductsArray = function() {
+            
+            console.log("\n==============================================");
+            console.log("     CÓDIGO DE INVENTARIO ACTUALIZADO (ADMIN)");
+            console.log("==============================================");
+            
+            const newProductsDefinition = JSON.parse(JSON.stringify(ORIGINAL_PRODUCTS_DEFINITION));
+            const exportedArray = [];
 
-            // Asignar evento al botón de agregar
-            addButton.onclick = () => {
-                const size = document.getElementById('detail-size').value;
-                const quantity = parseInt(quantityInput.value);
+            newProductsDefinition.forEach(prod => {
+                const i = prod.i;
+                const id = `PROD_${String(i).padStart(3, '0')}`; 
                 
-                if (quantity > 0 && quantity <= stock) {
-                    addToCart(productId, size, quantity);
-                    // Opcional: Cerrar el modal después de agregar
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
-                    modal.hide();
+                const newProd = JSON.parse(JSON.stringify(prod));
+
+                if (newProd.isColorProduct) {
+                    if (newProd.stockByColor) {
+                        for (const color in newProd.stockByColor) {
+                            for (const size in newProd.stockByColor[color]) {
+                                const key = `${id}_${color}_${size}`;
+                                const currentStock = productInventory[key] || 0; 
+                                newProd.stockByColor[color][size] = currentStock;
+                            }
+                        }
+                    }
                 } else {
-                    alert('Por favor, selecciona una cantidad válida (1-' + stock + ').');
+                    if (newProd.stock) {
+                        for (const size in newProd.stock) {
+                            const key = `${id}_${size}`;
+                            const currentStock = productInventory[key] || 0;
+                            newProd.stock[size] = currentStock;
+                        }
+                    }
                 }
-            };
-
-            const detailModal = new bootstrap.Modal(document.getElementById('productDetailModal'));
-            detailModal.show();
-        }
-        
-        /**
-         * Muestra la imagen del frente en el modal de detalles.
-         */
-        window.showFrontImage = function() {
-            document.getElementById('detail-front-image').style.display = 'block';
-            document.getElementById('detail-back-image').style.display = 'none';
-        }
-        
-        /**
-         * Muestra la imagen de la espalda en el modal de detalles.
-         */
-        window.showBackImage = function() {
-            document.getElementById('detail-front-image').style.display = 'none';
-            document.getElementById('detail-back-image').style.display = 'block';
-        }
-
-        // ====================================================================
-        // === 6. FUNCIONES DEL CARRITO =======================================
-        // ====================================================================
-
-        /**
-         * Agrega un producto al carrito.
-         */
-        function addToCart(id, size, quantity) {
-            const key = `${id}_${size}`;
-            const product = products[id];
-            
-            if (!product) return;
-
-            if (cart[key]) {
-                cart[key].quantity += quantity;
-            } else {
-                cart[key] = {
-                    id: id,
-                    name: product.name,
-                    price: product.price,
-                    size: size,
-                    quantity: quantity,
-                    frontFile: product.frontFile
-                };
-            }
-            
-            saveCart();
-            updateCartDisplay();
-            alert(`Se agregaron ${quantity} unidad(es) de ${product.name} (Talla ${size}) al pedido.`);
-        }
-
-        /**
-         * Remueve un producto del carrito.
-         */
-        window.removeFromCart = function(key) {
-            if (cart[key]) {
-                delete cart[key];
-                saveCart();
-                updateCartDisplay();
-            }
-        }
-        
-        /**
-         * Carga el carrito desde localStorage.
-         */
-        function loadCart() {
-            const savedCart = localStorage.getItem('shoppingCart');
-            if (savedCart) {
-                try {
-                    cart = JSON.parse(savedCart);
-                } catch (e) {
-                    console.error("Error al cargar el carrito de localStorage:", e);
-                    cart = {};
-                }
-            }
-            updateCartDisplay();
-        }
-
-        /**
-         * Guarda el carrito en localStorage.
-         */
-        function saveCart() {
-            localStorage.setItem('shoppingCart', JSON.stringify(cart));
-        }
-
-        /**
-         * Actualiza el contador del carrito y el contenido del modal.
-         */
-        function updateCartDisplay() {
-            const keys = Object.keys(cart);
-            let totalItems = 0;
-            let totalAmount = 0;
-            const container = document.getElementById('cart-items-container');
-            container.innerHTML = '';
-
-            if (keys.length === 0) {
-                document.getElementById('cart-count').textContent = '0';
-                document.getElementById('empty-cart-message').style.display = 'block';
-                document.getElementById('finalize-order-button').style.display = 'none';
-                document.getElementById('cart-total').textContent = '$0';
-                return;
-            }
-
-            document.getElementById('empty-cart-message').style.display = 'none';
-            document.getElementById('finalize-order-button').style.display = 'block';
-
-
-            keys.forEach(key => {
-                const item = cart[key];
-                const subtotal = item.price * item.quantity;
-                totalItems += item.quantity;
-                totalAmount += subtotal;
                 
-                // HTML del item del carrito
-                const itemHtml = `
-                    <div class="cart-item">
-                        <img src="${IMAGE_PATH}${item.frontFile}" alt="${item.name}">
-                        <div class="item-details">
-                            <h6>${item.name}</h6>
-                            <small>Talla: ${item.size} | Cantidad: ${item.quantity} | Subtotal: $${subtotal.toLocaleString('es-MX')}</small>
+                let totalStock = 0;
+                if (newProd.isColorProduct) {
+                     for (const color in newProd.stockByColor) {
+                        for (const size in newProd.stockByColor[color]) {
+                            totalStock += newProd.stockByColor[color][size];
+                        }
+                    }
+                } else {
+                    for (const size in newProd.stock) {
+                        totalStock += newProd.stock[size];
+                    }
+                }
+                
+                if (totalStock > 0) {
+                     exportedArray.push(newProd);
+                }
+            });
+
+            const jsonString = JSON.stringify(exportedArray, null, 4);
+
+            console.log("⚠️ PASO CRÍTICO: COPIA EL TEXTO COMPLETO ENTRE LAS LÍNEAS DE PUNTOS.\n");
+            console.log("----------------------------------------------");
+            console.log(jsonString);
+            console.log("----------------------------------------------");
+            console.log("\nINSTRUCCIÓN: Reemplaza completamente el array 'const ORIGINAL_PRODUCTS_DEFINITION = [...]' en tu archivo aplay.html con este texto y súbelo a GitHub.");
+            
+            return "Código JSON generado en la consola. ¡Cópialo y actualiza GitHub!";
+        }
+        
+        window.showInventoryReport = function() {
+            console.log("\n==============================================");
+            console.log("     REPORTE DE INVENTARIO (ADMIN)");
+            console.log("==============================================");
+            
+            let totalStock = 0;
+            const report = [];
+
+            for (const key in productInventory) {
+                const stock = productInventory[key];
+                if (stock > 0) {
+                    const parts = key.split('_');
+                    const isColor = parts.length === 4;
+                    const id = isColor ? `${parts[0]}_${parts[1]}` : key.substring(0, key.lastIndexOf('_')); 
+                    const color = isColor ? parts[2] : null; 
+                    const size = isColor ? parts[3] : parts[2]; 
+
+                    const product = productData.find(p => p.id === id);
+                    const name = product ? product.name : 'Desconocido';
+
+                    const colorText = color ? ` | Color: ${color}` : '';
+                    
+                    report.push(`Modelo: ${name} | Talla: ${size}${colorText} | Stock: ${stock} unidades`);
+                    totalStock += stock;
+                }
+            }
+
+
+            if (report.length > 0) {
+                console.log(report.join('\n'));
+                console.log("----------------------------------------------");
+                console.log(`TOTAL DE ARTÍCULOS EN STOCK: ${totalStock}`);
+            } else {
+                console.log("El inventario está vacío.");
+            }
+            console.log("==============================================");
+            return "Inventario impreso en la consola.";
+        }
+        
+        window.resetInventoryAndOrders = function() {
+            if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
+            
+            generateInitialInventory(); 
+            saveStockToFirebase(); 
+            
+            PENDING_ORDERS = [];
+            orderIdCounter = 0;
+            currentOrder = [];
+            saveOrdersStorage();
+            
+            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+            if(ordersModal) ordersModal.hide();
+            
+            alert("Inventario y órdenes reiniciados. Recarga la página (F5).");
+        }
+
+
+        // =======================================================
+        // FUNCIONES DE ÓRDENES (USA LOCALSTORAGE, ESTÁ BIEN)
+        // =======================================================
+        
+        function saveOrdersStorage() {
+            localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
+            localStorage.setItem('orderIdCounter', orderIdCounter);
+            document.getElementById('ordersCounter').textContent = currentOrder.length;
+        }
+
+        function loadOrdersStorage() {
+            const storedOrders = localStorage.getItem('pendingOrders');
+            if (storedOrders) {
+                PENDING_ORDERS = JSON.parse(storedOrders);
+            }
+            const storedCounter = localStorage.getItem('orderIdCounter');
+            if (storedCounter) {
+                orderIdCounter = parseInt(storedCounter);
+            }
+        }
+
+
+        // =======================================================
+        // FUNCIONES DE FIREBASE (REEMPLAZAN LOCALSTORAGE PARA INVENTARIO)
+        // =======================================================
+
+        function saveStockToFirebase() {
+            // Guarda el inventario local completo en el nodo 'inventory' de Firebase.
+            set(stockRef, productInventory)
+                .then(() => {
+                    console.log("Inventario actualizado exitosamente en Firebase.");
+                })
+                .catch((error) => {
+                    console.error("Error al guardar el inventario en Firebase: ", error);
+                    alert("⚠️ ERROR DE FIREBASE: Hubo un error al guardar el inventario global. ¡Revisa tus reglas de Firebase! Deben tener .write: 'true' en el nodo /inventory");
+                });
+        }
+
+        function loadStockFromFirebase() {
+            // 1. Cargamos la definición inicial de productos
+            generateInitialInventory(); 
+
+            // 2. Escuchamos el nodo de inventario en Firebase para actualizaciones en tiempo real
+            onValue(stockRef, (snapshot) => {
+                const firebaseInventory = snapshot.val();
+                
+                if (firebaseInventory) {
+                    // Si hay datos en Firebase, sobreescribimos el inventario local con ellos.
+                    for (const key in firebaseInventory) {
+                        if (productInventory.hasOwnProperty(key)) {
+                            productInventory[key] = firebaseInventory[key]; 
+                        }
+                    }
+                    console.log("Inventario cargado desde Firebase.");
+                } else {
+                    // Si es la primera vez o la DB está vacía, subimos el inventario inicial.
+                    console.log("Inventario de Firebase vacío. Inicializando con valores por defecto.");
+                    saveStockToFirebase(); 
+                }
+
+                // 3. Renderizar las tarjetas de producto una vez que el stock está cargado.
+                renderProductCards();
+            }, (error) => {
+                console.error("Error al cargar el inventario de Firebase: ", error);
+                alert("⚠️ ERROR DE CONEXIÓN: Hubo un error al conectar con el inventario en tiempo real. Revisa tu conexión de Firebase y las reglas de seguridad. El error: " + error.message);
+                // Si hay error, renderizar con el stock inicial como fallback
+                renderProductCards(); 
+            });
+        }
+
+
+        // =======================================================
+        // LÓGICA DE STOCKS
+        // =======================================================
+
+        function getStock(productId, size, color = null) {
+            let key;
+            if (color) {
+                key = `${productId}_${color}_${size}`;
+            } else {
+                key = `${productId}_${size}`;
+            }
+            return productInventory[key] || 0; 
+        }
+
+
+        // =======================================================
+        // RENDERIZACIÓN DE TARJETAS DE PRODUCTO
+        // =======================================================
+
+        function renderProductCards() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = ''; 
+
+            productData.forEach(product => {
+                let maxStock = 0;
+                
+                if (product.isColorProduct) {
+                    for (const color in product.stockByColor) {
+                        const colorStock = product.stockByColor[color];
+                        for (const size in colorStock) {
+                            maxStock = Math.max(maxStock, getStock(product.id, size, color));
+                        }
+                    }
+                } else {
+                    product.sizes.forEach(size => {
+                        maxStock = Math.max(maxStock, getStock(product.id, size));
+                    });
+                }
+                
+                const status = maxStock >= MINIMUM_TO_SHIP ? 'Disponible' : 'Agotado'; 
+                const statusClass = maxStock >= MINIMUM_TO_SHIP ? 'bg-success' : 'bg-danger';
+
+                const card = `
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card product-card h-100">
+                            <span class="stock-badge ${statusClass} badge fs-6 p-2 rounded-0">${status}</span> 
+                            <img src="${product.mainImg}" class="card-img-top p-2" alt="${product.name}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">${product.name}</h5>
+                                <p class="card-text text-success fw-bold">$${product.price.toFixed(2)}</p>
+                                <button class="btn btn-buy mt-auto btn-block btn-lg" data-product-id="${product.id}" 
+                                        ${maxStock === 0 ? 'disabled' : ''}>
+                                    ${maxStock === 0 ? 'Agotado' : (product.isColorProduct ? 'Ver Colores / Pedir' : 'Ver / Pedir')}
+                                </button>
+                            </div>
                         </div>
-                        <i class="fas fa-trash btn-remove" onclick="removeFromCart('${key}')"></i>
                     </div>
                 `;
-                container.innerHTML += itemHtml;
+                list.innerHTML += card;
             });
-            
-            document.getElementById('cart-count').textContent = totalItems.toString();
-            document.getElementById('cart-total').textContent = `$${totalAmount.toLocaleString('es-MX')}`;
         }
         
-        // ====================================================================
-        // === 7. FINALIZACIÓN Y PEDIDO =======================================
-        // ====================================================================
+        // =======================================================
+        // LÓGICA DE MODAL DE DETALLE
+        // =======================================================
+        
+        function updateSizesForSelectedColor(product, selectedColor) {
+            const sizeSelect = document.getElementById('sizeSelect');
+            sizeSelect.innerHTML = '';
+            let firstAvailableSize = null;
+            
+            let sizesToProcess = product.sizes;
+            
+            if (product.isColorProduct && product.stockByColor[selectedColor]) {
+                sizesToProcess = Object.keys(product.stockByColor[selectedColor]).sort();
+            }
+            
+            sizesToProcess.forEach(size => {
+                const stock = getStock(product.id, size, selectedColor);
+                
+                if (stock > 0) {
+                    const option = document.createElement('option');
+                    option.value = size;
+                    option.textContent = `${size} (Stock: ${stock})`; 
+                    sizeSelect.appendChild(option);
 
-        document.getElementById('finalize-order-button').addEventListener('click', () => {
-            const keys = Object.keys(cart);
-            if (keys.length === 0) {
-                alert('Tu carrito está vacío.');
+                    if (!firstAvailableSize) {
+                        firstAvailableSize = size;
+                    }
+                }
+            });
+            
+            if (firstAvailableSize) {
+                sizeSelect.value = firstAvailableSize;
+            }
+            updateTotalAndCheckStock(); 
+        }
+
+
+        function openModalDetail(productId) {
+            const product = productData.find(p => p.id === productId);
+            if (!product) return;
+
+            document.getElementById('modalProductId').value = productId;
+            document.getElementById('modalProductName').textContent = product.name;
+            document.getElementById('modalProductDescription').textContent = product.description;
+            document.getElementById('modalProductPrice').textContent = `$${product.price.toFixed(2)}`;
+            
+            const colorContainer = document.getElementById('colorSelectContainer');
+            const colorSelect = document.getElementById('colorSelect');
+            
+            let defaultColor = null;
+
+            if (product.isColorProduct && product.colors && product.colors.length > 0) {
+                colorContainer.style.display = 'block';
+                colorSelect.innerHTML = '';
+                
+                product.colors.forEach(color => {
+                    const option = document.createElement('option');
+                    option.value = color;
+                    option.textContent = color;
+                    colorSelect.appendChild(option);
+                });
+                
+                defaultColor = product.colors[0]; 
+                
+                colorSelect.onchange = () => {
+                    const selectedColor = colorSelect.value;
+                    renderCarousel(product, selectedColor);
+                    updateSizesForSelectedColor(product, selectedColor);
+                };
+
+            } else {
+                colorContainer.style.display = 'none';
+                colorSelect.innerHTML = '';
+                defaultColor = null; 
+            }
+            
+            renderCarousel(product, defaultColor);
+
+            updateSizesForSelectedColor(product, defaultColor);
+
+            document.getElementById('quantityInput').value = 1;
+
+            const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+            modal.show();
+            
+            const sizeSelect = document.getElementById('sizeSelect');
+            sizeSelect.onchange = updateTotalAndCheckStock;
+            
+            updateTotalAndCheckStock(); 
+        }
+        
+        function renderCarousel(product, color = null) {
+            const indicators = document.getElementById('carouselIndicators');
+            const inner = document.getElementById('carouselInner');
+            indicators.innerHTML = '';
+            inner.innerHTML = '';
+            
+            let imageVariants = [];
+
+            if (product.isColorProduct && color && product.colorMap[color]) {
+                const map = product.colorMap[color];
+                imageVariants = [
+                    { variant: `Frente (${color})`, fileBase: map.front, alt: 'Frente' }, 
+                    { variant: `Espalda (${color})`, fileBase: map.back, alt: 'Espalda' },
+                    { variant: `Lateral`, fileBase: map.side, alt: 'Lateral' }
+                ];
+                
+            } else {
+                // Para productos que NO son de color. Usamos las bases frontFileBase, backFileBase, sideFileBase
+                imageVariants = [
+                    { variant: 'Frente', fileBase: product.frontFileBase, alt: 'Frente' }, 
+                    { variant: 'Espalda', fileBase: product.backFileBase, alt: 'Espalda' },
+                    { variant: 'Lateral', fileBase: product.sideFileBase, alt: 'Lateral' }
+                ];
+            }
+
+
+            let index = 0;
+            
+            imageVariants.forEach((item) => {
+                let imgUrl;
+                let altText = `${product.name} ${item.alt}`;
+
+                if (item.fileBase === GENERIC_SIDE_PLACEHOLDER) {
+                    imgUrl = getImageUrl('medidas.png'); 
+                } else {
+                    imgUrl = getImageUrl(item.fileBase);
+                }
+
+                indicators.innerHTML += `
+                    <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="${index}" 
+                        class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" 
+                        aria-label="Slide ${index + 1}">
+                    </button>
+                `;
+                
+                inner.innerHTML += `
+                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                        <img src="${imgUrl}" class="d-block w-100" alt="${altText}">
+                    </div>
+                `;
+                index++;
+            });
+        }
+
+
+        function updateTotalAndCheckStock() {
+            const productId = document.getElementById('modalProductId').value;
+            const size = document.getElementById('sizeSelect').value;
+            const quantityInput = document.getElementById('quantityInput');
+            const colorSelect = document.getElementById('colorSelect');
+            
+            const product = productData.find(p => p.id === productId);
+            const selectedColor = product && product.isColorProduct ? colorSelect.value : null;
+
+            let quantity = parseInt(quantityInput.value);
+            const stock = getStock(productId, size, selectedColor); 
+            const addButton = document.getElementById('addToOrderButton');
+
+            if (quantity < 1 || isNaN(quantity)) {
+                quantityInput.value = 1;
+                quantity = 1;
+            }
+
+            if (stock > 0) {
+                addButton.disabled = false;
+                addButton.textContent = `Añadir ${quantity} a Pedido`;
+                
+                if (quantity > stock) {
+                    quantityInput.value = stock;
+                    quantity = stock;
+                    addButton.textContent = `Añadir ${stock} a Pedido`;
+                }
+                
+            } else {
+                addButton.disabled = true;
+                addButton.textContent = 'Añadir al Pedido (Agotado)';
+                quantityInput.value = 0;
+            }
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const productId = document.getElementById('modalProductId').value;
+            const product = productData.find(p => p.id === productId);
+            const size = document.getElementById('sizeSelect').value;
+            const quantity = parseInt(document.getElementById('quantityInput').value);
+
+            const colorSelect = document.getElementById('colorSelect');
+            const color = product && product.isColorProduct ? colorSelect.value : null;
+
+            if (!product || quantity <= 0) return;
+
+            const stock = getStock(productId, size, color); 
+
+            if (quantity > stock) {
+                const colorText = color ? ` para el color ${color}` : '';
+                alert(`Error: Solo quedan ${stock} unidades disponibles en talla ${size}${colorText}. Por favor, reduce la cantidad.`);
                 return;
             }
 
-            // 1. Preguntar datos del cliente
-            const clientName = prompt("Ingresa tu Nombre Completo para el pedido:");
-            if (!clientName) return;
+            const existingItemIndex = currentOrder.findIndex(item => 
+                item.productId === productId && item.size === size && item.color === color
+            );
 
-            const clientAddress = prompt("Ingresa la Dirección de Envío:");
-            if (!clientAddress) return;
-            
-            const clientPhone = prompt("Ingresa tu número de WhatsApp (código de país y número, ej: 5218112345678):");
-            if (!clientPhone) return;
-
-            // 2. Generar el mensaje de WhatsApp y el objeto de pedido
-            let whatsappMessage = `¡Hola! Quiero hacer el PEDIDO #${nextOrderId} de playeras.\n\n`;
-            whatsappMessage += `--- DETALLES DEL PEDIDO ---\n`;
-            whatsappMessage += `Cliente: ${clientName}\n`;
-            whatsappMessage += `Dirección: ${clientAddress}\n`;
-            whatsappMessage += `Teléfono: ${clientPhone}\n\n`;
-            whatsappMessage += `--- PRODUCTOS ---\n`;
-            
-            let total = 0;
-            let orderItems = [];
-
-            keys.forEach(key => {
-                const item = cart[key];
-                const subtotal = item.price * item.quantity;
-                total += subtotal;
-                
-                whatsappMessage += `- ${item.quantity}x ${item.name} (Talla: ${item.size}) - $${subtotal.toLocaleString('es-MX')}\n`;
-                
-                orderItems.push({
-                    id: item.id,
-                    name: item.name,
-                    size: item.size,
-                    quantity: item.quantity,
-                    price: item.price,
-                    subtotal: subtotal
+            if (existingItemIndex !== -1) {
+                currentOrder[existingItemIndex].quantity += quantity;
+            } else {
+                currentOrder.push({
+                    productId: productId,
+                    name: product.name,
+                    description: product.description, 
+                    size: size,
+                    color: color, 
+                    quantity: quantity,
+                    price: product.price
                 });
-            });
-
-            whatsappMessage += `\n--- TOTAL A PAGAR ---\n`;
-            whatsappMessage += `TOTAL: $${total.toLocaleString('es-MX')}\n`;
-            whatsappMessage += `\n¡Gracias!`;
-
-            const orderObject = {
-                id: nextOrderId,
-                clientName: clientName,
-                clientAddress: clientAddress,
-                clientPhone: clientPhone,
-                items: orderItems,
-                total: total,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                status: 'Nuevo'
-            };
-
-            // 3. Procesar el pedido (Firebase y Stock)
-            processOrder(orderObject, whatsappMessage);
-        });
-        
-        /**
-         * Guarda el pedido en Firebase, descuenta el stock y redirige a WhatsApp.
-         */
-        function processOrder(order, whatsappMessage) {
-            
-            // 3a. Verificar stock antes de iniciar transacciones
-            for (const item of order.items) {
-                const product = products[item.id];
-                if (!product || product.stock < item.quantity) {
-                    alert(`Error: Stock insuficiente para ${item.name} (Disponible: ${product ? product.stock : 0}). Por favor, ajusta tu pedido.`);
-                    return; // Aborta el proceso si hay stock insuficiente
-                }
             }
 
-            // 3b. Iniciar transacciones para descontar stock
-            const stockUpdatePromises = order.items.map(item => {
-                const productRef = inventoryRef.child(item.id);
-                
-                return productRef.transaction((currentData) => {
-                    if (currentData) {
-                        currentData.stock -= item.quantity;
-                    }
-                    return currentData;
-                }, (error, committed, snapshot) => {
-                    if (error) {
-                        console.error(`Error en la transacción de stock para ${item.name}:`, error);
-                    } else if (!committed) {
-                        console.warn(`Transacción de stock no confirmada para ${item.name}.`);
-                    }
-                });
-            });
+            const detailModal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
+            detailModal.hide();
+            window.openOrdersModal(); 
+        });
 
-            // 3c. Guardar el pedido y actualizar el contador
-            Promise.all(stockUpdatePromises)
-                .then(() => {
-                    // 3d. Guardar el pedido en Firebase
-                    return ordersRef.child(nextOrderId).set(order);
-                })
-                .then(() => {
-                    // 3e. Incrementar el contador de pedidos
-                    return orderCounterRef.set(nextOrderId + 1);
-                })
-                .then(() => {
-                    console.log(`Pedido #${order.id} guardado. Contador actualizado.`);
-                    
-                    // 3f. Limpiar carrito y redirigir
-                    cart = {};
-                    saveCart();
-                    updateCartDisplay();
-                    
-                    // Prepara la URL de WhatsApp
-                    const encodedMessage = encodeURIComponent(whatsappMessage);
-                    const whatsappRecipient = order.clientPhone; 
-                    const whatsappURL = `https://wa.me/${whatsappRecipient}?text=${encodedMessage}`;
-                    
-                    alert(`¡Pedido #${order.id} creado exitosamente! Ahora serás redirigido a WhatsApp para enviar los detalles.`);
-                    window.open(whatsappURL, '_blank');
-                    
-                    // Cerrar modal de pedidos
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
-                    modal.hide();
-                })
-                .catch(error => {
-                    console.error("Error en el proceso de pedido (guardar/contador):", error);
-                    alert("ERROR: No se pudo completar el pedido. Hubo un fallo al actualizar el stock o guardar el pedido en la base de datos.");
-                });
+        // =======================================================
+        // LÓGICA DE MODAL DE PEDIDOS (CHECKOUT)
+        // =======================================================
+
+        // 🚨 FUNCIÓN EXPUESTA A WINDOW
+        window.openOrdersModal = function() {
+            renderOrdersList();
+            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
+            modal.show();
+        }
+
+        function renderOrdersList() {
+            const list = document.getElementById('currentOrdersList');
+            const emptyMessage = document.getElementById('emptyOrdersMessage');
+            
+            list.querySelectorAll('li:not(#emptyOrdersMessage)').forEach(item => {
+                if(item !== emptyMessage) item.remove();
+            });
+            
+            if (currentOrder.length === 0) {
+                emptyMessage.style.display = 'block';
+                document.getElementById('finalizeOrderButton').disabled = true;
+                updateOrdersCounter(0);
+                updateModalUI(false);
+                updateOrdersTotal(); 
+                return;
+            }
+
+            emptyMessage.style.display = 'none';
+            let totalItems = 0;
+
+            currentOrder.forEach((item, index) => {
+                const totalPrice = item.quantity * item.price;
+                totalItems += item.quantity;
+                
+                const colorText = item.color ? ` (${item.color})` : '';
+
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                listItem.innerHTML = `
+                    <div>
+                        <span class="fw-bold">${item.name} - ${item.description}</span> (${item.size})${colorText} x ${item.quantity}
+                        <div class="text-muted small">$${item.price.toFixed(2)} c/u</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold text-primary me-3">$${totalPrice.toFixed(2)}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeItemFromOrder(${index})">
+                            &times;
+                        </button>
+                    </div>
+                `;
+                list.insertBefore(listItem, emptyMessage);
+            });
+            
+            updateOrdersCounter(currentOrder.length);
+            updateModalUI(true);
+            updateOrdersTotal(); 
+        }
+
+        // 🚨 FUNCIÓN EXPUESTA A WINDOW
+        window.removeItemFromOrder = function(index) {
+            currentOrder.splice(index, 1);
+            renderOrdersList();
+        }
+
+        function updateOrdersTotal() {
+            const totalElement = document.getElementById('ordersTotal');
+            const halfPaymentElement = document.getElementById('halfPaymentAmount');
+            const halfPaymentCheck = document.getElementById('halfPaymentCheck');
+            
+            const subtotal = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            
+            const halfAmount = subtotal / 2;
+            halfPaymentElement.textContent = `$${halfAmount.toFixed(2)}`;
+
+            if (halfPaymentCheck.checked) {
+                totalElement.textContent = `$${halfAmount.toFixed(2)}`;
+            } else {
+                totalElement.textContent = `$${subtotal.toFixed(2)}`;
+            }
         }
         
-        // ====================================================================
-        // === 8. FUNCIONES DE CONSOLA PARA ADMINISTRACIÓN ====================
-        // ====================================================================
+        document.getElementById('halfPaymentCheck').addEventListener('change', updateOrdersTotal); 
 
-        /**
-         * FUNCIÓN PARA REINICIAR INVENTARIO Y CONTADOR (SÓLO ADMIN)
-         * Ejecutar en la consola: window.resetInventoryAndOrders()
-         */
-        window.resetInventoryAndOrders = function() {
-            if (confirm("🚨 ADVERTENCIA CRÍTICA: ¿Estás seguro de que quieres RESTABLECER TODO el INVENTARIO en Firebase al stock maestro Y REINICIAR el contador de pedidos a #1?")) {
-                
-                // 1. Resetear Inventario
-                const initialInventory = {};
-                ORIGINAL_PRODUCTS_DEFINITION.forEach(([id, name, desc, price, front, back, stock]) => {
-                    initialInventory[id] = {
-                        id,
-                        name,
-                        description: desc,
-                        price,
-                        frontFile: front,
-                        backFile: back,
-                        stock: stock 
-                    };
-                });
-                
-                inventoryRef.set(initialInventory)
-                    .then(() => {
-                        console.log("✅ INVENTARIO RESTABLECIDO: Stock inicial subido exitosamente a Firebase.");
-                        // 2. Resetear Contador
-                        return orderCounterRef.set(1);
-                    })
-                    .then(() => {
-                        console.log("✅ CONTADOR RESTABLECIDO: Contador de pedidos reiniciado a #1.");
-                        alert("¡Reiniciado Completo! Inventario en stock maestro y contador de pedidos a #1.");
-                    })
-                    .catch(error => {
-                        console.error("❌ ERROR CRÍTICO DURANTE EL REINICIO:", error);
-                        alert("ERROR CRÍTICO: No se pudo completar el reinicio. Revisa la consola.");
-                    });
+        function updateOrdersCounter(count) {
+            document.getElementById('ordersCounter').textContent = currentOrder.length; 
+        }
+
+        function updateModalUI(hasItems) {
+            const finalizeButton = document.getElementById('finalizeOrderButton');
+            const clientDataForm = document.getElementById('clientDataForm');
+            const paymentDetailsSection = document.getElementById('paymentDetailsSection');
+            
+            if (hasItems) {
+                finalizeButton.disabled = !document.getElementById('clientDataForm').checkValidity();
+                clientDataForm.style.display = 'block';
+                paymentDetailsSection.style.display = 'block';
             } else {
-                console.log("Reiniciado cancelado.");
+                finalizeButton.disabled = true;
+                clientDataForm.style.display = 'none';
+                paymentDetailsSection.style.display = 'none';
             }
-        };
-
-        /**
-         * FUNCIÓN PARA EXPORTAR EL ARRAY DE PRODUCTOS CON EL STOCK ACTUAL (SÓLO ADMIN)
-         * Ejecutar en la consola: window.exportInitialProductsArray()
-         */
-        window.exportInitialProductsArray = function() {
-            const currentStockData = Object.values(products);
-            const newArray = currentStockData.map(p => [
-                p.id, p.name, p.description, p.price, p.frontFile, p.backFile, p.stock
-            ]);
-
-            const newArrayString = JSON.stringify(newArray, null, 4)
-                .replace(/"/g, '') // Quita las comillas de los strings
-                .replace(/,\n {4}(\[)/g, ',\n    $1') // Ajusta el formato de arrays internos
-                .replace(/^\[\n {4}\[/, '[\n    ['); // Ajusta el inicio del array principal
-            
-            console.log("=================================================");
-            console.log("✅ PASO CRÍTICO MANUAL:");
-            console.log("Para que el stock quede fijo y no dependa de Firebase, reemplaza la constante ORIGINAL_PRODUCTS_DEFINITION con la salida de abajo y sube el nuevo 'aplay.html' a GitHub.");
-            console.log("=================================================");
-            
-            // Genera la salida de JavaScript formateada
-            const output = `const ORIGINAL_PRODUCTS_DEFINITION = ${newArrayString};`;
-            console.log(output);
-
-            return output;
-        };
+        }
         
-        // ====================================================================
-        // === 9. INICIO DE LA APLICACIÓN =====================================
-        // ====================================================================
+        document.getElementById('clientDataForm').addEventListener('input', () => {
+            if (currentOrder.length > 0) {
+                document.getElementById('finalizeOrderButton').disabled = !document.getElementById('clientDataForm').checkValidity();
+            }
+        });
+
+        // =======================================================
+        // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK
+        // =======================================================
+
+        // 🚨 FUNCIÓN EXPUESTA A WINDOW (CORRECCIÓN CRÍTICA DE ReferenceError)
+        window.sendOrderToWhatsapp = function() {
+            if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
+                alert("Por favor, añade productos al pedido y completa tus datos de envío.");
+                return;
+            }
+
+            const clientName = document.getElementById('clientName').value;
+            const clientAddress = document.getElementById('clientAddress').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            const isHalfPayment = document.getElementById('halfPaymentCheck').checked;
+            
+            const total = currentOrder.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const amountToPay = isHalfPayment ? total / 2 : total;
+
+            let orderText = `*PEDIDO #${orderIdCounter + 1} - RPLAY*\n\n`;
+            orderText += `*Total a Pagar:* $${amountToPay.toFixed(2)} (${isHalfPayment ? 'Anticipo 50%' : 'Pago Completo'})\n`;
+            orderText += `*Productos:*\n`;
+            
+            currentOrder.forEach((item, index) => {
+                const colorText = item.color ? ` (${item.color})` : '';
+                orderText += `${index + 1}. *${item.name}* - ${item.description} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
+            });
+
+            orderText += `\n*Datos del Cliente:*\n`;
+            orderText += `Nombre: ${clientName}\n`;
+            orderText += `Teléfono: ${clientPhone}\n`;
+            orderText += `Dirección: ${clientAddress}\n`;
+            orderText += `\n*IMPORTANTE:* Adjunta aquí tu comprobante de pago o transferencia para confirmar tu pedido.`;
+
+            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderText)}`;
+
+            // 1. CREAR HISTORIAL
+            orderIdCounter++;
+            PENDING_ORDERS.push({
+                id: orderIdCounter,
+                items: JSON.parse(JSON.stringify(currentOrder)), 
+                client: { name: clientName, address: clientAddress, phone: clientPhone },
+                total: total,
+                amountPaid: amountToPay,
+                date: new Date().toLocaleString()
+            });
+
+            // 2. APLICAR EL DESCUENTO DEL STOCK (por ID, Color y Talla)
+            currentOrder.forEach(item => {
+                let key;
+                if (item.color) {
+                    key = `${item.productId}_${item.color}_${item.size}`;
+                } else {
+                    key = `${item.productId}_${item.size}`;
+                }
+
+                if (productInventory[key] !== undefined && productInventory[key] >= item.quantity) {
+                    productInventory[key] -= item.quantity;
+                }
+            });
+
+            // 3. Limpiar el pedido actual y guardar todo
+            currentOrder = [];
+            saveStockToFirebase(); // <-- GUARDA GLOBALMENTE EN FIREBASE 
+            saveOrdersStorage();
+            
+            // 4. Cerrar el modal y redirigir
+            const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
+            ordersModal.hide();
+
+            // 5. Advertencia para el administrador y redirección
+            console.log("=================================================");
+            console.log("✅ ¡STOCK GLOBALMENTE DESCONTADO! PASO CRÍTICO MANUAL:");
+            console.log("Para que el stock quede fijo, ejecuta: window.exportInitialProductsArray();");
+            console.log("Y sube el nuevo 'aplay.html' con el stock actualizado a GitHub.");
+            console.log("=================================================");
+            
+            window.open(whatsappURL, '_blank');
+        }
+
+        // =======================================================
+        // INICIALIZACIÓN DE FIREBASE Y CÓDIGO DE INICIO
+        // =======================================================
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyCtgsjjbNiS0lv5aLDb8nkpN_9-4sXIJvE",
+          authDomain: "rplay-f04dc.firebaseapp.com",
+          projectId: "rplay-f04dc",
+          storageBucket: "rplay-f04dc.firebasestorage.app",
+          messagingSenderId: "787828282738",
+          appId: "1:787828282738:web:00c1ff1a7008c0e02b79eb",
+          measurementId: "G-XEKR4KEDMR"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app); 
+        // 🚨 CORRECCIÓN CRÍTICA DE FIREBASE: Apuntamos al nodo 'inventory'
+        const stockRef = ref(database, 'inventory'); 
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadCart();
-            // El renderizado se llama automáticamente después de que Firebase lee el inventario
+            
+            loadOrdersStorage();
+            
+            // === CARGAR INVENTARIO DESDE FIREBASE ===
+            loadStockFromFirebase(); 
+
+            document.getElementById('product-list').addEventListener('click', (e) => {
+                const target = e.target.closest('.btn-buy');
+                if (target && !target.disabled) {
+                    const productId = target.getAttribute('data-product-id');
+                    openModalDetail(productId); 
+                }
+            });
+            
+            const quantityInput = document.getElementById('quantityInput');
+            if (quantityInput) {
+                quantityInput.addEventListener('change', updateTotalAndCheckStock);
+                quantityInput.addEventListener('input', updateTotalAndCheckStock);
+            }
         });
 
     </script>
