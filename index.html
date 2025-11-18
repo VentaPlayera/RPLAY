@@ -236,7 +236,7 @@
         
         // --- CONSTANTES DE IMAGEN ---
         const IMAGE_EXTENSION = '.png';
-        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
+        const GENERIC_SIDE_IMAGE_BASE = 'medidas.png'; // Usamos la extensión aquí para que getImageUrl la respete
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
         const GENERIC_SIDE_PLACEHOLDER = 'generic_side_image_placeholder';
 
@@ -284,7 +284,7 @@
             { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
             { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
             { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
-            // Mantenemos Gon1.PNG tal como te funcionó, pero la función de imagen es más estable
+            // 🚨 CORRECCIÓN CRÍTICA DE IMAGEN: Usamos el nombre de archivo EXACTO con mayúsculas/minúsculas
             { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1.PNG', backFile: 'Gon2.PNG', sideFile: 'negro' },
             { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
             { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
@@ -402,7 +402,7 @@
                         const fileBase = prod.colorMap[prod.colors[0]].front;
                         mainImg = getImageUrl(fileBase); 
                     } else {
-                        mainImg = getImageUrl('fallback_default'); 
+                        mainImg = getImageUrl('fallback_default.png'); 
                     }
                     
                 } else {
@@ -449,12 +449,15 @@
         // FUNCIÓN DE ADMINISTRACIÓN OCULTA (SOLO COMANDOS)
         // =======================================================
         
-        // 🚨 FUNCIÓN DE IMAGEN MEJORADA (más estable con capitalización)
-        function getImageUrl(fileBase) {
-            // Elimina extensiones existentes, si las hay (Gon1.PNG -> Gon1)
-            const base = fileBase.replace(/\.(png|jpg|jpeg|webp)$/i, '');
-            // Construye la URL con la extensión estandarizada (minúscula)
-            return `${GITHUB_BASE_URL}${base}${IMAGE_EXTENSION}`;
+        // 🚨 FUNCIÓN DE IMAGEN CORREGIDA: Usa el nombre de archivo EXACTO para respetar mayúsculas
+        function getImageUrl(fileName) {
+            // Usa el nombre de archivo EXACTO (incluyendo mayúsculas/minúsculas)
+            // Si el archivo NO tiene extensión, añade la estándar (.png)
+            if (!fileName.includes('.')) {
+                fileName = fileName + IMAGE_EXTENSION;
+            }
+            
+            return `${GITHUB_BASE_URL}${fileName}`;
         }
         
         // 🚨 TODAS LAS FUNCIONES DE WINDOW. DEBEN SER EXPLÍCITAS PARA UN MÓDULO
@@ -606,14 +609,14 @@
         // =======================================================
 
         function saveStockToFirebase() {
-            // Guarda el inventario local completo en el nodo 'productInventory' de Firebase.
+            // Guarda el inventario local completo en el nodo 'inventory' de Firebase.
             set(stockRef, productInventory)
                 .then(() => {
                     console.log("Inventario actualizado exitosamente en Firebase.");
                 })
                 .catch((error) => {
                     console.error("Error al guardar el inventario en Firebase: ", error);
-                    alert("⚠️ ERROR DE FIREBASE: Hubo un error al guardar el inventario global. ¡Revisa tus reglas de Firebase! Deben tener .write: 'true'");
+                    alert("⚠️ ERROR DE FIREBASE: Hubo un error al guardar el inventario global. ¡Revisa tus reglas de Firebase! Deben tener .write: 'true' en el nodo /inventory");
                 });
         }
 
@@ -643,7 +646,7 @@
                 renderProductCards();
             }, (error) => {
                 console.error("Error al cargar el inventario de Firebase: ", error);
-                alert("⚠️ ERROR DE CONEXIÓN: Hubo un error al conectar con el inventario en tiempo real. Revisa tu conexión de Firebase y las reglas de seguridad.");
+                alert("⚠️ ERROR DE CONEXIÓN: Hubo un error al conectar con el inventario en tiempo real. Revisa tu conexión de Firebase y las reglas de seguridad. El error: " + error.message);
                 // Si hay error, renderizar con el stock inicial como fallback
                 renderProductCards(); 
             });
@@ -820,10 +823,10 @@
                 ];
                 
             } else {
-                const colorSuffix = color ? `_${color.toLowerCase()}` : ''; 
+                // Para productos que NO son de color. Usamos las bases frontFileBase, backFileBase, sideFileBase
                 imageVariants = [
-                    { variant: 'Frente', fileBase: `${product.frontFileBase}${colorSuffix}`, alt: 'Frente' }, 
-                    { variant: 'Espalda', fileBase: `${product.backFileBase}${colorSuffix}`, alt: 'Espalda' },
+                    { variant: 'Frente', fileBase: product.frontFileBase, alt: 'Frente' }, 
+                    { variant: 'Espalda', fileBase: product.backFileBase, alt: 'Espalda' },
                     { variant: 'Lateral', fileBase: product.sideFileBase, alt: 'Lateral' }
                 ];
             }
@@ -835,8 +838,8 @@
                 let imgUrl;
                 let altText = `${product.name} ${item.alt}`;
 
-                if (item.fileBase === GENERIC_SIDE_PLACEHOLDER || item.fileBase === GENERIC_SIDE_IMAGE_BASE) {
-                    imgUrl = getImageUrl(GENERIC_SIDE_IMAGE_BASE); 
+                if (item.fileBase === GENERIC_SIDE_PLACEHOLDER) {
+                    imgUrl = getImageUrl('medidas.png'); 
                 } else {
                     imgUrl = getImageUrl(item.fileBase);
                 }
@@ -1145,7 +1148,8 @@
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app); 
-        const stockRef = ref(database, 'productInventory');
+        // 🚨 CORRECCIÓN CRÍTICA DE FIREBASE: Apuntamos al nodo 'inventory'
+        const stockRef = ref(database, 'inventory'); 
 
         document.addEventListener('DOMContentLoaded', () => {
             
