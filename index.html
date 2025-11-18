@@ -226,8 +226,7 @@
         // =======================================================
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
         import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js';
-        // Nota: Se elimina getAnalytics para evitar complejidades de importación.
-
+        
         // =======================================================
         // DECLARACIÓN DE VARIABLES GLOBALES Y CONSTANTES
         // =======================================================
@@ -237,13 +236,8 @@
         
         // --- CONSTANTES DE IMAGEN ---
         const IMAGE_EXTENSION = '.png';
-        // Asume que tienes una imagen de medidas llamada 'medidas.png' en tu carpeta RPLAY
-        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; // Usamos el nombre base de la imagen de medidas
-        
-        // 🚨 ENLACE CRÍTICO: SE MANTIENE EL USO DE MAYÚSCULAS/MINÚSCULAS QUE TE FUNCIONÓ
+        const GENERIC_SIDE_IMAGE_BASE = 'medidas'; 
         const GITHUB_BASE_URL = 'https://ventaplayera.github.io/RPLAY/';
-        
-        // Placeholder para la imagen lateral genérica (se usará si no defines sideFile)
         const GENERIC_SIDE_PLACEHOLDER = 'generic_side_image_placeholder';
 
         let productData = []; 
@@ -290,7 +284,7 @@
             { i: 27, name: 'TAYLOR SWIFT', description: 'Playera Modelo 27', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Vale3', backFile: 'Vale4', sideFile: 'negro' },
             { i: 28, name: 'HUMBE', description: 'Playera Modelo 28', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro1', backFile: 'Caro2', sideFile: 'arena' },
             { i: 29, name: 'HUMBE', description: 'Playera Modelo 29', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Caro3', backFile: 'Caro4', sideFile: 'arena' },
-            // 🚨 MANTENEMOS LA CORRECCIÓN DE LA IMAGEN (EXPLÍCITA .PNG)
+            // Mantenemos Gon1.PNG tal como te funcionó, pero la función de imagen es más estable
             { i: 30, name: 'KATY PERRY', description: 'Playera Modelo 30', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Gon1.PNG', backFile: 'Gon2.PNG', sideFile: 'negro' },
             { i: 31, name: 'KATY PERRY', description: 'Playera Modelo 31', stock: { 'M': 1, 'L': 1, 'XL':1 }, frontFile: 'Katy3', backFile: 'Katy4', sideFile: 'blanco' },
             { i: 32, name: 'TAYLOR SWIFT', description: 'Playera Modelo 32', stock: { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Bere1', backFile: 'Bere2', sideFile: 'blanco2' },
@@ -304,7 +298,7 @@
             { i: 40, name: 'HOZIER', description: 'Playera Modelo 40', stock:  { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri1', backFile: 'Adri2', sideFile: 'negro2' },
             { i: 41, name: 'HOZIER', description: 'Playera Modelo 41', stock:  { 'S': 1, 'M': 1, 'L':1 }, frontFile: 'Adri3', backFile: 'Adri4', sideFile: 'blanco2' },
            
-            // --- MODELOS CON OPCIÓN DE COLOR (ESTRUCTURA CORREGIDA) ---
+            // --- MODELOS CON OPCIÓN DE COLOR ---
             { 
                 i: 42, 
                 name: 'BLACKPINK', 
@@ -350,8 +344,7 @@
             // --- STOCK BASE PARA MODELOS NO DEFINIDOS (MÁXIMO 2 TALLAS) ---
             const defaultStock = { 'M': 1, 'L': 1 }; 
             
-            // 🚨🚨 LISTA DE MODELOS INTEGRADA 🚨🚨
-            const initialProducts = ORIGINAL_PRODUCTS_DEFINITION; // <--- USAMOS LA CONSTANTE GLOBAL
+            const initialProducts = ORIGINAL_PRODUCTS_DEFINITION; 
             
 
             // Rellenar hasta el modelo 43 con stock por defecto si no están definidos
@@ -407,7 +400,6 @@
                     // Imagen principal de la tarjeta: usa la imagen de frente del primer color
                     if (prod.colors.length > 0 && prod.colorMap[prod.colors[0]]) {
                         const fileBase = prod.colorMap[prod.colors[0]].front;
-                        // 🚨 IMPORTANTE: Usa la nueva función corregida
                         mainImg = getImageUrl(fileBase); 
                     } else {
                         mainImg = getImageUrl('fallback_default'); 
@@ -433,7 +425,7 @@
                 const product = {
                     id: id,
                     name: prod.name,
-                    description: prod.description, // <-- Añadido al objeto producto
+                    description: prod.description, 
                     price: PRODUCT_PRICE,
                     sizes: modelSizes.sort(), 
                     colors: prod.colors || [], 
@@ -457,62 +449,50 @@
         // FUNCIÓN DE ADMINISTRACIÓN OCULTA (SOLO COMANDOS)
         // =======================================================
         
-        // 🚨 NUEVA FUNCIÓN MEJORADA: CONSTRUCCIÓN DE URL DE IMAGEN
+        // 🚨 FUNCIÓN DE IMAGEN MEJORADA (más estable con capitalización)
         function getImageUrl(fileBase) {
-            // Verifica si el nombre base ya incluye una extensión (ej: 'Gon1.PNG')
-            if (/\.(png|jpg|jpeg|webp)$/i.test(fileBase)) {
-                return `${GITHUB_BASE_URL}${fileBase}`;
-            }
-            // Si no incluye extensión, añade la extensión global (ej: '.png')
-            return `${GITHUB_BASE_URL}${fileBase}${IMAGE_EXTENSION}`;
+            // Elimina extensiones existentes, si las hay (Gon1.PNG -> Gon1)
+            const base = fileBase.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+            // Construye la URL con la extensión estandarizada (minúscula)
+            return `${GITHUB_BASE_URL}${base}${IMAGE_EXTENSION}`;
         }
         
-        // 🚨 NUEVA FUNCIÓN PARA EXPORTAR EL CÓDIGO ACTUALIZADO 🚨
+        // 🚨 TODAS LAS FUNCIONES DE WINDOW. DEBEN SER EXPLÍCITAS PARA UN MÓDULO
         window.exportInitialProductsArray = function() {
-            // Aseguramos que el inventario local esté cargado para tener los últimos descuentos
-            // NOTA: Con la integración de Firebase, productInventory ya está sincronizado.
             
             console.log("\n==============================================");
             console.log("     CÓDIGO DE INVENTARIO ACTUALIZADO (ADMIN)");
             console.log("==============================================");
             
-            // Creamos una copia de la definición original para trabajar sobre ella
             const newProductsDefinition = JSON.parse(JSON.stringify(ORIGINAL_PRODUCTS_DEFINITION));
             const exportedArray = [];
 
             newProductsDefinition.forEach(prod => {
                 const i = prod.i;
-                // Aseguramos que el ID tenga 3 dígitos, ej: PROD_001
                 const id = `PROD_${String(i).padStart(3, '0')}`; 
                 
-                // Crear una copia limpia del producto sin stock para reconstruir
                 const newProd = JSON.parse(JSON.stringify(prod));
 
                 if (newProd.isColorProduct) {
-                    // Producto de Color: Reconstruir stockByColor con valores actuales
                     if (newProd.stockByColor) {
                         for (const color in newProd.stockByColor) {
                             for (const size in newProd.stockByColor[color]) {
                                 const key = `${id}_${color}_${size}`;
-                                // Traemos el stock actual (sincronizado con Firebase)
                                 const currentStock = productInventory[key] || 0; 
                                 newProd.stockByColor[color][size] = currentStock;
                             }
                         }
                     }
                 } else {
-                    // Producto Estándar: Reconstruir stock con valores actuales
                     if (newProd.stock) {
                         for (const size in newProd.stock) {
                             const key = `${id}_${size}`;
-                            // Traemos el stock actual (sincronizado con Firebase)
                             const currentStock = productInventory[key] || 0;
                             newProd.stock[size] = currentStock;
                         }
                     }
                 }
                 
-                // Solo incluimos el producto si tiene un total de stock > 0.
                 let totalStock = 0;
                 if (newProd.isColorProduct) {
                      for (const color in newProd.stockByColor) {
@@ -526,13 +506,11 @@
                     }
                 }
                 
-                // Si el stock es 0, el producto no se exporta (se asume agotado y se omite en la lista)
                 if (totalStock > 0) {
                      exportedArray.push(newProd);
                 }
             });
 
-            // Generamos el JSON con formato legible (indentación 4)
             const jsonString = JSON.stringify(exportedArray, null, 4);
 
             console.log("⚠️ PASO CRÍTICO: COPIA EL TEXTO COMPLETO ENTRE LAS LÍNEAS DE PUNTOS.\n");
@@ -556,7 +534,6 @@
                 const stock = productInventory[key];
                 if (stock > 0) {
                     const parts = key.split('_');
-                    // Identifica si es stock por color (4 partes: PROD_042_Blanco_S) o simple (3 partes: PROD_001_M)
                     const isColor = parts.length === 4;
                     const id = isColor ? `${parts[0]}_${parts[1]}` : key.substring(0, key.lastIndexOf('_')); 
                     const color = isColor ? parts[2] : null; 
@@ -584,19 +561,16 @@
             return "Inventario impreso en la consola.";
         }
         
-        // Función de reseteo para pruebas
         window.resetInventoryAndOrders = function() {
             if (!confirm("ADVERTENCIA (ADMIN): ¿Estás seguro de que quieres REINICIAR el inventario y todos los pedidos? Esto es SOLO para pruebas.")) return;
             
             generateInitialInventory(); 
-            saveStockToFirebase(); // Guardar el stock inicial en Firebase
+            saveStockToFirebase(); 
             
             PENDING_ORDERS = [];
             orderIdCounter = 0;
             currentOrder = [];
             saveOrdersStorage();
-            
-            // renderProductCards() será llamado por loadStockFromFirebase()
             
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             if(ordersModal) ordersModal.hide();
@@ -609,7 +583,6 @@
         // FUNCIONES DE ÓRDENES (USA LOCALSTORAGE, ESTÁ BIEN)
         // =======================================================
         
-        // Guardar órdenes SÍ usa localStorage porque son específicas de la sesión del cliente
         function saveOrdersStorage() {
             localStorage.setItem('pendingOrders', JSON.stringify(PENDING_ORDERS));
             localStorage.setItem('orderIdCounter', orderIdCounter);
@@ -640,7 +613,7 @@
                 })
                 .catch((error) => {
                     console.error("Error al guardar el inventario en Firebase: ", error);
-                    alert("⚠️ Error al actualizar el inventario global. ¡Revisa tus reglas de Firebase! Deben tener .write: 'true'");
+                    alert("⚠️ ERROR DE FIREBASE: Hubo un error al guardar el inventario global. ¡Revisa tus reglas de Firebase! Deben tener .write: 'true'");
                 });
         }
 
@@ -656,7 +629,6 @@
                     // Si hay datos en Firebase, sobreescribimos el inventario local con ellos.
                     for (const key in firebaseInventory) {
                         if (productInventory.hasOwnProperty(key)) {
-                            // Solo actualizamos las claves que existen en nuestra definición inicial
                             productInventory[key] = firebaseInventory[key]; 
                         }
                     }
@@ -671,7 +643,7 @@
                 renderProductCards();
             }, (error) => {
                 console.error("Error al cargar el inventario de Firebase: ", error);
-                alert("Error crítico al cargar el stock de productos. Verifique las reglas de lectura.");
+                alert("⚠️ ERROR DE CONEXIÓN: Hubo un error al conectar con el inventario en tiempo real. Revisa tu conexión de Firebase y las reglas de seguridad.");
                 // Si hay error, renderizar con el stock inicial como fallback
                 renderProductCards(); 
             });
@@ -682,7 +654,6 @@
         // LÓGICA DE STOCKS
         // =======================================================
 
-        // 🚨 FUNCIÓN MEJORADA PARA MANEJAR STOCK POR COLOR O SIMPLE
         function getStock(productId, size, color = null) {
             let key;
             if (color) {
@@ -705,19 +676,15 @@
             productData.forEach(product => {
                 let maxStock = 0;
                 
-                // Lógica para calcular stock máximo en productos de color
                 if (product.isColorProduct) {
                     for (const color in product.stockByColor) {
                         const colorStock = product.stockByColor[color];
                         for (const size in colorStock) {
-                            // Usar getStock para obtener el valor actualizado
                             maxStock = Math.max(maxStock, getStock(product.id, size, color));
                         }
                     }
                 } else {
-                    // Lógica para productos estándar
                     product.sizes.forEach(size => {
-                        // Usar getStock para obtener el valor actualizado
                         maxStock = Math.max(maxStock, getStock(product.id, size));
                     });
                 }
@@ -749,7 +716,6 @@
         // LÓGICA DE MODAL DE DETALLE
         // =======================================================
         
-        // 🚨 FUNCIÓN MEJORADA PARA ACTUALIZAR TALLAS BASADO EN COLOR
         function updateSizesForSelectedColor(product, selectedColor) {
             const sizeSelect = document.getElementById('sizeSelect');
             sizeSelect.innerHTML = '';
@@ -757,7 +723,6 @@
             
             let sizesToProcess = product.sizes;
             
-            // Si es producto con color, obtener las tallas que realmente existen para ese color
             if (product.isColorProduct && product.stockByColor[selectedColor]) {
                 sizesToProcess = Object.keys(product.stockByColor[selectedColor]).sort();
             }
@@ -768,7 +733,6 @@
                 if (stock > 0) {
                     const option = document.createElement('option');
                     option.value = size;
-                    // Mostrar el stock disponible de la talla seleccionada/color
                     option.textContent = `${size} (Stock: ${stock})`; 
                     sizeSelect.appendChild(option);
 
@@ -799,7 +763,6 @@
             
             let defaultColor = null;
 
-            // 1. Manejar el Selector de Color
             if (product.isColorProduct && product.colors && product.colors.length > 0) {
                 colorContainer.style.display = 'block';
                 colorSelect.innerHTML = '';
@@ -820,16 +783,13 @@
                 };
 
             } else {
-                // Producto sin opción de color (es decir, usa la estructura de stock simple)
                 colorContainer.style.display = 'none';
                 colorSelect.innerHTML = '';
                 defaultColor = null; 
             }
             
-            // 2. Renderizar Carrusel con el color inicial o estándar
             renderCarousel(product, defaultColor);
 
-            // 3. Renderizar Tallas (la primera vez)
             updateSizesForSelectedColor(product, defaultColor);
 
             document.getElementById('quantityInput').value = 1;
@@ -843,7 +803,6 @@
             updateTotalAndCheckStock(); 
         }
         
-        // FUNCIÓN CLAVE PARA RENDERIZAR IMÁGENES CON COLOR
         function renderCarousel(product, color = null) {
             const indicators = document.getElementById('carouselIndicators');
             const inner = document.getElementById('carouselInner');
@@ -852,19 +811,15 @@
             
             let imageVariants = [];
 
-            // 🚨 Lógica para productos con colorMap (como Aro1, Aro2, etc.)
             if (product.isColorProduct && color && product.colorMap[color]) {
                 const map = product.colorMap[color];
                 imageVariants = [
-                    // map.front es 'Aro1', map.back es 'Aro2', etc. (USADO TAL CUAL)
                     { variant: `Frente (${color})`, fileBase: map.front, alt: 'Frente' }, 
                     { variant: `Espalda (${color})`, fileBase: map.back, alt: 'Espalda' },
                     { variant: `Lateral`, fileBase: map.side, alt: 'Lateral' }
                 ];
                 
             } else {
-                // Lógica para productos ESTÁNDAR (que sí necesitan sufijo de color si está definido)
-                // Nota: Los modelos 1-41 usan el sufijo que ya tenías configurado
                 const colorSuffix = color ? `_${color.toLowerCase()}` : ''; 
                 imageVariants = [
                     { variant: 'Frente', fileBase: `${product.frontFileBase}${colorSuffix}`, alt: 'Frente' }, 
@@ -880,12 +835,9 @@
                 let imgUrl;
                 let altText = `${product.name} ${item.alt}`;
 
-                // Usa la imagen genérica si el nombre base es el placeholder o el nombre de medidas
                 if (item.fileBase === GENERIC_SIDE_PLACEHOLDER || item.fileBase === GENERIC_SIDE_IMAGE_BASE) {
-                    // El placeholder de medidas SIEMPRE usa la extensión global (minúscula)
                     imgUrl = getImageUrl(GENERIC_SIDE_IMAGE_BASE); 
                 } else {
-                    // Usa la función mejorada para manejar .PNG o .png correctamente
                     imgUrl = getImageUrl(item.fileBase);
                 }
 
@@ -912,12 +864,10 @@
             const quantityInput = document.getElementById('quantityInput');
             const colorSelect = document.getElementById('colorSelect');
             
-            // Determinar si es un producto de color y obtener el color seleccionado
             const product = productData.find(p => p.id === productId);
             const selectedColor = product && product.isColorProduct ? colorSelect.value : null;
 
             let quantity = parseInt(quantityInput.value);
-            // 🚨 USAR getStock CON COLOR
             const stock = getStock(productId, size, selectedColor); 
             const addButton = document.getElementById('addToOrderButton');
 
@@ -956,7 +906,6 @@
 
             if (!product || quantity <= 0) return;
 
-            // 🚨 USAR getStock CON COLOR
             const stock = getStock(productId, size, color); 
 
             if (quantity > stock) {
@@ -975,7 +924,7 @@
                 currentOrder.push({
                     productId: productId,
                     name: product.name,
-                    description: product.description, // <--- CAMBIO: Incluir la descripción del modelo
+                    description: product.description, 
                     size: size,
                     color: color, 
                     quantity: quantity,
@@ -985,14 +934,15 @@
 
             const detailModal = bootstrap.Modal.getInstance(document.getElementById('productDetailModal'));
             detailModal.hide();
-            openOrdersModal(); 
+            window.openOrdersModal(); 
         });
 
         // =======================================================
         // LÓGICA DE MODAL DE PEDIDOS (CHECKOUT)
         // =======================================================
 
-        function openOrdersModal() {
+        // 🚨 FUNCIÓN EXPUESTA A WINDOW
+        window.openOrdersModal = function() {
             renderOrdersList();
             const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
             modal.show();
@@ -1046,7 +996,8 @@
             updateOrdersTotal(); 
         }
 
-        function removeItemFromOrder(index) {
+        // 🚨 FUNCIÓN EXPUESTA A WINDOW
+        window.removeItemFromOrder = function(index) {
             currentOrder.splice(index, 1);
             renderOrdersList();
         }
@@ -1100,7 +1051,8 @@
         // LÓGICA DE ENVÍO POR WHATSAPP Y DESCUENTO DE STOCK
         // =======================================================
 
-        function sendOrderToWhatsapp() {
+        // 🚨 FUNCIÓN EXPUESTA A WINDOW (CORRECCIÓN CRÍTICA DE ReferenceError)
+        window.sendOrderToWhatsapp = function() {
             if (currentOrder.length === 0 || !document.getElementById('clientDataForm').checkValidity()) {
                 alert("Por favor, añade productos al pedido y completa tus datos de envío.");
                 return;
@@ -1120,7 +1072,6 @@
             
             currentOrder.forEach((item, index) => {
                 const colorText = item.color ? ` (${item.color})` : '';
-                // 🚨 CAMBIO PARA INCLUIR LA DESCRIPCIÓN DEL MODELO
                 orderText += `${index + 1}. *${item.name}* - ${item.description} (${item.size})${colorText} - ${item.quantity} pza(s) - $${(item.quantity * item.price).toFixed(2)}\n`;
             });
 
@@ -1159,22 +1110,19 @@
 
             // 3. Limpiar el pedido actual y guardar todo
             currentOrder = [];
-            saveStockToFirebase(); // <-- 🚨 AHORA GUARDA GLOBALMENTE EN FIREBASE 🚨
+            saveStockToFirebase(); // <-- GUARDA GLOBALMENTE EN FIREBASE 
             saveOrdersStorage();
             
             // 4. Cerrar el modal y redirigir
             const ordersModal = bootstrap.Modal.getInstance(document.getElementById('ordersModal'));
             ordersModal.hide();
 
-            // 5. Renderizar las tarjetas (esto se hace automáticamente cuando saveStockToFirebase() llama a Firebase)
-            
-            // 🚨 RECORDATORIO MANUAL (ADMIN) 🚨
+            // 5. Advertencia para el administrador y redirección
             console.log("=================================================");
             console.log("✅ ¡STOCK GLOBALMENTE DESCONTADO! PASO CRÍTICO MANUAL:");
             console.log("Para que el stock quede fijo, ejecuta: window.exportInitialProductsArray();");
             console.log("Y sube el nuevo 'aplay.html' con el stock actualizado a GitHub.");
             console.log("=================================================");
-            // 🚨 FIN RECORDATORIO 🚨
             
             window.open(whatsappURL, '_blank');
         }
@@ -1196,7 +1144,6 @@
 
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
-        // Inicializar Realtime Database y la referencia al inventario
         const database = getDatabase(app); 
         const stockRef = ref(database, 'productInventory');
 
