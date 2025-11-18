@@ -55,7 +55,7 @@
             border-radius: 10px;
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
-            height: 100%; /* Asegura que todas las tarjetas tengan la misma altura si la imagen es el mismo tamaño */
+            height: 100%; 
             display: flex;
             flex-direction: column;
         }
@@ -68,7 +68,7 @@
         .product-card img {
             width: 100%;
             height: auto;
-            max-height: 300px; /* Altura máxima para las imágenes */
+            max-height: 300px; 
             object-fit: cover;
         }
 
@@ -89,7 +89,7 @@
         .product-info p {
             font-size: 1rem;
             color: #6c757d;
-            margin-bottom: auto; /* Empuja el precio y el botón hacia abajo */
+            margin-bottom: auto; 
         }
         
         .product-price {
@@ -358,12 +358,12 @@
 
     <script>
         // ====================================================================
-        // === 1. CONFIGURACIÓN INICIAL (DEBES REEMPLAZAR ESTO) ==============
+        // === 1. CONFIGURACIÓN INICIAL =======================================
         // ====================================================================
 
-        // ** AVISO IMPORTANTE: REEMPLAZA TU_DATABASE_URL CON TU URL REAL **
+        // ** LA URL DE FIREBASE HA SIDO CORREGIDA Y REEMPLAZADA **
         const firebaseConfig = {
-            databaseURL: "https://rplay-f04dc-default-rtdb.firebaseio.com", // <<<<<<<<<<<<<<<<< REEMPLAZAR AQUÍ
+            databaseURL: "https://rplay-f04dc-default-rtdb.firebaseio.com", 
         };
 
         // La carpeta donde están las imágenes dentro de tu repositorio (ej: RPLAY/)
@@ -400,25 +400,21 @@
 
 
         // ====================================================================
-        // === 3. INICIALIZACIÓN DE FIREBASE ==================================
+        // === 3. INICIALIZACIÓN DE FIREBASE (CORRECCIÓN CRÍTICA APLICADA) ====
         // ====================================================================
 
         // Inicializar Firebase
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            const db = firebase.database();
-            
-            // Referencias a la base de datos
-            const inventoryRef = db.ref('inventory');
-            const ordersRef = db.ref('orders');
-            const orderCounterRef = db.ref('nextOrderId');
-            
-        } catch (error) {
-            console.error("Error al inicializar Firebase:", error);
-            alert("Hubo un error al configurar Firebase. Revisa tu URL de configuración.");
+        // ** SE ELIMINÓ EL BLOQUE TRY/CATCH para evitar ReferenceError: inventoryRef is not defined **
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
+        const db = firebase.database();
+        
+        // Referencias a la base de datos (Ahora son globales y accesibles)
+        const inventoryRef = db.ref('inventory');
+        const ordersRef = db.ref('orders');
+        const orderCounterRef = db.ref('nextOrderId');
+        
 
 
         // ====================================================================
@@ -469,6 +465,7 @@
             updateCartDisplay(); // Actualiza el carrito si el stock cambia
         }, (errorObject) => {
             console.error("Fallo la lectura del inventario:", errorObject);
+            // La alerta de 'permission_denied' se verá si las reglas no se publican.
             alert("Hubo un error al conectar con el inventario en tiempo real. Revisa tu conexión de Firebase y las reglas de seguridad. (" + errorObject.message + ")");
         });
 
@@ -610,7 +607,7 @@
         /**
          * Muestra la imagen del frente en el modal de detalles.
          */
-        function showFrontImage() {
+        window.showFrontImage = function() {
             document.getElementById('detail-front-image').style.display = 'block';
             document.getElementById('detail-back-image').style.display = 'none';
         }
@@ -618,7 +615,7 @@
         /**
          * Muestra la imagen de la espalda en el modal de detalles.
          */
-        function showBackImage() {
+        window.showBackImage = function() {
             document.getElementById('detail-front-image').style.display = 'none';
             document.getElementById('detail-back-image').style.display = 'block';
         }
@@ -809,6 +806,7 @@
             
             // 3a. Iniciar transacciones para descontar stock
             const stockUpdatePromises = order.items.map(item => {
+                // Se usa inventoryRef que ahora está definido globalmente
                 const productRef = inventoryRef.child(item.id);
                 
                 return productRef.transaction((currentData) => {
@@ -853,8 +851,11 @@
                                     saveCart();
                                     updateCartDisplay();
                                     
+                                    // Prepara la URL de WhatsApp
                                     const encodedMessage = encodeURIComponent(whatsappMessage);
-                                    const whatsappURL = `https://wa.me/${order.clientPhone}?text=${encodedMessage}`;
+                                    // Si no se proporcionó el teléfono, se usa un número predefinido o se le pide al cliente que lo agregue a la URL.
+                                    const whatsappRecipient = order.clientPhone || 'NUMERO_ADMINISTRADOR'; 
+                                    const whatsappURL = `https://wa.me/${whatsappRecipient}?text=${encodedMessage}`;
                                     
                                     alert(`¡Pedido #${order.id} creado exitosamente! Ahora serás redirigido a WhatsApp para enviar los detalles.`);
                                     window.open(whatsappURL, '_blank');
@@ -875,7 +876,6 @@
                         });
                 })
                 .catch(error => {
-                     // Este catch es principalmente para errores de Promise.all, pero los errores de transacción ya se manejan dentro.
                     console.error("Error general en el proceso de pedido:", error);
                 });
         }
@@ -940,10 +940,8 @@
                 .replace(/^\[\n {4}\[/, '[\n    ['); // Ajusta el inicio del array principal
             
             console.log("=================================================");
-            console.log("✅ ¡STOCK GLOBALMENTE DESCONTADO! PASO CRÍTICO MANUAL:");
-            console.log("Para que el stock quede fijo, ejecuta:");
-            console.log("window.exportInitialProductsArray();");
-            console.log("Y sube el nuevo 'aplay.html' con el stock actualizado a GitHub.");
+            console.log("✅ PASO CRÍTICO MANUAL:");
+            console.log("Para que el stock quede fijo y no dependa de Firebase, reemplaza la constante ORIGINAL_PRODUCTS_DEFINITION con la salida de abajo y sube el nuevo 'aplay.html' a GitHub.");
             console.log("=================================================");
             
             // Genera la salida de JavaScript formateada
