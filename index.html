@@ -329,6 +329,24 @@
                     'Blanco': { front: 'Aro7', back: 'Aro8', side: 'blanco2'}
                 }
             },
+            { 
+        i: 44, // Nuevo índice
+        name: 'TÍTULO PLAYERA 44', 
+        description: 'Playera Modelo 44', 
+        stock:  {'M': 1, 'L': 1, 'XL': 1 }, // Define el stock inicial
+        frontFile: 'Paloma1', // Nombre de tu archivo de imagen
+        backFile: 'Paloma2',   // Nombre de tu archivo de imagen
+        sideFile: 'negro'   // Suele ser 'blanco' o 'negro'
+    },
+    { 
+        i: 45, // Nuevo índice
+        name: 'RIHANNA', 
+        description: 'Playera Modelo 45.', 
+        stock:  {'M': 1, 'L': 1, 'XL': 1 }, // Define el stock inicial
+        frontFile: 'Paloma3',
+        backFile: 'Paloma4',
+        sideFile: 'negro'
+    }
         ];
 
 
@@ -348,7 +366,7 @@
             
 
             // Rellenar hasta el modelo 43 con stock por defecto si no están definidos
-            const MAX_MODELS = 43;
+            const MAX_MODELS = 45;
             const existingIndices = initialProducts.map(p => p.i);
             
             for (let i = 1; i <= MAX_MODELS; i++) {
@@ -1176,3 +1194,4 @@
     </script>
 </body>
 </html>
+
